@@ -1,0 +1,464 @@
+[
+  {
+    "from": "m_function",
+    "to": "m_vector",
+    "type": "prereq",
+    "why": "把单个输入变量扩展为多个有固定顺序的分量，才能把位置与速度一起作为模型输入，并明确函数处理的对象。",
+    "formula": "s=[x,y,vx,vy]ᵀ"
+  },
+  {
+    "from": "m_vector",
+    "to": "m_matrix",
+    "type": "prereq",
+    "why": "每条数据先表示为向量，再将多条向量按行堆叠成矩阵，由此解释样本维与特征维并为批量计算检查形状。",
+    "formula": "X∈R^(B×d)"
+  },
+  {
+    "from": "m_matrix",
+    "to": "m_matmul",
+    "type": "prereq",
+    "why": "先知道两个矩阵的行列含义，才能判断内维是否相容，并解释一个样本的多个输入如何组合成多个输出。",
+    "formula": "(B×d)(d×k)→B×k"
+  },
+  {
+    "from": "m_sum",
+    "to": "m_matmul",
+    "type": "prereq",
+    "why": "矩阵乘法的每个输出都累加一组对应乘积，求和索引指出遍历哪一维，避免误写成逐元素相乘或沿错维归约。",
+    "formula": "(XW)ᵢⱼ=ΣₖXᵢₖWₖⱼ"
+  },
+  {
+    "from": "m_vector",
+    "to": "m_norm",
+    "type": "prereq",
+    "why": "先将预测与目标逐项相减得到误差向量，再把多个误差分量压成一个长度，以比较候选状态离目标多远。",
+    "formula": "e=ŝ−s；‖e‖₂=√Σᵢeᵢ²"
+  },
+  {
+    "from": "m_matmul",
+    "to": "m_coordinates",
+    "type": "prereq",
+    "why": "旋转使用矩阵乘法混合原坐标分量，再添加平移，因而能把不同参考系里的观测与目标转到同一坐标系比较。",
+    "formula": "pᴬ=Rᴬ_Bpᴮ+tᴬ_B"
+  },
+  {
+    "from": "m_coordinates",
+    "to": "m_trig",
+    "type": "prereq",
+    "why": "参考系中的朝向具有圆周结构，结合坐标轴旋转理解正弦余弦表示，才能避免把角度边界附近的近邻误判为远离。",
+    "formula": "u(θ)=(cosθ,sinθ)"
+  },
+  {
+    "from": "m_function",
+    "to": "m_derivative",
+    "type": "prereq",
+    "why": "明确哪个量是函数输入和输出后，才能用输入的小变化衡量输出变化，并将曲线局部斜率解释为敏感度或速度。",
+    "formula": "f′(x)=lim[h→0](f(x+h)−f(x))/h"
+  },
+  {
+    "from": "m_derivative",
+    "to": "m_partial",
+    "type": "prereq",
+    "why": "把一元函数的变化率推广到多个输入时，先固定其他输入只改变一个分量，就能逐个测量每个参数对损失的影响。",
+    "formula": "∂L/∂wᵢ"
+  },
+  {
+    "from": "m_vector",
+    "to": "m_partial",
+    "type": "prereq",
+    "why": "模型参数与输入常被打包为向量，分量索引标出正在改变哪一个旋钮，使偏导所针对的变量可以明确定位。",
+    "formula": "θ=[θ₁,…,θₙ]ᵀ"
+  },
+  {
+    "from": "m_derivative",
+    "to": "m_chain",
+    "type": "prereq",
+    "why": "复合函数的整体变化要经过中间变量传递，每一步的局部变化率相乘，才能从最终损失追溯到较早的计算。",
+    "formula": "dy/dx=(dy/du)(du/dx)"
+  },
+  {
+    "from": "m_partial",
+    "to": "m_chain",
+    "type": "prereq",
+    "why": "多变量计算图可能有多个分支共同影响输出，分别计算局部偏导并汇总路径贡献，才能把链式法则用于真实网络。",
+    "formula": "∂L/∂x=Σⱼ(∂L/∂uⱼ)(∂uⱼ/∂x)"
+  },
+  {
+    "from": "m_chain",
+    "to": "m_gradient",
+    "type": "prereq",
+    "why": "链式法则让深层模型的损失可以对每个参数求导，将这些导数排成梯度后，才能执行一次参数下降更新。",
+    "formula": "θ←θ−η∇θL"
+  },
+  {
+    "from": "m_norm",
+    "to": "m_gradient",
+    "type": "prereq",
+    "why": "先用平方范数把多维预测误差变成标量损失，再讨论该损失对参数的梯度，使下降方向对应明确的优化目标。",
+    "formula": "L=‖fθ(x)−y‖₂²"
+  },
+  {
+    "from": "m_partial",
+    "to": "m_jacobian",
+    "type": "prereq",
+    "why": "每个输出对每个输入分别求偏导，再按输出行与输入列排列，得到同时描述所有局部影响的雅可比矩阵。",
+    "formula": "Jᵢⱼ=∂fᵢ/∂xⱼ"
+  },
+  {
+    "from": "m_matmul",
+    "to": "m_jacobian",
+    "type": "prereq",
+    "why": "雅可比通过矩阵乘法把小输入变化映射成近似输出变化，形状检查能确认每个动作扰动如何影响各个状态分量。",
+    "formula": "Δf≈JΔx"
+  },
+  {
+    "from": "m_matmul",
+    "to": "m_eigen",
+    "type": "prereq",
+    "why": "特征方向的定义就是矩阵作用后得到原向量的倍数，理解乘法作为线性变换后，才能解释不改变直线方向的意义。",
+    "formula": "Av=λv"
+  },
+  {
+    "from": "m_function",
+    "to": "p_probability",
+    "type": "prereq",
+    "why": "先给一次实验结果定义明确的事件和数值映射，再把概率赋给这些事件，避免将输入条件、事件与概率数值混为一谈。",
+    "formula": "P(A)∈[0,1]"
+  },
+  {
+    "from": "p_probability",
+    "to": "p_random",
+    "type": "prereq",
+    "why": "把实验事件映射成可计算的数值后，需要用事件概率组织各取值的分布，才能进一步计算状态预测的不确定性。",
+    "formula": "P(X=x)"
+  },
+  {
+    "from": "p_random",
+    "to": "p_conditional",
+    "type": "prereq",
+    "why": "未来状态先被视作随机变量，再把当前状态和动作放进已知条件，才能表达动作不同导致的未来分布变化。",
+    "formula": "p(sₜ₊₁|sₜ,aₜ)"
+  },
+  {
+    "from": "p_conditional",
+    "to": "p_bayes",
+    "type": "prereq",
+    "why": "利用条件概率与联合概率的乘法关系交换证据和假设的位置，才能由某假设下的观测概率推回观测后的假设概率。",
+    "formula": "P(H|D)=P(D|H)P(H)/P(D)"
+  },
+  {
+    "from": "p_random",
+    "to": "p_expectation",
+    "type": "prereq",
+    "why": "随机变量给出可能取值及其分布，期望再按各取值概率加权，得到训练平均损失或随机回报的总体水平。",
+    "formula": "E[X]=ΣₓxP(X=x)"
+  },
+  {
+    "from": "m_sum",
+    "to": "p_expectation",
+    "type": "prereq",
+    "why": "对离散随机变量，将每个取值乘以相应概率后逐项累加，求和索引确保平均覆盖的是全部可能结果。",
+    "formula": "E[X]=ΣₓxP(X=x)"
+  },
+  {
+    "from": "p_expectation",
+    "to": "p_variance",
+    "type": "prereq",
+    "why": "先得到均值，再对偏离均值的平方或成对偏差乘积取期望，才能量化波动大小和不同状态分量的共同变化。",
+    "formula": "Var(X)=E[(X−E[X])²]"
+  },
+  {
+    "from": "m_matrix",
+    "to": "p_variance",
+    "type": "prereq",
+    "why": "多维数据中每一对分量都需要一个协方差，把这些值排列成矩阵，才能同时表达各方向尺度和线性相关结构。",
+    "formula": "Σᵢⱼ=Cov(Xᵢ,Xⱼ)"
+  },
+  {
+    "from": "p_variance",
+    "to": "p_gaussian",
+    "type": "prereq",
+    "why": "高斯分布用均值确定中心、方差或协方差确定散布，理解这些统计量后，才能读取噪声分布的宽窄和椭圆方向。",
+    "formula": "X~N(μ,Σ)"
+  },
+  {
+    "from": "p_gaussian",
+    "to": "p_sampling",
+    "type": "prereq",
+    "why": "从标准高斯抽取噪声并按均值与尺度变换，能生成扩散训练或候选搜索所需样本，连接抽象分布和实际数组。",
+    "formula": "x=μ+σε，ε~N(0,1)"
+  },
+  {
+    "from": "p_expectation",
+    "to": "p_sampling",
+    "type": "prereq",
+    "why": "蒙特卡洛用有限样本平均近似分布期望，先理解真正要估计的总体平均，才能判断采样误差及增加样本的用途。",
+    "formula": "E[f(X)]≈(1/N)Σᵢf(xᵢ)"
+  },
+  {
+    "from": "p_conditional",
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why": "把模型输出写成给定输入或参数下的数据概率，才能固定已观察数据并比较哪个参数更能解释这些样本。",
+    "formula": "L(θ)=∏ᵢpθ(yᵢ|xᵢ)"
+  },
+  {
+    "from": "m_gradient",
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why": "将负对数似然作为可微损失后，可对模型参数求梯度并更新，使实际观察到的数据在模型下逐渐获得更高概率。",
+    "formula": "θ←θ−η∇θ[−Σᵢlog pθ(xᵢ)]"
+  },
+  {
+    "from": "m_explog",
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why": "对数把大量小概率的连乘变为加法，并保留最大值位置，因此既能稳定数值，也能把最大似然转成损失优化。",
+    "formula": "log∏ᵢpᵢ=Σᵢlog pᵢ"
+  },
+  {
+    "from": "p_expectation",
+    "to": "p_entropy",
+    "type": "prereq",
+    "why": "把每个结果的负对数概率视为信息量，再对真实结果分布取平均，才能得到熵及交叉熵的加权表达。",
+    "formula": "H(p,q)=Eₓ~p[−log q(x)]"
+  },
+  {
+    "from": "p_likelihood",
+    "to": "p_entropy",
+    "type": "prereq",
+    "why": "单条样本的负对数似然在许多样本上平均后，连接分类训练使用的交叉熵，使概率学习目标具有实际数据解释。",
+    "formula": "L=−(1/N)Σᵢlog q(yᵢ|xᵢ)"
+  },
+  {
+    "from": "m_explog",
+    "to": "p_entropy",
+    "type": "prereq",
+    "why": "概率越小对应的负对数越大，而独立事件的信息量可相加，这些对数性质解释了错误自信为何受到较强惩罚。",
+    "formula": "I(x)=−log p(x)"
+  },
+  {
+    "from": "p_entropy",
+    "to": "p_kl",
+    "type": "prereq",
+    "why": "交叉熵减去真实分布自身的熵，得到使用模型分布所付出的额外平均代价，由此比较分布而非只比较均值。",
+    "formula": "D_KL(p||q)=H(p,q)−H(p)"
+  },
+  {
+    "from": "m_function",
+    "to": "ml_supervised",
+    "type": "prereq",
+    "why": "先明确输入如何经过参数化规则变成预测输出，才能用带答案的样本调整该规则，并区分训练和推理的输入角色。",
+    "formula": "ŷ=fθ(x)"
+  },
+  {
+    "from": "p_random",
+    "to": "ml_supervised",
+    "type": "prereq",
+    "why": "训练样本来自某种数据分布，理解随机抽样才能说明经验学习为何需要覆盖目标任务，并为未见样本的评估留出空间。",
+    "formula": "(x,y)~p_data"
+  },
+  {
+    "from": "ml_supervised",
+    "to": "ml_mse",
+    "type": "prereq",
+    "why": "监督数据提供每个输入对应的真实目标，平方误差再将预测与该目标比较，形成可用于训练的明确标量目标。",
+    "formula": "L=(1/N)Σᵢ‖fθ(xᵢ)−yᵢ‖₂²"
+  },
+  {
+    "from": "m_norm",
+    "to": "ml_mse",
+    "type": "prereq",
+    "why": "多维预测先得到误差向量，使用平方二范数累计各分量偏差，避免正负抵消并使较大偏差受到更强惩罚。",
+    "formula": "‖e‖₂²=Σⱼeⱼ²"
+  },
+  {
+    "from": "p_expectation",
+    "to": "ml_mse",
+    "type": "prereq",
+    "why": "训练样本上的平均平方误差是总体期望风险的有限样本估计，借此区分训练集表现和未来数据真正的平均误差。",
+    "formula": "R(θ)=E[‖fθ(X)−Y‖₂²]"
+  },
+  {
+    "from": "m_sum",
+    "to": "ml_mse",
+    "type": "prereq",
+    "why": "将每条样本或每个状态分量的误差累加后再按约定平均，才能准确实现损失并核对代码归约的维度和倍率。",
+    "formula": "L=(1/N)ΣᵢΣⱼeᵢⱼ²"
+  },
+  {
+    "from": "ml_mse",
+    "to": "ml_linear",
+    "type": "prereq",
+    "why": "用平方误差比较直线预测与真实数值，能把寻找斜率和截距的问题变成一个可计算、可检查的拟合目标。",
+    "formula": "L=(1/N)Σᵢ(wᵀxᵢ+b−yᵢ)²"
+  },
+  {
+    "from": "m_matmul",
+    "to": "ml_linear",
+    "type": "prereq",
+    "why": "每个输入与相应权重相乘再求和，构成线性预测；批量矩阵乘法则让一整批样本共享同一组权重完成计算。",
+    "formula": "ŷ=Xw+b"
+  },
+  {
+    "from": "m_gradient",
+    "to": "ml_linear",
+    "type": "prereq",
+    "why": "对线性回归损失分别求斜率和截距的梯度并更新，可以亲手实现一个完整的训练循环，为神经网络优化打基础。",
+    "formula": "w←w−η∂L/∂w"
+  },
+  {
+    "from": "ml_linear",
+    "to": "ml_logistic",
+    "type": "prereq",
+    "why": "沿用加权求和产生实数分数，再接 sigmoid 把分数映射到零一范围，便能从数值预测过渡到二分类概率。",
+    "formula": "p=σ(wᵀx+b)"
+  },
+  {
+    "from": "p_entropy",
+    "to": "ml_logistic",
+    "type": "prereq",
+    "why": "二分类预测需要奖励真实标签的高概率，二元交叉熵把这种要求写成损失，惩罚对错误类别过度自信的输出。",
+    "formula": "L=−y log p−(1−y)log(1−p)"
+  },
+  {
+    "from": "ml_supervised",
+    "to": "ml_split",
+    "type": "prereq",
+    "why": "明确哪些样本用于更新模型后，再把选超参数和最终报告的数据独立留下，才能检验学到的规则是否适用于新例子。",
+    "formula": "D=Dtrain ⊔ Dval ⊔ Dtest"
+  },
+  {
+    "from": "ml_split",
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why": "同时观察用于拟合与独立验证的数据误差，才能区分模型整体学不够和只记住训练样本，并诊断泛化差距。",
+    "formula": "泛化差距≈Lval−Ltrain"
+  },
+  {
+    "from": "ml_mse",
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why": "平方误差提供可比较的训练与验证目标，并在相应回归假设下允许把总体预测误差拆成偏差、方差和噪声。",
+    "formula": "预测误差=偏差²+方差+噪声"
+  },
+  {
+    "from": "p_variance",
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why": "将不同训练集得到的预测看成随机结果，用方差描述其波动，才能理解“模型不稳定”与固定系统性偏差的区别。",
+    "formula": "Var_D[f_D(x)]"
+  },
+  {
+    "from": "ml_bias_variance",
+    "to": "ml_regularization",
+    "type": "prereq",
+    "why": "发现模型对训练样本过度敏感后，可增加复杂度偏好限制其自由度；同时监测验证误差，防止约束过强导致欠拟合。",
+    "formula": "Ltotal=Ldata+λ‖θ‖₂²"
+  },
+  {
+    "from": "m_gradient",
+    "to": "ml_regularization",
+    "type": "prereq",
+    "why": "把参数范数加入损失后，其导数会进入参数更新，因而能具体解释正则强度怎样改变训练方向和权重大小。",
+    "formula": "∇θLtotal=∇θLdata+2λθ"
+  },
+  {
+    "from": "ml_split",
+    "to": "ml_normalize",
+    "type": "prereq",
+    "why": "均值与标准差也属于从数据学到的预处理参数，应仅在训练集拟合并固定应用到验证测试，避免提前看到测试信息。",
+    "formula": "x̃=(x−μtrain)/(σtrain+ε)"
+  },
+  {
+    "from": "p_variance",
+    "to": "ml_normalize",
+    "type": "prereq",
+    "why": "标准差描述每维数据的典型波动，用它缩放输入后可减弱数值量级差异，使状态分量更便于共同优化与比较。",
+    "formula": "σ=√Var(X)；x̃=(x−μ)/σ"
+  },
+  {
+    "from": "m_eigen",
+    "to": "ml_pca",
+    "type": "prereq",
+    "why": "协方差矩阵的特征向量给出投影方向，特征值给出该方向的方差，因此选择最大特征值对应方向实现线性降维。",
+    "formula": "Σvᵢ=λᵢvᵢ"
+  },
+  {
+    "from": "p_variance",
+    "to": "ml_pca",
+    "type": "prereq",
+    "why": "PCA保留最大方差方向，需要先理解协方差如何描述分量共同变化，才能解释为何斜向投影可能比保留单一坐标更有效。",
+    "formula": "Var(vᵀX)=vᵀΣv"
+  },
+  {
+    "from": "ml_normalize",
+    "to": "ml_pca",
+    "type": "prereq",
+    "why": "PCA比较不同方向的方差，特征单位和量级会改变主方向；先中心化并按任务决定是否标准化，才能解释降维结果。",
+    "formula": "z=Wₖᵀ(x−μtrain)"
+  },
+  {
+    "from": "p_gaussian",
+    "to": "ml_clustering",
+    "type": "prereq",
+    "why": "用多个高斯分量及其权重组合，可以表达单个高斯无法覆盖的多峰数据，并把硬簇中心推广为概率性的软分配。",
+    "formula": "p(x)=ΣₖπₖN(x;μₖ,Σₖ)"
+  },
+  {
+    "from": "ml_pca",
+    "to": "ml_clustering",
+    "type": "prereq",
+    "why": "沿用表示和距离的视角，先检查压缩后哪些结构被保留，再理解聚类会受特征尺度和表示影响；PCA本身并非聚类必需步骤。",
+    "formula": "z=Wₖᵀ(x−μ)"
+  },
+  {
+    "from": "ml_split",
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why": "最终指标只有在未参与训练及调参的数据上才更能反映未见样本能力，划分方式还决定评估的是新轨迹还是新场景泛化。",
+    "formula": "metric=f(Dtest,θfixed)"
+  },
+  {
+    "from": "p_sampling",
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why": "成功率和平均误差都是有限次试验的估计，理解采样波动后，才能用多种子、更多测试和区间表达结果的可靠程度。",
+    "formula": "p̂=k/N"
+  },
+  {
+    "from": "ml_mse",
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why": "预测平方误差衡量数值接近程度，但任务成功还取决于关键状态和闭环执行，因而需要把预测指标与任务指标并列检查。",
+    "formula": "MSE 与 success rate 分别报告"
+  },
+  {
+    "from": "ml_evaluation",
+    "to": "ml_distribution_shift",
+    "type": "prereq",
+    "why": "单步、长步和闭环指标之间的差异能揭示模型何时离开可信数据范围，因此需要按预测时域和任务条件定位误差来源。",
+    "formula": "ŝₜ₊₁=fθ(ŝₜ,aₜ)"
+  },
+  {
+    "from": "ml_bias_variance",
+    "to": "ml_distribution_shift",
+    "type": "prereq",
+    "why": "训练与验证表现的差距提醒我们检查分布和模型覆盖；进一步比较部署输入，才能区分记忆训练样本与进入新状态区域。",
+    "formula": "p_train(s,a)≠p_deploy(s,a)"
+  },
+  {
+    "from": "m_function",
+    "to": "m_explog",
+    "type": "prereq",
+    "why": "把重复乘法和逆运算分别看成函数，才能理解指数与对数的输入域、单调性及互逆关系，为概率损失的变换做准备。",
+    "formula": "ln(exp(x))=x"
+  },
+  {
+    "from": "m_function",
+    "to": "m_sum",
+    "type": "prereq",
+    "why": "函数式输入输出确定每一项代表什么，索引再遍历重复项并累加，使紧凑求和符号可以展开为具体可核对的计算。",
+    "formula": "Σ(i=1…N)xᵢ"
+  }
+]

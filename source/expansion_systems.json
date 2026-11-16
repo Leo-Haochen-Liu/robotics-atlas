@@ -1,0 +1,1493 @@
+{
+  "nodes": [
+    {
+      "id": "cs_complexity",
+      "en": "Computational Complexity",
+      "title": "计算复杂度",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Computational complexity describes how resource demand scales with problem size under an explicit cost model.",
+      "definition": "Computational complexity describes how resource demand scales with problem size under an explicit cost model. Big-O is an asymptotic bound, not a hardware timing measurement. Count arithmetic operations, memory traffic and candidate evaluations separately when analysing training or planning. Vectorization can change execution efficiency without changing the mathematical operation count.",
+      "example": "A planner evaluating 300 candidates for five steps invokes roughly 1,500 transition evaluations per search iteration. Batching those evaluations may reduce latency, but it does not make their arithmetic vanish. Doubling the context length of dense attention changes the pairwise-score count by approximately fourfold.",
+      "role_en": "This connects planning budgets and neural-network dimensions to runtime; it prevents treating parameter count alone as inference cost.",
+      "latex": "T(n)=O(n^2),\\qquad T_{\\mathrm{GEMM}}\\sim O(MNK)",
+      "notation": [
+        {
+          "symbol": "n",
+          "meaning": "Problem-size parameter."
+        },
+        {
+          "symbol": "M,N,K",
+          "meaning": "Matrix dimensions."
+        }
+      ],
+      "prereqs": [
+        "m_sum"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        }
+      ]
+    },
+    {
+      "id": "cs_floating",
+      "en": "Floating-Point Representation",
+      "title": "浮点数表示",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Floating-point formats encode a finite set of numbers using sign, exponent and significand information.",
+      "definition": "Floating-point formats encode a finite set of numbers using sign, exponent and significand information. Precision and exponent range are different properties. Arithmetic rounds results and can overflow or underflow. Reordering additions can change their result because finite-precision addition is generally non-associative. Exact bit layouts and treatment of subnormals depend on the format.",
+      "example": "An FP16 computation can overflow where a format with a larger exponent range does not. BF16 and FP16 both use sixteen bits, but allocate them differently. Accumulating many small values into a large total can lose the smaller contributions, motivating higher-precision accumulators for selected operations.",
+      "role_en": "Training stability, mixed precision and reproducibility all depend on numeric representation; lower storage size alone does not establish equivalent numerical behaviour.",
+      "latex": "x=(-1)^s\\,m\\,2^e,\\qquad \\operatorname{fl}(a+b)\\ne a+b\\ \\text{in general}",
+      "notation": [
+        {
+          "symbol": "s,m,e",
+          "meaning": "Sign, significand and exponent in a simplified normalized representation."
+        },
+        {
+          "symbol": "\\operatorname{fl}",
+          "meaning": "Rounded floating-point result."
+        }
+      ],
+      "prereqs": [
+        "m_explog"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        },
+        {
+          "title": "PyTorch Automatic Mixed Precision",
+          "url": "https://docs.pytorch.org/docs/main/amp.html"
+        }
+      ]
+    },
+    {
+      "id": "cs_storage",
+      "en": "Tensor Storage, Shapes and Strides",
+      "title": "张量存储、形状与步幅",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "A tensor has logical dimensions and an underlying storage layout.",
+      "definition": "A tensor has logical dimensions and an underlying storage layout. Strides map logical indices to storage locations. A view can share the same storage while changing shape or strides; a copy allocates or populates different storage. Contiguity is a layout property, not a statement that tensor values are correct. Some kernels accept arbitrary strides while others require or benefit from contiguous inputs.",
+      "example": "Transposing a matrix can create a non-contiguous view without copying every element. A later contiguous conversion may allocate a copy. A pipeline that repeatedly transposes and copies can spend substantial time moving data even if the displayed matrix multiplication is efficient.",
+      "role_en": "Shape-aware model implementation must also account for storage layout when predicting memory use and kernel performance.",
+      "latex": "\\operatorname{offset}(i_0,\\ldots,i_{d-1})=o+\\sum_{j=0}^{d-1}i_j s_j",
+      "notation": [
+        {
+          "symbol": "o",
+          "meaning": "Storage offset."
+        },
+        {
+          "symbol": "i_j,s_j",
+          "meaning": "Index and element stride along axis j."
+        }
+      ],
+      "prereqs": [
+        "d_tensor",
+        "e_python"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        },
+        {
+          "title": "PyTorch Tensor strides",
+          "url": "https://docs.pytorch.org/docs/stable/generated/torch.Tensor.stride.html"
+        }
+      ]
+    },
+    {
+      "id": "cs_memory",
+      "en": "Model and Training Memory Accounting",
+      "title": "模型与训练显存估算",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Training memory includes parameters, gradients, optimizer states, saved activations and temporary workspaces.",
+      "definition": "Training memory includes parameters, gradients, optimizer states, saved activations and temporary workspaces. Storage precision can differ among these components. Framework allocator reservations and peak overlap make observed memory differ from a simple sum. Inference may remove gradients and optimizer states but still require temporary activations, caches and workspaces.",
+      "example": "One million FP32 weights require about four megabytes in decimal units. Adam commonly needs two additional moment tensors, while gradients and possibly master weights add more storage. Doubling sequence length can increase activation memory even if the parameter count is unchanged.",
+      "role_en": "Use component accounting before choosing batch size, activation checkpointing or parameter sharding; GPU capacity cannot be inferred from model weights alone.",
+      "latex": "M\\approx M_{\\mathrm{weights}}+M_{\\mathrm{grads}}+M_{\\mathrm{optim}}+M_{\\mathrm{activations}}+M_{\\mathrm{workspace}}",
+      "notation": [
+        {
+          "symbol": "M",
+          "meaning": "Approximate resident memory demand."
+        },
+        {
+          "symbol": "M_{\\mathrm{activations}}",
+          "meaning": "Saved forward intermediates needed by backward."
+        }
+      ],
+      "prereqs": [
+        "cs_floating",
+        "d_tensor"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        },
+        {
+          "title": "PyTorch Automatic Mixed Precision",
+          "url": "https://docs.pytorch.org/docs/main/amp.html"
+        }
+      ]
+    },
+    {
+      "id": "cs_parallel",
+      "en": "Parallelism and Amdahl’s Law",
+      "title": "并行性与阿姆达尔定律",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Parallel execution divides suitable work among processing resources.",
+      "definition": "Parallel execution divides suitable work among processing resources. Dependencies, serial code, synchronization and data transfer limit end-to-end speedup. Amdahl’s law is a simplified upper bound with fixed workload and ideal parallel scaling. Real GPU performance also depends on memory access, occupancy and launch overhead. More parallel workers do not guarantee proportional improvement.",
+      "example": "If ninety percent of a pipeline becomes ten times faster while ten percent is unchanged, the ideal overall speedup is about 5.26, not ten. A Python environment loop can limit a fast GPU policy rollout if observations are assembled serially.",
+      "role_en": "This explains why faster matrix kernels or more GPUs may not proportionally accelerate a complete robotics training pipeline.",
+      "latex": "S(p)\\le\\frac{1}{(1-f)+f/p}",
+      "notation": [
+        {
+          "symbol": "f",
+          "meaning": "Fraction of baseline execution that is parallelizable."
+        },
+        {
+          "symbol": "p",
+          "meaning": "Ideal parallel speedup for that fraction."
+        },
+        {
+          "symbol": "S",
+          "meaning": "Overall speedup under the simplified assumptions."
+        }
+      ],
+      "prereqs": [
+        "cs_complexity"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_model",
+      "en": "CPU, GPU and Throughput Computing",
+      "title": "CPU、GPU与吞吐计算",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "A CPU is typically optimized for low-latency control and diverse execution; a GPU provides many execution resources for high-throughput parallel workloads.",
+      "definition": "A CPU is typically optimized for low-latency control and diverse execution; a GPU provides many execution resources for high-throughput parallel workloads. The displayed bound separates arithmetic and data movement and ignores launch and scheduling overhead. GPU acceleration requires enough suitable parallel work and efficient data supply. Hardware details and useful performance vary by architecture.",
+      "example": "A large batched matrix multiplication can expose extensive parallelism and reuse. A tiny tensor operation invoked repeatedly from Python can instead be dominated by dispatch and launch overhead. Moving inputs between CPU and GPU at every step can further reduce useful acceleration.",
+      "role_en": "This is the starting point for understanding why neural-network batches and parallel simulation benefit from GPUs while some robotics control tasks remain latency-bound.",
+      "latex": "T\\gtrsim\\max\\!\\left(\\frac{F}{P},\\frac{B}{W}\\right)",
+      "notation": [
+        {
+          "symbol": "F,B",
+          "meaning": "Arithmetic work and transferred bytes."
+        },
+        {
+          "symbol": "P,W",
+          "meaning": "Available compute throughput and memory bandwidth."
+        }
+      ],
+      "prereqs": [
+        "cs_parallel",
+        "cs_memory"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        },
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_kernel",
+      "en": "CUDA Kernels and Indexing",
+      "title": "CUDA核函数与索引",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "A CUDA kernel is a device function executed by a grid of thread blocks.",
+      "definition": "A CUDA kernel is a device function executed by a grid of thread blocks. Each thread uses its indices to determine which data to process. The launch configuration is a logical decomposition of work, not a guarantee that all threads run simultaneously. Boundary checks prevent out-of-range accesses when the launch covers more threads than elements.",
+      "example": "For a vector addition of 1,000 elements with 256 threads per block, four blocks cover 1,024 logical indices. The final twenty-four threads must skip memory accesses beyond the valid range. Multiple blocks may be scheduled at different times.",
+      "role_en": "Tensor libraries invoke kernels underneath high-level operations. Understanding indexing helps explain batching, launch overhead and parallel simulation layouts.",
+      "latex": "i=\\operatorname{blockIdx}_x\\operatorname{blockDim}_x+\\operatorname{threadIdx}_x",
+      "notation": [
+        {
+          "symbol": "i",
+          "meaning": "Global element index for a one-dimensional launch."
+        },
+        {
+          "symbol": "\\operatorname{blockDim}_x",
+          "meaning": "Threads per block along x."
+        }
+      ],
+      "prereqs": [
+        "gpu_model",
+        "cs_storage"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_simt",
+      "en": "SMs, Warps and SIMT Execution",
+      "title": "流式多处理器、线程束与SIMT",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "NVIDIA GPUs schedule threads in warps within streaming multiprocessors.",
+      "definition": "NVIDIA GPUs schedule threads in warps within streaming multiprocessors. SIMT presents per-thread execution while grouping instruction execution across threads. Thread blocks require sufficient resources on an SM; the grid may be much larger than the simultaneously resident work. Warp width, instruction capabilities and resource limits must be read from the target architecture documentation.",
+      "example": "A block of 128 threads contains four logical warps on a thirty-two-thread warp architecture. That does not mean one CUDA core executes an entire warp at once, or that all blocks are resident. Instruction issue, latency hiding and execution pipelines are separate hardware details.",
+      "role_en": "This connects CUDA thread hierarchy to resource occupancy, divergence, memory access and GPU simulation throughput.",
+      "latex": "\\text{warp width}=32\\ \\text{threads on current NVIDIA CUDA architectures}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{SM}",
+          "meaning": "Streaming multiprocessor, a hardware scheduling/execution resource."
+        },
+        {
+          "symbol": "\\mathrm{SIMT}",
+          "meaning": "Single instruction, multiple threads."
+        }
+      ],
+      "prereqs": [
+        "gpu_kernel"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_divergence",
+      "en": "Branch Divergence",
+      "title": "分支发散",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "Branch divergence occurs when threads grouped for SIMT execution take different control-flow paths.",
+      "definition": "Branch divergence occurs when threads grouped for SIMT execution take different control-flow paths. Hardware must manage the active threads for each path, which can reduce useful execution efficiency. Predication, reconvergence and independent thread scheduling details vary. Divergence is not a correctness error by itself, and branch-free code is not always faster.",
+      "example": "If neighbouring threads evaluate different collision cases, some execute one contact branch while others execute another. Reorganizing work to group similar cases may improve execution, but sorting and extra data movement can outweigh the benefit.",
+      "role_en": "Contact-rich GPU simulation and irregular robot datasets may have different performance from dense neural-network arithmetic even with similar element counts.",
+      "latex": "\\text{if }p_i:\\ u_i\\leftarrow f(u_i)\\quad\\text{else}:\\ u_i\\leftarrow g(u_i)",
+      "notation": [
+        {
+          "symbol": "p_i",
+          "meaning": "Branch condition for thread i."
+        },
+        {
+          "symbol": "f,g",
+          "meaning": "Different instruction paths."
+        }
+      ],
+      "prereqs": [
+        "gpu_simt"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_hierarchy",
+      "en": "GPU Memory Hierarchy",
+      "title": "GPU存储层级",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "GPU storage includes registers, block-cooperative shared memory, caches and device memory.",
+      "definition": "GPU storage includes registers, block-cooperative shared memory, caches and device memory. Scope, capacity, latency and bandwidth differ. Register and shared-memory demand can limit concurrent work. Cache behaviour and memory technology are architecture-specific. A logical tensor being on the GPU does not mean every access is served from its fastest storage.",
+      "example": "A matrix multiplication tile can reuse values loaded into shared memory rather than repeatedly fetching them from device memory. Excessive per-thread registers may reduce residency or cause spilling, increasing memory traffic. The best tile size therefore balances several resource constraints.",
+      "role_en": "The hierarchy explains why data reuse, tiling and fusion can matter as much as the number of arithmetic operations.",
+      "latex": "\\text{registers}\\leftrightarrow\\text{shared memory/cache}\\leftrightarrow\\text{device memory}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{HBM/GDDR}",
+          "meaning": "Architecture-dependent external device memory technologies."
+        },
+        {
+          "symbol": "\\mathrm{registers}",
+          "meaning": "Thread-local fast storage, subject to resource limits."
+        }
+      ],
+      "prereqs": [
+        "cs_storage",
+        "gpu_simt"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        },
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_coalescing",
+      "en": "Coalesced Memory Access",
+      "title": "合并访存",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "Coalescing combines suitable memory accesses from threads into efficient memory transactions.",
+      "definition": "Coalescing combines suitable memory accesses from threads into efficient memory transactions. Consecutive addresses, alignment and access width influence transaction count. Strided, scattered or poorly aligned accesses can transfer unused bytes and lower effective bandwidth. Exact transaction rules depend on the GPU generation and memory instruction. Coalescing is a property of accesses, not simply tensor shape.",
+      "example": "Threads reading adjacent FP32 elements can use memory transactions efficiently. If neighbouring threads instead read widely separated rows, the same number of requested values can require more transactions. A transpose may require a tiled access strategy to make both reads and writes efficient.",
+      "role_en": "Robot observation layouts, image processing and custom CUDA kernels benefit from matching parallel thread indexing to storage layout.",
+      "latex": "\\operatorname{addr}(i)=\\operatorname{base}+i\\,b",
+      "notation": [
+        {
+          "symbol": "b",
+          "meaning": "Bytes per element for contiguous accesses."
+        },
+        {
+          "symbol": "i",
+          "meaning": "Neighbouring logical thread index."
+        }
+      ],
+      "prereqs": [
+        "gpu_hierarchy",
+        "cs_storage"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_tiling",
+      "en": "Tiled Matrix Multiplication",
+      "title": "分块矩阵乘法",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "Tiling partitions matrix multiplication into reusable subproblems.",
+      "definition": "Tiling partitions matrix multiplication into reusable subproblems. A block computes an output tile while reusing input tiles across multiple products. This reduces traffic per useful arithmetic operation relative to repeatedly loading each operand. Tile dimensions interact with shared memory, registers, Tensor Core instructions and scheduling. High throughput requires suitable shapes and efficient handling of boundary tiles.",
+      "example": "An input value used in several output dot products can be loaded once into cooperative storage and reused. A small matrix-vector multiplication may have much less reuse than a large matrix-matrix multiplication, so equal nominal FLOP rates do not imply equal achievable speed.",
+      "role_en": "Dense layers, attention projections and simulation linear algebra rely on the same matrix multiplication principles.",
+      "latex": "C_{ij}=\\sum_k A_{ik}B_{kj},\\qquad F\\approx2MNK",
+      "notation": [
+        {
+          "symbol": "A\\in\\mathbb R^{M\\times K},B\\in\\mathbb R^{K\\times N}",
+          "meaning": "Input matrices."
+        },
+        {
+          "symbol": "F",
+          "meaning": "Multiply-and-add operation count under the usual convention."
+        }
+      ],
+      "prereqs": [
+        "m_matmul",
+        "gpu_hierarchy"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        },
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_tensorcores",
+      "en": "Tensor Cores and Matrix Instructions",
+      "title": "Tensor Core与矩阵指令",
+      "group": "cuda",
+      "kind": "concept",
+      "summary": "Tensor Cores execute supported matrix operations using architecture-dependent operand formats, shapes and accumulation behaviour.",
+      "definition": "Tensor Cores execute supported matrix operations using architecture-dependent operand formats, shapes and accumulation behaviour. They are not interchangeable with every ordinary CUDA execution unit. Frameworks and libraries select suitable kernels when data types, dimensions and hardware allow. Nominal peak throughput assumes favourable conditions and is not an end-to-end application speed measurement.",
+      "example": "A mixed-precision dense layer may use matrix instructions with lower-precision operands and higher-precision accumulation. A scalar branch-heavy environment update may use ordinary instructions instead. Changing model dtype does not guarantee all operations use Tensor Cores or preserve numerical accuracy.",
+      "role_en": "This explains a major source of training throughput while clarifying why robot simulation, attention and optimizer steps can have different bottlenecks.",
+      "latex": "D\\leftarrow AB+C",
+      "notation": [
+        {
+          "symbol": "A,B,C,D",
+          "meaning": "Small matrix fragments processed by a supported matrix instruction."
+        }
+      ],
+      "prereqs": [
+        "gpu_tiling",
+        "cs_floating"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        },
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        },
+        {
+          "title": "PyTorch Automatic Mixed Precision",
+          "url": "https://docs.pytorch.org/docs/main/amp.html"
+        }
+      ]
+    },
+    {
+      "id": "gpu_libraries",
+      "en": "cuBLAS, cuDNN and Operator Dispatch",
+      "title": "数学库与算子分派",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "A high-level tensor operation passes through framework dispatch to an implementation appropriate for device, dtype, layout and other conditions.",
+      "definition": "A high-level tensor operation passes through framework dispatch to an implementation appropriate for device, dtype, layout and other conditions. Backends may use vendor libraries or generated/custom kernels. The mapping is not always one Python call to one kernel, especially under compilation or fusion. Backend selection can change with software versions and input properties.",
+      "example": "A PyTorch matrix product on CUDA can dispatch to an optimized matrix backend rather than execute a Python loop over entries. Adjacent elementwise operations may still launch separate kernels in eager mode unless another optimization combines them.",
+      "role_en": "This connects the mathematical model description to the actual GPU work executed during training and inference.",
+      "latex": "\\texttt{torch.matmul}\\to\\text{dispatch}\\to\\text{backend kernel}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{cuBLAS}",
+          "meaning": "NVIDIA linear algebra library."
+        },
+        {
+          "symbol": "\\mathrm{cuDNN}",
+          "meaning": "NVIDIA neural-network primitive library."
+        }
+      ],
+      "prereqs": [
+        "gpu_tensorcores",
+        "e_torch"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        },
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_vjp",
+      "en": "Reverse-Mode Autodiff and VJPs",
+      "title": "反向自动微分与向量雅可比积",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "Reverse-mode automatic differentiation propagates vector-Jacobian products through recorded operations.",
+      "definition": "Reverse-mode automatic differentiation propagates vector-Jacobian products through recorded operations. It can compute gradients of a scalar loss with respect to many parameters without explicitly materializing every Jacobian. Backward requires relevant forward values or recomputation. Differentiability and numerical correctness of local operations still matter; autograd does not validate a model’s physical predictions.",
+      "example": "For a large matrix layer, backward can compute parameter and input gradients using matrix products rather than constructing a huge dense Jacobian. Detaching the next state in an imagined rollout breaks gradient propagation across that transition, even though the forward numbers remain available.",
+      "role_en": "SuperMimic-style policy optimization needs gradients through learned transition rollouts. This is different from using CEM with fixed, derivative-free model evaluation.",
+      "latex": "\\bar x=\\bar y\\,\\frac{\\partial y}{\\partial x}",
+      "notation": [
+        {
+          "symbol": "\\bar y",
+          "meaning": "Incoming sensitivity of a scalar objective to y."
+        },
+        {
+          "symbol": "\\bar x",
+          "meaning": "Propagated sensitivity to x."
+        }
+      ],
+      "prereqs": [
+        "d_backprop",
+        "m_jacobian"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Autograd mechanics",
+          "url": "https://docs.pytorch.org/docs/main/notes/autograd.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_graph",
+      "en": "Dynamic Autograd Graphs and Saved Tensors",
+      "title": "动态自动微分图与保存张量",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "PyTorch eager autograd records executed tensor operations needed for gradient computation.",
+      "definition": "PyTorch eager autograd records executed tensor operations needed for gradient computation. Saved forward values and graph references affect memory lifetime. Creating tensors without gradients, detaching values or using inference modes changes what is recorded. Graph retention and higher-order differentiation can require additional memory and different API settings.",
+      "example": "Saving a training loss tensor to a long-lived Python list can retain graph references unless only a detached scalar is stored. Accumulating unintended references can increase memory consumption even when the model shape is unchanged.",
+      "role_en": "Understanding graph lifetime helps debug differentiable rollouts, memory growth and accidental gradient breaks in learned world models.",
+      "latex": "\\mathcal L=f_L\\circ\\cdots\\circ f_1(x;\\theta)",
+      "notation": [
+        {
+          "symbol": "f_i",
+          "meaning": "Recorded differentiable operation."
+        },
+        {
+          "symbol": "\\theta",
+          "meaning": "Parameters whose gradients are requested."
+        }
+      ],
+      "prereqs": [
+        "pt_vjp",
+        "cs_memory"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Autograd mechanics",
+          "url": "https://docs.pytorch.org/docs/main/notes/autograd.html"
+        },
+        {
+          "title": "PyTorch Activation Checkpointing",
+          "url": "https://docs.pytorch.org/docs/main/checkpoint.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_device",
+      "en": "Devices, Allocation and the Caching Allocator",
+      "title": "设备、显存分配与缓存分配器",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "CUDA tensors have a device and storage allocation.",
+      "definition": "CUDA tensors have a device and storage allocation. PyTorch commonly caches device memory to reduce allocation overhead, so reserved memory can exceed currently allocated live tensors. External libraries and driver usage add other accounting. Deleting a tensor reference, freeing unused cache and reducing peak working memory are different actions. Device placement must be consistent across participating operations.",
+      "example": "A tensor can be released while its block remains reserved for reuse, so a process-level GPU monitor may not immediately show a drop. Calling an empty-cache function does not free live tensors or make an oversized training batch fit without other changes.",
+      "role_en": "This supports interpreting GPU memory statistics without assuming every reservation is a leak. It also explains out-of-memory failures and device mismatch errors.",
+      "latex": "M_{\\mathrm{allocated}}\\le M_{\\mathrm{reserved}}\\quad\\text{for the allocator accounting}",
+      "notation": [
+        {
+          "symbol": "M_{\\mathrm{allocated}}",
+          "meaning": "Memory occupied by live tensor allocations in the selected accounting."
+        },
+        {
+          "symbol": "M_{\\mathrm{reserved}}",
+          "meaning": "Memory held by the allocator from the device."
+        }
+      ],
+      "prereqs": [
+        "cs_memory",
+        "gpu_hierarchy",
+        "e_torch"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_streams",
+      "en": "CUDA Streams, Events and Asynchrony",
+      "title": "CUDA流、事件与异步执行",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "CUDA launches are often asynchronous relative to host execution.",
+      "definition": "CUDA launches are often asynchronous relative to host execution. Operations are ordered within a stream; cross-stream dependencies need appropriate coordination. Host enqueue time is not device completion time. Events or explicit synchronization establish suitable timing boundaries. Excessive synchronization can destroy overlap, while missing dependencies can cause incorrect reads or writes.",
+      "example": "A Python timer placed immediately around a CUDA operation may measure mostly launch overhead. Recording device events and waiting for completion can measure GPU work more accurately. A transfer and compute operation can overlap only when hardware, memory and dependency conditions permit.",
+      "role_en": "Correct timing is necessary for comparing planners, simulations and training pipelines; asynchronous launch is not evidence that a result is already computed.",
+      "latex": "T_{\\mathrm{host\\ enqueue}}\\ne T_{\\mathrm{device\\ completion}}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{stream}",
+          "meaning": "Ordered sequence of operations on a device."
+        },
+        {
+          "symbol": "\\mathrm{event}",
+          "meaning": "Device-side ordering or timing marker."
+        }
+      ],
+      "prereqs": [
+        "gpu_kernel",
+        "pt_device"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        },
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_data",
+      "en": "DataLoader, Pinned Memory and Transfers",
+      "title": "数据加载、锁页内存与传输",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "Training input pipelines include storage reads, decoding, augmentation, batching and transfer.",
+      "definition": "Training input pipelines include storage reads, decoding, augmentation, batching and transfer. Worker processes can overlap CPU preparation; pinned host memory can support suitable asynchronous transfers. More workers or pinned buffers can increase memory demand and contention. Effective overlap depends on queueing, synchronization and whether preprocessing itself is the bottleneck.",
+      "example": "If image decoding takes twice as long as GPU computation, faster matrix kernels alone may not improve training throughput. Precomputing frozen features can change the bottleneck, but only if it preserves the intended augmentation and experimental protocol.",
+      "role_en": "Robot video datasets often need careful input-pipeline design before additional GPU capacity produces useful speedup.",
+      "latex": "T_{\\mathrm{step}}\\gtrsim\\max(T_{\\mathrm{data}},T_{\\mathrm{compute}})\\quad\\text{under ideal overlap}",
+      "notation": [
+        {
+          "symbol": "T_{\\mathrm{data}}",
+          "meaning": "Data preparation and transfer time."
+        },
+        {
+          "symbol": "T_{\\mathrm{compute}}",
+          "meaning": "Device computation time."
+        }
+      ],
+      "prereqs": [
+        "e_dataset",
+        "pt_streams"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Data Loading",
+          "url": "https://docs.pytorch.org/docs/main/data.html"
+        },
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        }
+      ]
+    },
+    {
+      "id": "train_batch",
+      "en": "Batching and Gradient Accumulation",
+      "title": "批处理与梯度累积",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Batching groups examples for efficient tensor operations.",
+      "definition": "Batching groups examples for efficient tensor operations. Gradient accumulation sums or averages gradients over microbatches before updating parameters. Effective batch size depends on the loss normalization and distributed sampling. Accumulation is not always identical to one large batch because dropout, normalization, clipping and stochastic data transformations can differ.",
+      "example": "Four microbatches of sixteen examples on two data-parallel workers correspond to 128 examples per update if gradients are normalized consistently. Calling the optimizer step after each microbatch changes the update sequence and is a different experiment.",
+      "role_en": "This links statistical training choices to GPU utilization and memory limits, especially for large video or action models.",
+      "latex": "B_{\\mathrm{effective}}=B_{\\mathrm{micro}}\\,K\\,N_{\\mathrm{workers}}",
+      "notation": [
+        {
+          "symbol": "K",
+          "meaning": "Microbatches accumulated per optimizer update."
+        },
+        {
+          "symbol": "N_{\\mathrm{workers}}",
+          "meaning": "Data-parallel workers under the stated sampling protocol."
+        }
+      ],
+      "prereqs": [
+        "d_sgd",
+        "pt_graph"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        },
+        {
+          "title": "PyTorch DistributedDataParallel",
+          "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.parallel.DistributedDataParallel.html"
+        }
+      ]
+    },
+    {
+      "id": "train_amp",
+      "en": "Automatic Mixed Precision",
+      "title": "自动混合精度",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Mixed-precision training selects lower precision for suitable operations while keeping other calculations in higher precision.",
+      "definition": "Mixed-precision training selects lower precision for suitable operations while keeping other calculations in higher precision. Autocast chooses operation dtypes; gradient scaling addresses selected underflow risks and is not universally required for every lower-precision format. Stability, speed and memory benefits depend on model, backend and hardware. Precision changes must be validated against the objective and task outcomes.",
+      "example": "A matrix multiplication may use a lower-precision path while a reduction remains higher precision. FP16 gradient scaling can prevent small gradients from underflowing, but cannot correct every source of unstable training or bad data. BF16 has different range and precision tradeoffs.",
+      "role_en": "This explains practical acceleration of large world models and VLAs without equating reduced precision to guaranteed equal accuracy.",
+      "latex": "\\mathcal L_s=s\\mathcal L,\\qquad g=\\frac{1}{s}\\nabla_\\theta\\mathcal L_s",
+      "notation": [
+        {
+          "symbol": "s",
+          "meaning": "Loss-scaling factor when scaling is used."
+        },
+        {
+          "symbol": "g",
+          "meaning": "Unscaled gradient for the optimizer."
+        }
+      ],
+      "prereqs": [
+        "cs_floating",
+        "gpu_tensorcores",
+        "e_torch"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Automatic Mixed Precision",
+          "url": "https://docs.pytorch.org/docs/main/amp.html"
+        }
+      ]
+    },
+    {
+      "id": "train_checkpoint",
+      "en": "Activation Checkpointing",
+      "title": "激活重计算",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Activation checkpointing saves a selected subset of forward intermediates and recomputes others during backward.",
+      "definition": "Activation checkpointing saves a selected subset of forward intermediates and recomputes others during backward. It trades additional computation for lower activation memory. It is different from saving training state to disk. Correctness requires recomputation behaviour compatible with the chosen checkpointing method, randomness and side effects. The benefit depends on which layers dominate peak memory.",
+      "example": "Checkpointing a stack of Transformer blocks can permit a longer context at the cost of repeated forward work. It does not reduce parameter or optimizer-state storage in the same way that parameter sharding does. Wall-clock impact must be measured.",
+      "role_en": "This is a common memory technique for video diffusion and long imagined rollouts; it changes runtime without reducing the mathematical model depth.",
+      "latex": "\\text{less saved activation memory}\\quad\\Longleftrightarrow\\quad\\text{additional forward recomputation}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{activation}",
+          "meaning": "Intermediate value needed for a backward rule."
+        },
+        {
+          "symbol": "\\mathrm{checkpoint}",
+          "meaning": "Selected boundary from which intermediates are recomputed."
+        }
+      ],
+      "prereqs": [
+        "pt_graph",
+        "cs_memory"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Activation Checkpointing",
+          "url": "https://docs.pytorch.org/docs/main/checkpoint.html"
+        }
+      ]
+    },
+    {
+      "id": "train_ddp",
+      "en": "Distributed Data Parallel and All-Reduce",
+      "title": "分布式数据并行与全归约",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Data parallelism replicates the model across workers and computes gradients on different data shards.",
+      "definition": "Data parallelism replicates the model across workers and computes gradients on different data shards. Collective communication combines corresponding gradients so synchronized replicas perform consistent updates. DDP can overlap communication with backward using gradient buckets. Speedup depends on compute, communication, batch size and imbalance; distributed correctness also requires consistent model and data handling.",
+      "example": "Two workers process different examples, then average their gradients before an update. If one worker receives a much slower input batch, the other may wait during synchronization. Doubling worker count can change effective batch size unless other settings are adjusted.",
+      "role_en": "This is the systems layer beneath multi-GPU paper training reports. Report GPU-hours and wall-clock time separately and document the effective batch.",
+      "latex": "g=\\frac1N\\sum_{r=1}^{N}g^{(r)}",
+      "notation": [
+        {
+          "symbol": "g^{(r)}",
+          "meaning": "Gradient computed on worker r."
+        },
+        {
+          "symbol": "N",
+          "meaning": "Number of data-parallel workers."
+        }
+      ],
+      "prereqs": [
+        "train_batch",
+        "cs_parallel"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch DistributedDataParallel",
+          "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.parallel.DistributedDataParallel.html"
+        }
+      ]
+    },
+    {
+      "id": "train_sharding",
+      "en": "Parameter, Gradient and Optimizer Sharding",
+      "title": "参数、梯度与优化器分片",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Sharding distributes selected model states across workers rather than keeping all states replicated.",
+      "definition": "Sharding distributes selected model states across workers rather than keeping all states replicated. Different strategies shard optimizer state, gradients, parameters or combinations. Execution may gather parameters temporarily and introduce communication. Persistent memory reduction does not directly specify peak memory, throughput or inference behaviour. Framework versions and wrapping choices affect actual execution.",
+      "example": "A large model can fit across several workers because each stores only part of its persistent states. During a layer computation, gathered weights and activation buffers can still produce a peak much larger than the simple one-over-worker-count estimate.",
+      "role_en": "This supports reading large-model training configurations and distinguishing memory scaling from data-parallel throughput scaling.",
+      "latex": "M_{\\mathrm{persistent,worker}}\\approx\\frac{M_{\\mathrm{sharded}}}{N}+M_{\\mathrm{unsharded}}",
+      "notation": [
+        {
+          "symbol": "N",
+          "meaning": "Shard count."
+        },
+        {
+          "symbol": "M_{\\mathrm{persistent,worker}}",
+          "meaning": "Persistent per-worker storage, excluding temporary gathered states."
+        }
+      ],
+      "prereqs": [
+        "train_ddp",
+        "cs_memory"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Fully Sharded Data Parallel",
+          "url": "https://docs.pytorch.org/docs/stable/fsdp.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_compile",
+      "en": "torch.compile, Graph Capture and Fusion",
+      "title": "图捕获、编译与融合",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "Compilation captures supported program regions and transforms their tensor operations into optimized implementations.",
+      "definition": "Compilation captures supported program regions and transforms their tensor operations into optimized implementations. Fusion may reduce intermediate storage and kernel-launch overhead. Dynamic control flow, unsupported operations and shape changes can cause graph breaks or recompilation. Compilation startup cost and steady-state performance must be separated. Compiling a program does not change its task specification or guarantee a speedup.",
+      "example": "A sequence of elementwise activations and arithmetic may become fewer kernels, whereas an already efficient matrix multiplication may remain a library call. Benchmark after the intended warmup and include compilation cost when it matters for a short-lived job.",
+      "role_en": "This connects high-level PyTorch code to generated GPU execution and helps explain version- and shape-dependent training speed.",
+      "latex": "\\text{Python graph}\\to\\text{captured graph}\\to\\text{optimized backend kernels}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{fusion}",
+          "meaning": "Combining operations to reduce launches or intermediate traffic."
+        },
+        {
+          "symbol": "\\mathrm{graph\\ break}",
+          "meaning": "A boundary where execution cannot remain in the compiled graph."
+        }
+      ],
+      "prereqs": [
+        "gpu_libraries",
+        "pt_graph"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch compiler documentation",
+          "url": "https://docs.pytorch.org/docs/main/torch.compiler.html"
+        }
+      ]
+    },
+    {
+      "id": "pt_triton",
+      "en": "Triton and Custom GPU Kernels",
+      "title": "Triton与自定义GPU核函数",
+      "group": "pytorch_systems",
+      "kind": "concept",
+      "summary": "Triton is a language and compiler for writing GPU kernels with tensor-oriented operations and explicit memory access patterns.",
+      "definition": "Triton is a language and compiler for writing GPU kernels with tensor-oriented operations and explicit memory access patterns. It can express tiled computation and is used by compiler backends and custom operators. Correctness, masks, layout and resource use still require attention. A custom kernel is valuable only when it improves a relevant measured bottleneck while preserving required numerical behaviour.",
+      "example": "A fused operation can load a tile, apply several elementwise transforms and write once instead of storing every intermediate. For an unusual shape, an optimized library kernel may still be faster than a simple custom implementation. Validate both output and timing.",
+      "role_en": "This is an optional advanced branch for training-system optimization, not a prerequisite for understanding a world-model paper’s mathematical method.",
+      "latex": "\\text{program instance}\\mapsto\\text{tensor tile and memory operations}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{tile}",
+          "meaning": "Block of logical tensor elements handled by a program instance."
+        }
+      ],
+      "prereqs": [
+        "gpu_tiling",
+        "pt_compile"
+      ],
+      "sources": [
+        {
+          "title": "Triton programming documentation",
+          "url": "https://triton-lang.org/main/index.html"
+        },
+        {
+          "title": "PyTorch compiler documentation",
+          "url": "https://docs.pytorch.org/docs/main/torch.compiler.html"
+        }
+      ]
+    },
+    {
+      "id": "train_flash",
+      "en": "FlashAttention and IO-Aware Attention",
+      "title": "FlashAttention与IO感知注意力",
+      "group": "training",
+      "kind": "concept",
+      "summary": "FlashAttention reorganizes exact attention computation using tiling and numerically stable blockwise normalization to reduce memory traffic.",
+      "definition": "FlashAttention reorganizes exact attention computation using tiling and numerically stable blockwise normalization to reduce memory traffic. It does not replace attention with an arbitrary approximate sparse pattern. Arithmetic complexity, memory footprint and wall-clock time are distinct quantities. Supported variants and precision behaviour depend on implementation. IO-aware algorithms exploit the GPU hierarchy rather than merely adding more compute units.",
+      "example": "Ordinary attention can materialize a sequence-by-sequence score matrix. Tiled attention processes blocks while maintaining normalization information, avoiding full score storage in high-bandwidth memory. Speed benefits depend on sequence length, dimensions and hardware rather than a universal acceleration factor.",
+      "role_en": "This connects the attention formula to efficient large-model training and explains why a mathematical operation can stay the same while its implementation becomes much faster.",
+      "latex": "Y=\\operatorname{softmax}(QK^\\top/\\sqrt{d_k})V\\quad\\text{without storing the full score matrix in device memory}",
+      "notation": [
+        {
+          "symbol": "Q,K,V",
+          "meaning": "Query, key and value matrices."
+        },
+        {
+          "symbol": "\\mathrm{IO}",
+          "meaning": "Data movement between memory levels."
+        }
+      ],
+      "prereqs": [
+        "d_attention",
+        "gpu_tiling",
+        "cs_memory"
+      ],
+      "sources": [
+        {
+          "title": "FlashAttention original paper",
+          "url": "https://arxiv.org/abs/2205.14135"
+        }
+      ]
+    },
+    {
+      "id": "train_profile",
+      "en": "Profiling, Roofline and Bottleneck Analysis",
+      "title": "性能分析与Roofline模型",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Profiling records time and resource use to locate a workload’s actual bottleneck.",
+      "definition": "Profiling records time and resource use to locate a workload’s actual bottleneck. The roofline model relates arithmetic intensity to compute and memory ceilings as a simplified performance guide. Kernel launches, synchronization, CPU work and communication can create additional limits. A utilization percentage alone does not reveal which change will improve end-to-end throughput.",
+      "example": "A bandwidth-limited optimizer kernel may benefit more from reduced memory traffic than additional matrix throughput. A small inference loop can be launch-bound. Compare both kernel traces and complete-step timing before deciding whether to fuse operations, increase batching or optimize input loading.",
+      "role_en": "This supports evidence-based optimization of robot training, world-model rollouts and planning latency rather than attributing all speed differences to network depth.",
+      "latex": "P_{\\mathrm{achieved}}\\lesssim\\min(P_{\\mathrm{peak}},I\\,W)",
+      "notation": [
+        {
+          "symbol": "I",
+          "meaning": "Arithmetic intensity: operations per transferred byte."
+        },
+        {
+          "symbol": "W",
+          "meaning": "Memory bandwidth."
+        },
+        {
+          "symbol": "P_{\\mathrm{peak}}",
+          "meaning": "Relevant compute ceiling under the stated precision."
+        }
+      ],
+      "prereqs": [
+        "gpu_model",
+        "pt_streams",
+        "cs_complexity"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch Profiler",
+          "url": "https://docs.pytorch.org/docs/main/profiler.html"
+        },
+        {
+          "title": "NVIDIA Matrix Multiplication Performance",
+          "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html"
+        }
+      ]
+    },
+    {
+      "id": "train_repro",
+      "en": "Seeds, Determinism and Reproducible Experiments",
+      "title": "随机种子、确定性与实验复现",
+      "group": "training",
+      "kind": "concept",
+      "summary": "Reproducibility requires recording data, code, configuration, software, hardware and randomness.",
+      "definition": "Reproducibility requires recording data, code, configuration, software, hardware and randomness. Setting one seed does not guarantee identical results across devices, versions, parallel schedules or nondeterministic kernels. Deterministic settings can change available algorithms and performance. Repeated seeds measure variation in a protocol; they do not automatically establish generalization to unseen environments.",
+      "example": "A training run resumed without restoring the optimizer, scheduler and random states may follow a different trajectory even if model weights match. Exact numerical replication and statistically similar task performance are different evaluation goals.",
+      "role_en": "This provides a shared foundation for comparing robotics papers and deciding what a reproduction result actually establishes.",
+      "latex": "\\mathrm{result}=F(\\mathrm{data},\\mathrm{seed},\\mathrm{code},\\mathrm{config},\\mathrm{software},\\mathrm{hardware})",
+      "notation": [
+        {
+          "symbol": "F",
+          "meaning": "Complete experimental procedure, not only the neural network."
+        },
+        {
+          "symbol": "\\mathrm{seed}",
+          "meaning": "Initial state of selected pseudo-random generators."
+        }
+      ],
+      "prereqs": [
+        "p_sampling",
+        "e_dataset"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        }
+      ]
+    },
+    {
+      "id": "train_state",
+      "en": "Training Checkpoints and Resume State",
+      "title": "训练检查点与恢复状态",
+      "group": "training",
+      "kind": "concept",
+      "summary": "A training checkpoint stores selected state needed to restart computation.",
+      "definition": "A training checkpoint stores selected state needed to restart computation. Saving weights alone supports loading a model but may not reproduce the original training continuation. Optimizer moments, schedules, random generators, data sampler state and step counters can matter. Disk checkpointing is distinct from activation recomputation, which changes how backward intermediates are stored.",
+      "example": "Restoring Adam weights without its moment estimates changes subsequent updates. A robot policy file can be sufficient for inference yet insufficient to resume a training experiment or establish the identity of the data used to produce it.",
+      "role_en": "This distinguishes downloadable model assets, reproducible training state and completed evaluation evidence across world-model and policy projects.",
+      "latex": "C=(\\theta,\\mathrm{optimizer},\\mathrm{scheduler},\\mathrm{RNG},\\mathrm{step},\\mathrm{data\\ state})",
+      "notation": [
+        {
+          "symbol": "C",
+          "meaning": "Serialized training state under a chosen resume protocol."
+        },
+        {
+          "symbol": "\\theta",
+          "meaning": "Model weights."
+        },
+        {
+          "symbol": "\\mathrm{RNG}",
+          "meaning": "Random-number-generator states."
+        }
+      ],
+      "prereqs": [
+        "e_torch",
+        "train_repro"
+      ],
+      "sources": [
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        }
+      ]
+    },
+    {
+      "id": "cs_environment",
+      "en": "Drivers, CUDA Runtime and Package Environments",
+      "title": "驱动、CUDA运行时与软件环境",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "GPU software has multiple layers: application packages, compiled extensions, runtimes, numerical libraries, drivers and hardware.",
+      "definition": "GPU software has multiple layers: application packages, compiled extensions, runtimes, numerical libraries, drivers and hardware. Compatible version ranges are not equivalent to identical versions. A framework wheel can bundle selected libraries while depending on an installed driver. Installing a toolkit does not automatically rebuild every extension or change the libraries an existing process uses.",
+      "example": "A package can import successfully yet fail when launching its first kernel because an extension was built for an unsupported target or incompatible runtime. Record the actual environment and test representative operations rather than treating installation completion as training validation.",
+      "role_en": "This connects compute architecture to practical environment setup and explains why simulation and training stacks need explicit compatibility checks.",
+      "latex": "\\text{application}\\to\\text{runtime/libraries}\\to\\text{driver}\\to\\text{GPU}",
+      "notation": [
+        {
+          "symbol": "\\mathrm{driver}",
+          "meaning": "Host software controlling the GPU and providing supported interfaces."
+        },
+        {
+          "symbol": "\\mathrm{runtime}",
+          "meaning": "Application-facing execution and memory-management support."
+        }
+      ],
+      "prereqs": [
+        "gpu_kernel",
+        "e_python"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA CUDA Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html"
+        },
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/main/notes/cuda.html"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "to": "cs_complexity",
+      "type": "prereq",
+      "why_en": "Computational Complexity uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "m_sum"
+    },
+    {
+      "to": "cs_floating",
+      "type": "prereq",
+      "why_en": "Floating-Point Representation uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "m_explog"
+    },
+    {
+      "to": "cs_storage",
+      "type": "prereq",
+      "why_en": "Tensor Storage, Shapes and Strides uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "d_tensor"
+    },
+    {
+      "to": "cs_storage",
+      "type": "prereq",
+      "why_en": "Tensor Storage, Shapes and Strides uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_python"
+    },
+    {
+      "to": "cs_memory",
+      "type": "prereq",
+      "why_en": "Model and Training Memory Accounting uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_floating"
+    },
+    {
+      "to": "cs_memory",
+      "type": "prereq",
+      "why_en": "Model and Training Memory Accounting uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "d_tensor"
+    },
+    {
+      "to": "cs_parallel",
+      "type": "prereq",
+      "why_en": "Parallelism and Amdahl’s Law uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_complexity"
+    },
+    {
+      "to": "gpu_model",
+      "type": "prereq",
+      "why_en": "Many arithmetic tasks can execute concurrently, but serial work and data movement still limit end-to-end speedup.",
+      "from": "cs_parallel"
+    },
+    {
+      "to": "gpu_model",
+      "type": "prereq",
+      "why_en": "CPU, GPU and Throughput Computing uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "gpu_kernel",
+      "type": "prereq",
+      "why_en": "CUDA Kernels and Indexing uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_model"
+    },
+    {
+      "to": "gpu_kernel",
+      "type": "prereq",
+      "why_en": "CUDA Kernels and Indexing uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_storage"
+    },
+    {
+      "to": "gpu_simt",
+      "type": "prereq",
+      "why_en": "SMs, Warps and SIMT Execution uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_kernel"
+    },
+    {
+      "to": "gpu_divergence",
+      "type": "prereq",
+      "why_en": "Branch Divergence uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_simt"
+    },
+    {
+      "to": "gpu_hierarchy",
+      "type": "prereq",
+      "why_en": "GPU Memory Hierarchy uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_storage"
+    },
+    {
+      "to": "gpu_hierarchy",
+      "type": "prereq",
+      "why_en": "GPU Memory Hierarchy uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_simt"
+    },
+    {
+      "to": "gpu_coalescing",
+      "type": "prereq",
+      "why_en": "Coalesced Memory Access uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_hierarchy"
+    },
+    {
+      "to": "gpu_coalescing",
+      "type": "prereq",
+      "why_en": "Strides and thread indexing determine whether neighbouring accesses fall into efficient memory transactions.",
+      "from": "cs_storage"
+    },
+    {
+      "to": "gpu_tiling",
+      "type": "prereq",
+      "why_en": "Matrix products decompose into dot products; tiling reuses each loaded submatrix across several output entries.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "gpu_tiling",
+      "type": "prereq",
+      "why_en": "Input tiles reuse registers and shared memory so repeated arithmetic does not repeatedly fetch every operand from device memory.",
+      "from": "gpu_hierarchy"
+    },
+    {
+      "to": "gpu_tensorcores",
+      "type": "prereq",
+      "why_en": "Tiled matrix work maps suitable fragments onto supported matrix instructions; tile shapes and resource demands affect throughput.",
+      "from": "gpu_tiling"
+    },
+    {
+      "to": "gpu_tensorcores",
+      "type": "prereq",
+      "why_en": "Tensor Cores and Matrix Instructions uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_floating"
+    },
+    {
+      "to": "gpu_libraries",
+      "type": "prereq",
+      "why_en": "cuBLAS, cuDNN and Operator Dispatch uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_tensorcores"
+    },
+    {
+      "to": "gpu_libraries",
+      "type": "prereq",
+      "why_en": "cuBLAS, cuDNN and Operator Dispatch uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_torch"
+    },
+    {
+      "to": "pt_vjp",
+      "type": "prereq",
+      "why_en": "Backpropagation propagates objective sensitivities through local derivative rules; VJPs state the matrix operation performed by each rule.",
+      "from": "d_backprop"
+    },
+    {
+      "to": "pt_vjp",
+      "type": "prereq",
+      "why_en": "Reverse-mode differentiation computes vector-Jacobian products without explicitly materializing the full Jacobian.",
+      "from": "m_jacobian"
+    },
+    {
+      "to": "pt_graph",
+      "type": "prereq",
+      "why_en": "Dynamic Autograd Graphs and Saved Tensors uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "pt_vjp"
+    },
+    {
+      "to": "pt_graph",
+      "type": "prereq",
+      "why_en": "Dynamic Autograd Graphs and Saved Tensors uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "pt_device",
+      "type": "prereq",
+      "why_en": "Devices, Allocation and the Caching Allocator uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "pt_device",
+      "type": "prereq",
+      "why_en": "Devices, Allocation and the Caching Allocator uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_hierarchy"
+    },
+    {
+      "to": "pt_device",
+      "type": "prereq",
+      "why_en": "Devices, Allocation and the Caching Allocator uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_torch"
+    },
+    {
+      "to": "pt_streams",
+      "type": "prereq",
+      "why_en": "Kernel enqueueing and device execution occur on different timelines; streams and events specify ordering and completion.",
+      "from": "gpu_kernel"
+    },
+    {
+      "to": "pt_streams",
+      "type": "prereq",
+      "why_en": "CUDA Streams, Events and Asynchrony uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "pt_device"
+    },
+    {
+      "to": "pt_data",
+      "type": "prereq",
+      "why_en": "DataLoader, Pinned Memory and Transfers uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_dataset"
+    },
+    {
+      "to": "pt_data",
+      "type": "prereq",
+      "why_en": "DataLoader, Pinned Memory and Transfers uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "pt_streams"
+    },
+    {
+      "to": "train_batch",
+      "type": "prereq",
+      "why_en": "Batching and Gradient Accumulation uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "d_sgd"
+    },
+    {
+      "to": "train_batch",
+      "type": "prereq",
+      "why_en": "Batching and Gradient Accumulation uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "pt_graph"
+    },
+    {
+      "to": "train_amp",
+      "type": "prereq",
+      "why_en": "Format range, rounding and underflow determine where lower precision is safe and when gradient scaling is useful.",
+      "from": "cs_floating"
+    },
+    {
+      "to": "train_amp",
+      "type": "prereq",
+      "why_en": "Automatic Mixed Precision uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_tensorcores"
+    },
+    {
+      "to": "train_amp",
+      "type": "prereq",
+      "why_en": "Automatic Mixed Precision uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_torch"
+    },
+    {
+      "to": "train_checkpoint",
+      "type": "prereq",
+      "why_en": "Backward needs forward intermediates; checkpointing retains selected boundaries and recomputes the omitted values.",
+      "from": "pt_graph"
+    },
+    {
+      "to": "train_checkpoint",
+      "type": "prereq",
+      "why_en": "Activation Checkpointing uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "train_ddp",
+      "type": "prereq",
+      "why_en": "Each worker processes a batch; synchronizing its gradients changes the effective batch and communication schedule.",
+      "from": "train_batch"
+    },
+    {
+      "to": "train_ddp",
+      "type": "prereq",
+      "why_en": "Distributed Data Parallel and All-Reduce uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_parallel"
+    },
+    {
+      "to": "train_sharding",
+      "type": "prereq",
+      "why_en": "Parameter, Gradient and Optimizer Sharding uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "train_ddp"
+    },
+    {
+      "to": "train_sharding",
+      "type": "prereq",
+      "why_en": "Separating weights, gradients and optimizer states identifies which persistent allocations can be distributed across workers.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "pt_compile",
+      "type": "prereq",
+      "why_en": "torch.compile, Graph Capture and Fusion uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_libraries"
+    },
+    {
+      "to": "pt_compile",
+      "type": "prereq",
+      "why_en": "Captured tensor computation regions can be optimized, but control flow and graph breaks affect compiler coverage.",
+      "from": "pt_graph"
+    },
+    {
+      "to": "pt_triton",
+      "type": "prereq",
+      "why_en": "Triton and Custom GPU Kernels uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_tiling"
+    },
+    {
+      "to": "pt_triton",
+      "type": "prereq",
+      "why_en": "Triton and Custom GPU Kernels uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "pt_compile"
+    },
+    {
+      "to": "train_flash",
+      "type": "prereq",
+      "why_en": "The mathematical attention operator stays the same while tiling and blockwise normalization reduce its memory traffic.",
+      "from": "d_attention"
+    },
+    {
+      "to": "train_flash",
+      "type": "prereq",
+      "why_en": "Blocks of query, key and value data are reused while maintaining online normalization, avoiding a fully stored score matrix.",
+      "from": "gpu_tiling"
+    },
+    {
+      "to": "train_flash",
+      "type": "prereq",
+      "why_en": "FlashAttention and IO-Aware Attention uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_memory"
+    },
+    {
+      "to": "train_profile",
+      "type": "prereq",
+      "why_en": "Profiling, Roofline and Bottleneck Analysis uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_model"
+    },
+    {
+      "to": "train_profile",
+      "type": "prereq",
+      "why_en": "Asynchronous execution requires correct synchronization or device events to measure completed work rather than enqueue latency.",
+      "from": "pt_streams"
+    },
+    {
+      "to": "train_profile",
+      "type": "prereq",
+      "why_en": "Profiling, Roofline and Bottleneck Analysis uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "cs_complexity"
+    },
+    {
+      "to": "train_repro",
+      "type": "prereq",
+      "why_en": "Seeds, Determinism and Reproducible Experiments uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "p_sampling"
+    },
+    {
+      "to": "train_repro",
+      "type": "prereq",
+      "why_en": "Seeds, Determinism and Reproducible Experiments uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_dataset"
+    },
+    {
+      "to": "train_state",
+      "type": "prereq",
+      "why_en": "Training Checkpoints and Resume State uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_torch"
+    },
+    {
+      "to": "train_state",
+      "type": "prereq",
+      "why_en": "Training Checkpoints and Resume State uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "train_repro"
+    },
+    {
+      "to": "cs_environment",
+      "type": "prereq",
+      "why_en": "Drivers, CUDA Runtime and Package Environments uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "gpu_kernel"
+    },
+    {
+      "to": "cs_environment",
+      "type": "prereq",
+      "why_en": "Drivers, CUDA Runtime and Package Environments uses this foundation to connect its numerical representation, execution dependencies or training objective to the implementation described in the definition.",
+      "from": "e_python"
+    }
+  ],
+  "research": [
+    {
+      "title": "NVIDIA CUDA Programming Guide",
+      "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/index.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "NVIDIA Matrix Multiplication Performance",
+      "url": "https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch CUDA semantics",
+      "url": "https://docs.pytorch.org/docs/main/notes/cuda.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch Autograd mechanics",
+      "url": "https://docs.pytorch.org/docs/main/notes/autograd.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch compiler documentation",
+      "url": "https://docs.pytorch.org/docs/main/torch.compiler.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch DistributedDataParallel",
+      "url": "https://docs.pytorch.org/docs/main/generated/torch.nn.parallel.DistributedDataParallel.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch Automatic Mixed Precision",
+      "url": "https://docs.pytorch.org/docs/main/amp.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch Profiler",
+      "url": "https://docs.pytorch.org/docs/main/profiler.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch Activation Checkpointing",
+      "url": "https://docs.pytorch.org/docs/main/checkpoint.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "PyTorch Data Loading",
+      "url": "https://docs.pytorch.org/docs/main/data.html",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "FlashAttention original paper",
+      "url": "https://arxiv.org/abs/2205.14135",
+      "checked_date": "2026-11-14"
+    },
+    {
+      "title": "Triton programming documentation",
+      "url": "https://triton-lang.org/main/index.html",
+      "checked_date": "2026-11-14"
+    }
+  ]
+}

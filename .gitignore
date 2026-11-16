@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+source/dist/
+source/app-check.js
+source/atlas.json
+.DS_Store

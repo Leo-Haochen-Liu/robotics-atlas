@@ -1,0 +1,942 @@
+[
+  {
+    "id": "m_function",
+    "title": "函数与复合函数",
+    "latex": "y=f_\\theta(x),\\qquad (f\\circ g)(x)=f(g(x))",
+    "notation": [
+      {
+        "symbol": "x",
+        "meaning": "Input to the function."
+      },
+      {
+        "symbol": "y",
+        "meaning": "Output of the function."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Parameters specifying a particular function."
+      },
+      {
+        "symbol": "f\\circ g",
+        "meaning": "Composition: apply g first, then f."
+      }
+    ],
+    "definition": "A function assigns one output to each allowed input. A parameterized function changes when its parameters change; an input variable changes which output is evaluated for a fixed function. Composition applies one function to the output of another, provided the output and input domains are compatible. Neural networks, observation encoders, and dynamics predictors can all be described as functions, even when their inputs and outputs are vectors rather than single numbers.",
+    "example": "Let \\(g(x)=2x+1\\) and \\(f(u)=u^2\\). For \\(x=3\\), the intermediate value is \\(g(3)=7\\), and the composed result is \\(f(g(3))=49\\). Reversing the order gives \\(g(f(3))=19\\), so composition is generally order-dependent. In a prediction pipeline, encoding an image before predicting a future representation is also an ordered composition. A composition is defined only when the intermediate output is a valid input to the next function.",
+    "role_en": "ID-WM composes an observation representation with learned transition functions and a planner. Distinguishing model parameters from current inputs also separates training, which changes parameters, from inference, which evaluates trained functions and searches decision variables."
+  },
+  {
+    "id": "m_vector",
+    "title": "向量",
+    "latex": "\\mathbf{s}=\\begin{bmatrix}x&y&v_x&v_y\\end{bmatrix}^{\\mathsf T},\\qquad (\\mathbf{a}+\\mathbf{b})_i=a_i+b_i",
+    "notation": [
+      {
+        "symbol": "\\mathbf{s}",
+        "meaning": "An ordered vector of state features."
+      },
+      {
+        "symbol": "x,y",
+        "meaning": "Position coordinates."
+      },
+      {
+        "symbol": "v_x,v_y",
+        "meaning": "Velocity coordinates."
+      },
+      {
+        "symbol": "\\mathsf T",
+        "meaning": "Transpose, converting the displayed row to a column."
+      }
+    ],
+    "definition": "A real vector is an ordered collection of real-valued components. Its dimension is the number of components, and each position must retain a consistent meaning. Vectors of the same dimension can be added component by component and multiplied by scalars. In engineering, dimensions alone do not establish compatibility: units, reference frames, and feature order must also agree. A state vector can contain positions, velocities, angles, or learned features.",
+    "example": "For a planar moving object, write \\(\\mathbf{s}=[1,2,0.5,-1]^{\\mathsf T}\\), with positions measured in metres and velocities in metres per second. The third component denotes horizontal velocity, not another position. Exchanging the second and third components preserves the vector shape but changes its physical meaning, so a model trained with the original order would receive incorrect inputs.",
+    "role_en": "Both ID-WM levels operate on state or representation vectors. Vector definitions establish what enters each model, which quantities are predicted, and how candidate future states can be compared with a goal."
+  },
+  {
+    "id": "m_matrix",
+    "title": "矩阵与形状",
+    "latex": "X\\in\\mathbb{R}^{B\\times d},\\qquad W\\in\\mathbb{R}^{d\\times k}",
+    "notation": [
+      {
+        "symbol": "B",
+        "meaning": "Number of examples in a batch."
+      },
+      {
+        "symbol": "d",
+        "meaning": "Number of input features per example."
+      },
+      {
+        "symbol": "k",
+        "meaning": "Number of output features."
+      },
+      {
+        "symbol": "X_{ij}",
+        "meaning": "Entry in row i and column j."
+      }
+    ],
+    "definition": "A matrix is a rectangular array with a specified number of rows and columns. It may represent a batch of examples, a linear transformation, or a covariance structure. Its shape determines which operations are defined but does not by itself describe the meaning of its entries. Writing dimensions alongside equations helps detect incompatible operations before implementation and makes the batch, time, and feature axes of neural-network inputs explicit.",
+    "example": "Suppose a batch contains four states with three features each. Its matrix has shape \\(4\\times3\\). Multiplying by a weight matrix with shape \\(3\\times2\\) gives four outputs with two features each, a \\(4\\times2\\) result. A \\(4\\times2\\) weight matrix cannot be substituted into the same ordinary matrix product because the inner dimensions would disagree.",
+    "role_en": "Matrix shapes are essential for the low-level predictor, action encoder, Transformer projections, and batched CEM candidate evaluation. The same mathematical model can fail in code if batch and feature axes are exchanged."
+  },
+  {
+    "id": "m_matmul",
+    "title": "点积与矩阵乘法",
+    "latex": "\\mathbf{x}^{\\mathsf T}\\mathbf{w}=\\sum_{i=1}^{d}x_iw_i,\\qquad (XW)_{ij}=\\sum_{r=1}^{d}X_{ir}W_{rj}",
+    "notation": [
+      {
+        "symbol": "d",
+        "meaning": "Shared dimension over which the product sums."
+      },
+      {
+        "symbol": "i,j",
+        "meaning": "Output row and output column indices."
+      },
+      {
+        "symbol": "r",
+        "meaning": "Summation index."
+      },
+      {
+        "symbol": "\\mathbf{x}^{\\mathsf T}\\mathbf{w}",
+        "meaning": "Dot product of compatible vectors."
+      }
+    ],
+    "definition": "The dot product multiplies corresponding vector components and sums the products. Matrix multiplication computes one dot product for each output entry: a row of the first matrix is paired with a column of the second. This combines input features into outputs and composes linear transformations. It differs from elementwise multiplication, and its order generally matters. A valid product requires the first matrix column count to equal the second matrix row count.",
+    "example": "For \\(\\mathbf{x}=[1,2]^{\\mathsf T}\\) and \\(\\mathbf{w}=[3,4]^{\\mathsf T}\\), the dot product is \\(1\\cdot3+2\\cdot4=11\\). If two weight columns are \\([3,4]^{\\mathsf T}\\) and \\([1,-1]^{\\mathsf T}\\), the row input \\([1,2]\\) produces \\([11,-1]\\). The two output features are separate weighted combinations of the same inputs. The feature count is preserved at the input but need not equal the output count; the weight columns determine it.",
+    "role_en": "Matrix multiplication implements fully connected layers and the query, key, and value projections used by the low-level Transformer. Dot products also determine attention scores, connecting elementary linear algebra to the predictor architecture."
+  },
+  {
+    "id": "m_norm",
+    "title": "范数与距离",
+    "latex": "\\|\\mathbf{e}\\|_2=\\sqrt{\\sum_i e_i^2},\\qquad \\|\\mathbf{e}\\|_2^2=\\sum_i e_i^2,\\qquad \\|\\mathbf{e}\\|_1=\\sum_i|e_i|",
+    "notation": [
+      {
+        "symbol": "\\mathbf{e}",
+        "meaning": "Difference between prediction and target."
+      },
+      {
+        "symbol": "\\|\\cdot\\|_2",
+        "meaning": "Euclidean norm."
+      },
+      {
+        "symbol": "\\|\\cdot\\|_1",
+        "meaning": "Sum of absolute component magnitudes."
+      }
+    ],
+    "definition": "A norm assigns a nonnegative magnitude to a vector and satisfies definiteness, homogeneity, and the triangle inequality. The Euclidean norm is the straight-line length in ordinary coordinates. Applying a norm to the difference between two vectors defines a distance. The squared Euclidean norm is often useful as a loss, although it is not itself a norm. Feature units and scaling influence the interpretation of all such numerical distances.",
+    "example": "If a predicted two-dimensional position differs from its target by \\(\\mathbf{e}=[3,4]^{\\mathsf T}\\) centimetres, its Euclidean error is \\(5\\) centimetres, its squared error is \\(25\\) squared centimetres, and its L1 error is \\(7\\) centimetres. Adding an angular component without choosing a scale changes the meaning of the score and requires an explicit modelling decision.",
+    "role_en": "ID-WM uses distances between predicted states and goals to score planning candidates. The low-level paper equation uses an L2 norm, while generic MSE uses its square; these related objectives should not be reported as identical formulas."
+  },
+  {
+    "id": "m_coordinates",
+    "title": "坐标系与坐标变换",
+    "latex": "\\mathbf{p}^{A}=R^{A}_{B}\\mathbf{p}^{B}+\\mathbf{t}^{A}_{B},\\qquad R(\\theta)=\\begin{bmatrix}\\cos\\theta&-\\sin\\theta\\\\\\sin\\theta&\\cos\\theta\\end{bmatrix}",
+    "notation": [
+      {
+        "symbol": "\\mathbf{p}^{A},\\mathbf{p}^{B}",
+        "meaning": "Coordinates of the same point in frames A and B."
+      },
+      {
+        "symbol": "R^{A}_{B}",
+        "meaning": "Rotation mapping B-frame vector coordinates into frame A."
+      },
+      {
+        "symbol": "\\mathbf{t}^{A}_{B}",
+        "meaning": "Position of the B-frame origin expressed in frame A."
+      }
+    ],
+    "definition": "A coordinate system specifies an origin and basis directions for expressing geometric quantities. A rigid transformation changes a point representation between frames using a rotation and a translation. The point can remain physically fixed while its coordinate values change. Correct notation must identify both the source and destination frames. Rotating a direction vector requires only the rotation; transforming a point generally also requires translation because the origins may differ.",
+    "example": "Rotate the planar point \\([1,0]^{\\mathsf T}\\) by \\(90^\\circ\\) about the origin. The rotation matrix maps it to \\([0,1]^{\\mathsf T}\\). If the destination frame translation is then \\([2,3]^{\\mathsf T}\\), the transformed point is \\([2,4]^{\\mathsf T}\\). Applying translation before rotation would in general produce a different result and describe a different transformation.",
+    "role_en": "Coordinate consistency matters when constructing state inputs, goal errors, or robot extensions. ID-WM state-based experiments require consistent geometric labels; transferring the method to a robot additionally requires explicit world, body, sensor, and joint conventions."
+  },
+  {
+    "id": "m_trig",
+    "title": "角度与三角表示",
+    "latex": "\\mathbf{u}(\\theta)=\\begin{bmatrix}\\cos\\theta\\\\\\sin\\theta\\end{bmatrix},\\qquad 2\\pi\\;\\mathrm{rad}=360^\\circ",
+    "notation": [
+      {
+        "symbol": "\\theta",
+        "meaning": "Angle, usually in radians in mathematical software."
+      },
+      {
+        "symbol": "\\mathbf{u}(\\theta)",
+        "meaning": "Unit-vector representation of an angle."
+      },
+      {
+        "symbol": "\\pi",
+        "meaning": "Circle constant."
+      }
+    ],
+    "definition": "Trigonometric functions relate angles to coordinates on the unit circle. Sine and cosine are periodic, so they represent orientation without an artificial numerical break at a full revolution. Angles expressed directly in a bounded interval can have large numerical differences near the interval boundary even when the physical orientations are close. A sine-cosine pair avoids that particular discontinuity, although it uses two coordinates subject to a unit-length constraint.",
+    "example": "The angles \\(179^\\circ\\) and \\(-179^\\circ\\) differ by only \\(2^\\circ\\) around the circle, but ordinary subtraction gives \\(358^\\circ\\). Their sine-cosine representations are close instead. For \\(\\theta=\\pi/2\\), the representation is \\([0,1]^{\\mathsf T}\\). Always convert degrees to radians before calling software functions whose arguments use radians. The representation uses periodicity rather than treating a full revolution as a distinct physical orientation.",
+    "role_en": "Angle representations affect state distances, rotations, and prediction targets in manipulation and robotics. Trigonometric features also provide mathematical background for sinusoidal positional encoding, but their use in a state representation must be chosen and verified explicitly."
+  },
+  {
+    "id": "m_derivative",
+    "title": "导数",
+    "latex": "f\\prime(x)=\\lim_{h\\to0}\\frac{f(x+h)-f(x)}{h},\\qquad f(x+\\Delta x)\\approx f(x)+f\\prime(x)\\Delta x",
+    "notation": [
+      {
+        "symbol": "h",
+        "meaning": "Nonzero input increment approaching zero."
+      },
+      {
+        "symbol": "f\\prime(x)",
+        "meaning": "Derivative at x, when the limit exists."
+      },
+      {
+        "symbol": "\\Delta x",
+        "meaning": "Small finite input change."
+      }
+    ],
+    "definition": "The derivative of a scalar function at a point is the limit of its difference quotient, when that limit exists. It measures the local rate of output change with respect to the input. A derivative gives a first-order approximation near the point, rather than a guarantee about large changes. A function can be differentiable on some parts of its domain and nondifferentiable at others, which matters when composing optimization objectives.",
+    "example": "For \\(f(x)=x^2\\), the derivative is \\(f\\prime(x)=2x\\). At \\(x=3\\), increasing the input by \\(0.01\\) gives the first-order prediction \\(9+6(0.01)=9.06\\). The exact result is \\(3.01^2=9.0601\\). Their difference is the second-order term \\(0.01^2\\), illustrating why a sufficiently small increment improves the local approximation. This approximation concerns the chosen point; a derivative evaluated elsewhere would give a different local rate.",
+    "role_en": "Derivatives lead to partial derivatives, gradients, and backpropagation for training ID-WM networks. They are background for learning the models; the paper uses CEM rather than requiring derivatives of its planning objective with respect to candidate decisions."
+  },
+  {
+    "id": "m_partial",
+    "title": "偏导数",
+    "latex": "\\frac{\\partial f}{\\partial x_j}(\\mathbf{x})=\\lim_{h\\to0}\\frac{f(\\mathbf{x}+h\\mathbf{e}_j)-f(\\mathbf{x})}{h}",
+    "notation": [
+      {
+        "symbol": "f:\\mathbb{R}^{d}\\to\\mathbb{R}",
+        "meaning": "Scalar-valued function of several variables."
+      },
+      {
+        "symbol": "x_j",
+        "meaning": "The input coordinate being differentiated."
+      },
+      {
+        "symbol": "\\mathbf{e}_j",
+        "meaning": "Unit vector selecting coordinate j."
+      },
+      {
+        "symbol": "h",
+        "meaning": "Increment applied only to coordinate j."
+      }
+    ],
+    "definition": "A partial derivative measures the local rate of change of a multivariable function with respect to one input coordinate while holding the other coordinates fixed. It is an ordinary one-variable derivative applied to the function obtained by fixing those other inputs. Partial derivatives provide individual components of the gradient. Their existence alone does not always establish full differentiability, so first-order vector approximations require appropriate regularity assumptions.",
+    "example": "Let \\(L(w_1,w_2)=w_1^2+3w_2^2\\). Differentiating with respect to \\(w_1\\) while keeping \\(w_2\\) fixed gives \\(2w_1\\); differentiating with respect to \\(w_2\\) gives \\(6w_2\\). At \\((1,2)\\), the two partial derivatives are \\(2\\) and \\(12\\). They describe different coordinate directions at the same input point. Changing both inputs at once requires combining their partial derivatives with the corresponding increments; one partial derivative alone does not describe that joint change.",
+    "role_en": "Each ID-WM network parameter has a partial derivative of the training loss. Backpropagation calculates these derivatives efficiently, and the optimizer combines them into a parameter update. This definition also supports Jacobians of vector-valued state predictors."
+  },
+  {
+    "id": "m_chain",
+    "title": "链式法则",
+    "latex": "u=g(x),\\quad y=f(u)\\quad\\Longrightarrow\\quad\\frac{dy}{dx}=\\frac{dy}{du}\\frac{du}{dx}",
+    "notation": [
+      {
+        "symbol": "x",
+        "meaning": "Original input."
+      },
+      {
+        "symbol": "u",
+        "meaning": "Intermediate value."
+      },
+      {
+        "symbol": "y",
+        "meaning": "Final output."
+      },
+      {
+        "symbol": "\\frac{dy}{du}\\frac{du}{dx}",
+        "meaning": "Product of local derivatives along the composition."
+      }
+    ],
+    "definition": "The chain rule differentiates a composition by multiplying derivatives of its component functions in the appropriate order. For multivariable functions, contributions from multiple computational paths must be summed, and Jacobian products replace scalar multiplication. A computational graph records which values depend on which earlier values. Reverse-mode automatic differentiation traverses that graph backward, accumulating the contributions needed to differentiate a scalar loss with respect to many parameters.",
+    "example": "Let \\(u=2x+1\\) and \\(y=u^2\\). Then \\(dy/du=2u\\) and \\(du/dx=2\\), so \\(dy/dx=4(2x+1)\\). At \\(x=3\\), the derivative is \\(28\\). Directly expanding \\(y=4x^2+4x+1\\) gives the same result. Both calculations differentiate the same ordered composition. The factor associated with each operation is evaluated at its own intermediate input, so omitting the intermediate value would make the derivative incorrect.",
+    "role_en": "ID-WM training propagates loss derivatives through encoders, Transformer operations, and denoising networks. The chain rule explains these computations and why detaching a tensor interrupts gradient propagation through the corresponding computational path."
+  },
+  {
+    "id": "m_gradient",
+    "title": "梯度与梯度下降",
+    "latex": "\\nabla_{\\theta}L=\\begin{bmatrix}\\frac{\\partial L}{\\partial\\theta_1}&\\cdots&\\frac{\\partial L}{\\partial\\theta_d}\\end{bmatrix}^{\\mathsf T},\\qquad \\theta_{k+1}=\\theta_k-\\eta\\nabla_{\\theta}L(\\theta_k)",
+    "notation": [
+      {
+        "symbol": "\\theta",
+        "meaning": "Vector of parameters being optimized."
+      },
+      {
+        "symbol": "L",
+        "meaning": "Scalar loss function."
+      },
+      {
+        "symbol": "\\eta>0",
+        "meaning": "Learning rate."
+      },
+      {
+        "symbol": "k",
+        "meaning": "Optimization-step index, not environment time."
+      }
+    ],
+    "definition": "The gradient collects the partial derivatives of a scalar function into a vector. Under the Euclidean inner product, its direction gives the steepest first-order increase per unit displacement. Gradient descent updates parameters in the negative-gradient direction to seek lower loss. The local direction does not guarantee a global minimum or a decrease for every step size. Parameter scaling, curvature, stochastic gradients, and learning-rate choices all affect the optimization process.",
+    "example": "For \\(L(w)=w^2\\), start at \\(w=3\\) with learning rate \\(\\eta=0.1\\). The derivative is \\(6\\), so the update gives \\(w=2.4\\), lowering the loss from \\(9\\) to \\(5.76\\). With a sufficiently large learning rate, the same negative-gradient update can overshoot and increase the loss instead of reducing it. The example uses an exact gradient; minibatch training instead estimates a gradient from sampled examples.",
+    "role_en": "Gradients train the high-level denoising model and low-level dynamics predictor from offline data. ID-WM inference searches noise and action sequences with CEM, so training-gradient updates and inference-time search are separate operations."
+  },
+  {
+    "id": "m_jacobian",
+    "title": "雅可比矩阵",
+    "latex": "J_{ij}(\\mathbf{x})=\\frac{\\partial f_i}{\\partial x_j}(\\mathbf{x}),\\qquad f(\\mathbf{x}+\\Delta\\mathbf{x})\\approx f(\\mathbf{x})+J(\\mathbf{x})\\Delta\\mathbf{x}",
+    "notation": [
+      {
+        "symbol": "f:\\mathbb{R}^{d}\\to\\mathbb{R}^{m}",
+        "meaning": "Vector-valued function."
+      },
+      {
+        "symbol": "J\\in\\mathbb{R}^{m\\times d}",
+        "meaning": "Matrix of first partial derivatives."
+      },
+      {
+        "symbol": "i,j",
+        "meaning": "Output-coordinate and input-coordinate indices."
+      }
+    ],
+    "definition": "The Jacobian matrix contains the first partial derivative of every output coordinate with respect to every input coordinate. For a differentiable vector-valued function, it describes the best linear first-order approximation at a point. Its dimensions follow the output and input dimensions. A Jacobian can describe geometric sensitivity, neural-network input sensitivity, or state-transition sensitivity, but each interpretation must identify exactly which input and output variables are involved.",
+    "example": "For \\(f(x_1,x_2)=[x_1+x_2,\\;x_1^2]^{\\mathsf T}\\), the Jacobian is \\(J=[[1,1],[2x_1,0]]\\). At \\((2,3)\\), increasing \\(x_1\\) by \\(0.01\\) gives the predicted output change \\([0.01,0.04]^{\\mathsf T}\\). The exact second-coordinate change is \\(0.0401\\), again showing the difference between a local approximation and the full nonlinear update. The first output depends on both inputs, whereas the second output is locally insensitive to the second coordinate.",
+    "role_en": "Jacobians are useful background for analyzing sensitivity and error propagation in learned dynamics. ID-WM does not require explicitly computing full Jacobian matrices for CEM planning, so this node is an analysis and robotics extension rather than a mandatory implementation step."
+  },
+  {
+    "id": "m_eigen",
+    "title": "特征值与特征向量",
+    "latex": "A\\mathbf{v}=\\lambda\\mathbf{v},\\qquad \\mathbf{v}\\ne\\mathbf{0}",
+    "notation": [
+      {
+        "symbol": "A",
+        "meaning": "Square matrix."
+      },
+      {
+        "symbol": "\\mathbf{v}",
+        "meaning": "Nonzero eigenvector."
+      },
+      {
+        "symbol": "\\lambda",
+        "meaning": "Eigenvalue corresponding to that vector."
+      }
+    ],
+    "definition": "An eigenvector of a square matrix is a nonzero vector whose transformed value is a scalar multiple of itself. The corresponding eigenvalue is that scalar. Real symmetric matrices admit an orthonormal eigenbasis with real eigenvalues, a property important for covariance matrices. Eigenvectors then identify independent directions associated with different variances. General matrices need not have a complete real eigenbasis, so this interpretation should not be applied without checking matrix properties.",
+    "example": "For \\(A=\\operatorname{diag}(4,1)\\), the horizontal unit vector is an eigenvector with eigenvalue \\(4\\), and the vertical unit vector has eigenvalue \\(1\\). If this is a covariance matrix, variation along the first direction is larger. PCA would retain that direction first when reducing the two-dimensional data to one principal coordinate. The variance interpretation follows from the covariance matrix, not from every possible square matrix.",
+    "role_en": "Eigenvectors support the PCA and covariance-analysis branches of the atlas. They are useful for understanding representations and conditioning, but ID-WM does not train its visual representation by applying PCA to the observations."
+  },
+  {
+    "id": "p_probability",
+    "title": "概率",
+    "latex": "0\\leq P(A)\\leq1,\\qquad P(\\Omega)=1,\\qquad P(A\\cup B)=P(A)+P(B)-P(A\\cap B)",
+    "notation": [
+      {
+        "symbol": "\\Omega",
+        "meaning": "Sample space containing all possible outcomes."
+      },
+      {
+        "symbol": "A,B",
+        "meaning": "Events, represented as sets of outcomes."
+      },
+      {
+        "symbol": "P(A)",
+        "meaning": "Probability assigned to event A."
+      },
+      {
+        "symbol": "\\cup,\\cap",
+        "meaning": "Union and intersection of events."
+      }
+    ],
+    "definition": "Probability assigns a normalized measure to events in a specified sample space. An event is a set of outcomes, and its probability lies between zero and one. Probabilities of disjoint events add. Repeated-trial frequencies can estimate probabilities under suitable sampling assumptions, but an observed frequency is not the definition of every probability model. The experiment, possible outcomes, and event of interest must be specified before interpreting a probability numerically.",
+    "example": "Roll a fair six-sided die. Let \\(A\\) be the event that the result is even, and \\(B\\) the event that it exceeds four. Then \\(P(A)=3/6\\), \\(P(B)=2/6\\), and \\(P(A\\cap B)=1/6\\). Their union has probability \\(4/6\\), because the result six belongs to both events and must not be counted twice. The remaining two outcomes belong to neither event and complete the total probability to one.",
+    "role_en": "Probability underlies the high-level conditional future-state distribution, Gaussian diffusion noise, and sampling in CEM. In ID-WM, it is used to model multiple possible local futures and to generate candidate decisions; it does not by itself certify that every generated state is physically reachable."
+  },
+  {
+    "id": "p_random",
+    "title": "随机变量与概率分布",
+    "latex": "X:\\Omega\\to\\mathbb{R},\\qquad P(a\\leq X\\leq b)=\\int_a^b p_X(x)\\,dx",
+    "notation": [
+      {
+        "symbol": "X",
+        "meaning": "Random variable mapping outcomes to numeric values."
+      },
+      {
+        "symbol": "x",
+        "meaning": "A possible realized value of X."
+      },
+      {
+        "symbol": "p_X(x)",
+        "meaning": "Probability density, when X has a density."
+      },
+      {
+        "symbol": "a,b",
+        "meaning": "Bounds of an interval."
+      }
+    ],
+    "definition": "A random variable maps outcomes of a random experiment to numerical values. Its distribution specifies probabilities of possible values or sets of values. A discrete variable uses probability masses; a continuous variable may have a probability density whose integral over an interval gives probability. Density values are not point probabilities and can exceed one. For a variable with a continuous density, any individual point has probability zero despite being a possible observation.",
+    "example": "A die result is discrete, so \\(P(X=3)=1/6\\). A position sampled uniformly from \\([0,0.5]\\) has density \\(p_X(x)=2\\) within that interval. Its probability of lying between \\(0.1\\) and \\(0.2\\) is \\(2(0.2-0.1)=0.2\\). The density being two does not mean a probability exceeds one. Probabilities require integrating the density over an interval, and the total integral over its support is one.",
+    "role_en": "ID-WM represents possible future states and diffusion noise using random vectors. Distinguishing densities from probabilities is necessary when reading Gaussian formulas, likelihood objectives, conditional distributions, and statements about low-density regions of the noise prior."
+  },
+  {
+    "id": "p_conditional",
+    "title": "条件概率与独立性",
+    "latex": "P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)},\\quad P(B)>0;\\qquad A\\perp B\\iff P(A\\cap B)=P(A)P(B)",
+    "notation": [
+      {
+        "symbol": "P(A\\mid B)",
+        "meaning": "Probability of A given that B occurred."
+      },
+      {
+        "symbol": "P(A\\cap B)",
+        "meaning": "Joint probability that both events occur."
+      },
+      {
+        "symbol": "A\\perp B",
+        "meaning": "Independence of the two events."
+      }
+    ],
+    "definition": "Conditional probability restricts attention to outcomes compatible with known information and renormalizes their probability. The event being conditioned on must have positive probability in the elementary event formula. Independence means that knowing one event does not change the probability of the other. For continuous random variables, conditional densities require an appropriate density-based formulation; one should not divide point probabilities that are both zero.",
+    "example": "For a fair die, let \\(A\\) mean an even result and \\(B\\) mean a result greater than three. Among the possible outcomes \\(4,5,6\\), two are even, so \\(P(A\\mid B)=2/3\\). This differs from the unconditional \\(P(A)=1/2\\). Specifying additional information changes the distribution over the remaining possible outcomes. The conditioning event has probability one half, satisfying the positive-probability requirement of the formula.",
+    "role_en": "The high-level model learns a future-state distribution conditioned on the current state and temporal interval. The low-level model additionally conditions its next-state prediction on state-action history. Conditional probability states exactly which information each predictor uses."
+  },
+  {
+    "id": "p_bayes",
+    "title": "贝叶斯公式",
+    "latex": "P(H\\mid D)=\\frac{P(D\\mid H)P(H)}{P(D)},\\qquad P(D)>0",
+    "notation": [
+      {
+        "symbol": "H",
+        "meaning": "Hypothesis or latent condition."
+      },
+      {
+        "symbol": "D",
+        "meaning": "Observed evidence."
+      },
+      {
+        "symbol": "P(H)",
+        "meaning": "Prior probability."
+      },
+      {
+        "symbol": "P(D\\mid H)",
+        "meaning": "Likelihood of the evidence under the hypothesis."
+      },
+      {
+        "symbol": "P(H\\mid D)",
+        "meaning": "Posterior probability after observing evidence."
+      }
+    ],
+    "definition": "Bayes theorem relates a conditional probability to the reverse conditional probability, together with prior and evidence probabilities. The prior describes uncertainty before incorporating the specified evidence. The likelihood evaluates how compatible that evidence is with each hypothesis. The posterior is the normalized updated distribution. For continuous parameters, analogous formulas use densities and integrals. A likelihood viewed as a function of a parameter is not automatically a normalized probability distribution over that parameter.",
+    "example": "Suppose \\(P(H)=0.2\\), \\(P(D\\mid H)=0.8\\), and \\(P(D\\mid\\neg H)=0.1\\). The evidence probability is \\(0.8(0.2)+0.1(0.8)=0.24\\). The posterior is therefore \\(0.16/0.24=2/3\\). Observing the evidence increases the hypothesis probability, but the result depends on both the likelihood and the prior. If the evidence occurred equally often under both hypotheses, it would provide no change to the prior probability.",
+    "role_en": "Bayesian reasoning is useful background for state estimation and probabilistic robotics. ID-WM uses conditional generative models and a Gaussian noise prior, but its core planner is not a Bayesian filter or a posterior-inference algorithm over robot states."
+  },
+  {
+    "id": "p_expectation",
+    "title": "期望",
+    "latex": "\\mathbb{E}[X]=\\sum_x xP(X=x),\\qquad \\mathbb{E}[X]=\\int x p_X(x)\\,dx,\\qquad \\bar{x}_N=\\frac1N\\sum_{i=1}^{N}x_i",
+    "notation": [
+      {
+        "symbol": "\\mathbb{E}[X]",
+        "meaning": "Distribution-weighted mean, when it exists."
+      },
+      {
+        "symbol": "p_X",
+        "meaning": "Density for the continuous case."
+      },
+      {
+        "symbol": "\\bar{x}_N",
+        "meaning": "Mean of N observed or sampled values."
+      }
+    ],
+    "definition": "Expectation is the probability-weighted average of a random variable, provided the relevant sum or integral exists. It is a property of a distribution. A sample mean is a statistic computed from finitely many observations and can approximate an expectation under suitable sampling conditions. Expected values need not be possible individual outcomes. Linearity allows expectations of sums to be added without requiring independence, although other manipulations may require stronger assumptions.",
+    "example": "A fair die has expected value \\((1+2+3+4+5+6)/6=3.5\\), even though no roll equals \\(3.5\\). If observed rolls are \\(1,6,2,3\\), their sample mean is \\(3\\). This finite mean differs from the distribution expectation because it is based on only four samples. More samples do not guarantee monotonic improvement for each individual sample sequence.",
+    "role_en": "The diffusion objective averages noise-prediction loss over sampled data, Gaussian noise, and diffusion indices. CEM also uses sample averages to refit candidate distributions. These operations connect probabilistic objectives with finite-batch computations in ID-WM."
+  },
+  {
+    "id": "p_variance",
+    "title": "方差与协方差",
+    "latex": "\\operatorname{Var}(X)=\\mathbb{E}[(X-\\mathbb{E}X)^2],\\qquad \\operatorname{Cov}(X,Y)=\\mathbb{E}[(X-\\mathbb{E}X)(Y-\\mathbb{E}Y)]",
+    "notation": [
+      {
+        "symbol": "\\operatorname{Var}(X)",
+        "meaning": "Mean squared deviation from the mean."
+      },
+      {
+        "symbol": "\\operatorname{Cov}(X,Y)",
+        "meaning": "Mean product of centered deviations."
+      },
+      {
+        "symbol": "\\Sigma",
+        "meaning": "Covariance matrix for a random vector."
+      }
+    ],
+    "definition": "Variance measures squared dispersion around a variable mean. Covariance measures whether deviations of two variables tend to have the same or opposite signs. For a random vector, collecting pairwise covariances gives a covariance matrix. Covariance depends on scale and units, and zero covariance does not generally imply independence. Estimating population covariance from samples also requires choosing an estimator and distinguishing population normalization from an unbiased sample estimate.",
+    "example": "For a distribution assigning probability \\(1/2\\) to each of \\(X=0\\) and \\(X=2\\), the mean is \\(1\\), and the variance is \\(((0-1)^2+(2-1)^2)/2=1\\). If \\(Y=2X\\), covariance is \\(2\\). Increasing the units by a scale factor changes variance quadratically, which matters when combining differently scaled state features. For vector data, these pairwise calculations form a symmetric covariance matrix with nonnegative quadratic forms.",
+    "role_en": "Gaussian distributions use variance or covariance to describe their spread. CEM refits these statistics from elite candidates, while diffusion schedules specify noise variances. Feature scaling also affects covariance-based analysis and learned-model numerical conditioning."
+  },
+  {
+    "id": "p_gaussian",
+    "title": "高斯分布",
+    "latex": "p(x)=\\frac{1}{\\sqrt{2\\pi\\sigma^2}}\\exp\\!\\left(-\\frac{(x-\\mu)^2}{2\\sigma^2}\\right),\\quad X=\\mu+\\sigma\\epsilon,\\quad\\epsilon\\sim\\mathcal{N}(0,1)",
+    "notation": [
+      {
+        "symbol": "\\mu",
+        "meaning": "Mean."
+      },
+      {
+        "symbol": "\\sigma>0",
+        "meaning": "Standard deviation."
+      },
+      {
+        "symbol": "\\sigma^2",
+        "meaning": "Variance."
+      },
+      {
+        "symbol": "\\mathcal{N}(\\mathbf{0},I)",
+        "meaning": "Multivariate standard normal with identity covariance."
+      }
+    ],
+    "definition": "A Gaussian distribution is a continuous distribution specified in one dimension by a mean and positive variance. Its density decreases exponentially with squared distance from its mean after scaling by variance. A multivariate Gaussian replaces scalar variance with a covariance matrix, allowing correlations between coordinates. A standard multivariate Gaussian has zero mean and identity covariance. Its density describes local probability concentration, not the probability of an exact noise vector.",
+    "example": "If \\(\\epsilon\\) is standard normal, then \\(X=2+3\\epsilon\\) has mean \\(2\\) and variance \\(9\\). A sampled \\(\\epsilon=0.5\\) gives \\(X=3.5\\). In two dimensions, identity covariance gives independent standard-normal coordinates; a non-diagonal covariance can instead produce correlated candidate components, changing the geometry of the sampled distribution. The variance is nine rather than three because variance scales with the square of the multiplier.",
+    "role_en": "ID-WM diffusion training adds Gaussian noise, and deterministic DDIM maps an initial Gaussian noise vector to a candidate future. CEM commonly samples parameterized Gaussian candidate distributions. Noise regularization discourages extreme coordinates but is not an exact physical-feasibility constraint."
+  },
+  {
+    "id": "p_sampling",
+    "title": "采样与蒙特卡洛估计",
+    "latex": "\\mathbb{E}_{X\\sim p}[f(X)]\\approx\\frac1N\\sum_{i=1}^{N}f(x_i),\\qquad x_i\\overset{\\mathrm{iid}}{\\sim}p",
+    "notation": [
+      {
+        "symbol": "p",
+        "meaning": "Sampling distribution."
+      },
+      {
+        "symbol": "f",
+        "meaning": "Function whose expectation is being estimated."
+      },
+      {
+        "symbol": "N",
+        "meaning": "Number of samples."
+      },
+      {
+        "symbol": "\\mathrm{iid}",
+        "meaning": "Independent and identically distributed."
+      }
+    ],
+    "definition": "Sampling generates realizations from a specified distribution. Monte Carlo estimation approximates an expectation by averaging function values at sampled realizations. Under suitable independence and moment conditions, the sample average converges as the sample count grows, while finite estimates remain random. Pseudorandom generators use a seed to initialize a reproducible number sequence, but identical seeds alone do not ensure full reproducibility across changing devices, libraries, or nondeterministic operations.",
+    "example": "To estimate the expected squared value of a standard-normal variable, sample values \\(x_i\\) and average \\(x_i^2\\). The true expectation is \\(1\\), but a small batch may differ substantially. In planning, sample candidates are scored rather than averaged into a single action. Increasing the candidate count increases computation and can improve search coverage without guaranteeing the global optimum.",
+    "role_en": "Sampling appears in diffusion minibatches, Gaussian-noise initialization, and CEM candidate generation. It explains why ID-WM planning results depend on candidate counts and random seeds, and why search-budget comparisons should state the same sampling conditions."
+  },
+  {
+    "id": "p_likelihood",
+    "title": "似然与最大似然估计",
+    "latex": "\\hat\\theta=\\arg\\max_\\theta\\prod_{i=1}^{N}p_\\theta(x_i)=\\arg\\min_\\theta\\left[-\\sum_{i=1}^{N}\\log p_\\theta(x_i)\\right]",
+    "notation": [
+      {
+        "symbol": "x_i",
+        "meaning": "Observed data, treated as fixed during optimization."
+      },
+      {
+        "symbol": "p_\\theta",
+        "meaning": "Probability mass or density model."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Unknown model parameter."
+      },
+      {
+        "symbol": "\\hat\\theta",
+        "meaning": "Maximum-likelihood estimate."
+      }
+    ],
+    "definition": "Likelihood evaluates a fixed observed dataset under different parameter settings of a probability model. Maximum likelihood chooses parameters giving the largest likelihood. With independent observations, the joint likelihood factors into a product, and taking its logarithm converts the product into a sum. Negative log-likelihood therefore gives an equivalent minimization objective. For continuous observations, the model terms are densities; they are not probabilities of the exact observed points.",
+    "example": "Observe three successes and one failure from independent Bernoulli trials. A model with success probability \\(p\\) has likelihood \\(p^3(1-p)\\) for that ordered sequence. Maximizing it gives \\(\\hat p=3/4\\). The fitted number is an estimate based on the data, not a guarantee that exactly three of the next four trials will succeed.",
+    "role_en": "Likelihood gives probabilistic context for supervised losses, Gaussian modelling, and denoising objectives. ID-WM uses a noise-prediction diffusion objective and a state prediction loss; their reported forms should be read directly rather than replacing them with an unspecified generic likelihood."
+  },
+  {
+    "id": "p_entropy",
+    "title": "熵与交叉熵",
+    "latex": "H(p)=-\\sum_xp(x)\\log p(x),\\qquad H(p,q)=-\\sum_xp(x)\\log q(x)",
+    "notation": [
+      {
+        "symbol": "p",
+        "meaning": "Reference discrete probability distribution."
+      },
+      {
+        "symbol": "q",
+        "meaning": "Compared or predicted distribution."
+      },
+      {
+        "symbol": "H(p)",
+        "meaning": "Entropy of p."
+      },
+      {
+        "symbol": "H(p,q)",
+        "meaning": "Cross-entropy of p relative to q."
+      }
+    ],
+    "definition": "For a discrete distribution, entropy is the expected negative log probability under that distribution. Cross-entropy evaluates the expected negative log probability assigned by another distribution to the same outcomes. These definitions require suitable conventions for zero probabilities; assigning zero predicted probability to a possible reference outcome gives infinite cross-entropy. Logarithm base determines units. Continuous differential entropy is a different quantity and should not inherit every interpretation of discrete entropy.",
+    "example": "For a fair binary distribution \\(p=(0.5,0.5)\\), entropy is \\(\\log 2\\) with natural logarithms. If \\(q=(0.9,0.1)\\), cross-entropy is \\(-0.5\\log0.9-0.5\\log0.1\\), larger than \\(\\log2\\). A confident but poorly matched prediction therefore has a worse expected log score than the correctly matched uncertain distribution. When the reference distribution itself is the prediction, cross-entropy equals entropy and the excess score vanishes.",
+    "role_en": "Entropy is background for classification, distribution comparison, and the name of the Cross-Entropy Method. CEM planning itself can be understood operationally as sampling, selecting elites, and refitting a distribution; it is not a cross-entropy neural-network layer."
+  },
+  {
+    "id": "p_kl",
+    "title": "KL 散度",
+    "latex": "D_{\\mathrm{KL}}(p\\Vert q)=\\sum_xp(x)\\log\\frac{p(x)}{q(x)}=H(p,q)-H(p)\\geq0",
+    "notation": [
+      {
+        "symbol": "p,q",
+        "meaning": "Reference and comparison distributions."
+      },
+      {
+        "symbol": "D_{\\mathrm{KL}}(p\\Vert q)",
+        "meaning": "Directed divergence from p to q."
+      },
+      {
+        "symbol": "\\Vert",
+        "meaning": "Separates distributions; it is not a vector norm."
+      }
+    ],
+    "definition": "Kullback-Leibler divergence measures the expected log ratio between two distributions under the first distribution. It is nonnegative when defined and equals zero when the distributions agree almost everywhere. It is generally asymmetric and does not satisfy the triangle inequality, so it is not an ordinary distance metric. If the second distribution assigns zero probability where the first has positive probability, the divergence is infinite. Continuous versions replace sums with integrals.",
+    "example": "For \\(p=(0.5,0.5)\\) and \\(q=(0.9,0.1)\\), compute \\(D_{\\mathrm{KL}}(p\\Vert q)=0.5\\log(0.5/0.9)+0.5\\log(0.5/0.1)\\). Swapping the distributions changes both the weighting and ratios, so the answer differs. This direction dependence matters when comparing which distribution is expected to cover outcomes of the other. Neither result should be interpreted as a Euclidean separation between two state vectors; the inputs here are probability distributions over outcomes.",
+    "role_en": "KL divergence helps interpret probabilistic modelling and variational or distribution-fitting methods. It is optional background for the main ID-WM planner: the paper noise regularizer is a coordinate-threshold penalty, not a KL divergence or exact Gaussian negative log-density."
+  },
+  {
+    "id": "ml_supervised",
+    "title": "监督学习",
+    "latex": "\\mathcal{D}=\\{(x_i,y_i)\\}_{i=1}^{N},\\qquad\\hat y_i=f_\\theta(x_i),\\qquad\\hat\\theta=\\arg\\min_\\theta\\frac1N\\sum_i\\ell(\\hat y_i,y_i)",
+    "notation": [
+      {
+        "symbol": "\\mathcal D",
+        "meaning": "Training dataset of input-target pairs."
+      },
+      {
+        "symbol": "x_i,y_i",
+        "meaning": "Input and target for example i."
+      },
+      {
+        "symbol": "\\ell",
+        "meaning": "Per-example loss."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Learned model parameters."
+      }
+    ],
+    "definition": "Supervised learning fits a function using examples that pair inputs with target outputs. A loss measures disagreement between a prediction and its target, and training changes model parameters to reduce an empirical average of that loss. Targets need not be manually annotated: recorded future states can supply them. Performance on training pairs does not establish performance on unseen inputs, so evaluation must separate fitting from generalization.",
+    "example": "Record a small vehicle state \\((p_t,v_t)\\), an action \\(a_t\\), and the next state \\((p_{t+1},v_{t+1})\\). Use the current state and action as input and the recorded next state as target. The model learns a transition mapping from many such examples. A shuffled or incorrectly time-aligned target would train a different, usually incorrect mapping.",
+    "role_en": "The low-level ID-WM predictor uses supervised state-transition learning. The high-level denoiser also receives a supervised target, namely the sampled noise added to a future state, even though that target is constructed automatically rather than manually labelled."
+  },
+  {
+    "id": "ml_mse",
+    "title": "均方误差与经验风险",
+    "latex": "\\mathcal L(\\theta)=\\frac1N\\sum_{i=1}^{N}\\|f_\\theta(x_i)-y_i\\|_2^2",
+    "notation": [
+      {
+        "symbol": "N",
+        "meaning": "Number of examples in the average."
+      },
+      {
+        "symbol": "f_\\theta(x_i)",
+        "meaning": "Model prediction."
+      },
+      {
+        "symbol": "y_i",
+        "meaning": "Target vector."
+      },
+      {
+        "symbol": "\\|\\cdot\\|_2^2",
+        "meaning": "Sum of squared component errors."
+      }
+    ],
+    "definition": "Mean squared error averages squared prediction errors over examples, sometimes also averaging over output coordinates depending on the convention. It is an empirical risk: a finite-data approximation to an expected loss. Squaring penalizes large residuals more strongly than absolute error and yields convenient derivatives. Its units are squared output units. Reporting a value requires stating which axes are averaged and whether dimensions are normalized or weighted.",
+    "example": "Two scalar predictions have residuals \\(1\\) and \\(3\\). Their MSE is \\((1^2+3^2)/2=5\\), whereas the average absolute error is \\(2\\). For vector outputs, summing over coordinates before averaging over examples differs numerically from averaging over all entries. The difference is a fixed factor only when output dimensionality and weighting are fixed.",
+    "role_en": "The high-level diffusion model uses a squared noise-prediction error. MSE also provides standard background for dynamics fitting, but the ID-WM paper writes its low-level prediction loss with an unsquared L2 norm; implementation and reporting should preserve that distinction."
+  },
+  {
+    "id": "ml_linear",
+    "title": "线性回归",
+    "latex": "\\hat y=\\mathbf w^{\\mathsf T}\\mathbf x+b,\\qquad\\mathcal L=\\frac1N\\sum_i(\\hat y_i-y_i)^2",
+    "notation": [
+      {
+        "symbol": "\\mathbf w",
+        "meaning": "Feature weights."
+      },
+      {
+        "symbol": "b",
+        "meaning": "Intercept or bias."
+      },
+      {
+        "symbol": "\\mathbf x",
+        "meaning": "Input feature vector."
+      },
+      {
+        "symbol": "\\hat y",
+        "meaning": "Predicted scalar response."
+      }
+    ],
+    "definition": "Linear regression predicts a numerical response using a weighted sum of features and an intercept. The prediction is affine in the input and linear in the fitted coefficients. Ordinary least squares chooses coefficients minimizing squared residuals. Nonlinear transformations may be included as predefined features, but the model remains linear in its coefficients. This provides a simple setting for understanding model fitting, loss gradients, feature scaling, and regularization before multilayer neural networks.",
+    "example": "Suppose the model predicts distance from elapsed time using \\(\\hat y=2x+1\\). At \\(x=3\\), its prediction is \\(7\\). If the measured target is \\(8\\), the residual is \\(-1\\) and its squared loss contribution is \\(1\\). Adding an input feature such as squared time changes the feature representation and can model acceleration within a linear-coefficient model.",
+    "role_en": "Linear regression is a foundational supervised-learning example and a useful baseline for simple dynamics. ID-WM uses more expressive predictors, but the same separation of inputs, parameters, targets, and loss continues to apply."
+  },
+  {
+    "id": "ml_logistic",
+    "title": "逻辑回归",
+    "latex": "P_\\theta(Y=1\\mid\\mathbf x)=\\sigma(\\mathbf w^{\\mathsf T}\\mathbf x+b),\\qquad\\sigma(z)=\\frac1{1+e^{-z}}",
+    "notation": [
+      {
+        "symbol": "Y\\in\\{0,1\\}",
+        "meaning": "Binary target."
+      },
+      {
+        "symbol": "z=\\mathbf w^{\\mathsf T}\\mathbf x+b",
+        "meaning": "Real-valued logit."
+      },
+      {
+        "symbol": "\\sigma(z)",
+        "meaning": "Sigmoid mapping to a probability in (0,1)."
+      }
+    ],
+    "definition": "Binary logistic regression models the conditional probability of one class by applying a sigmoid to an affine input score. It is usually trained with Bernoulli negative log-likelihood, equivalent to binary cross-entropy. A classification threshold converts probabilities into decisions and is distinct from fitting the probability model. Despite its name, logistic regression is commonly used for classification. Its confidence is not automatically calibrated on new distributions.",
+    "example": "For a logit \\(z=0\\), the predicted class-one probability is \\(0.5\\). For \\(z=\\log3\\), the probability is \\(3/4\\). A threshold of \\(0.5\\) classifies the latter as class one, while a threshold of \\(0.9\\) does not. Different error costs may justify different thresholds without retraining the underlying probability model. The output concerns conditional class probability, rather than a continuous position prediction or deterministic physical state transition.",
+    "role_en": "Logistic regression connects linear models, conditional probabilities, sigmoid activations, and cross-entropy. It is a comparison and foundation branch, not a required component of ID-WM dynamics learning or its CEM planner."
+  },
+  {
+    "id": "ml_split",
+    "title": "数据划分与数据泄漏",
+    "latex": "\\mathcal D=\\mathcal D_{\\mathrm{train}}\\;\\dot\\cup\\;\\mathcal D_{\\mathrm{val}}\\;\\dot\\cup\\;\\mathcal D_{\\mathrm{test}}",
+    "notation": [
+      {
+        "symbol": "\\mathcal D_{\\mathrm{train}}",
+        "meaning": "Data used to fit model parameters and preprocessing statistics."
+      },
+      {
+        "symbol": "\\mathcal D_{\\mathrm{val}}",
+        "meaning": "Data used for model and hyperparameter selection."
+      },
+      {
+        "symbol": "\\mathcal D_{\\mathrm{test}}",
+        "meaning": "Held-out data used for final evaluation."
+      },
+      {
+        "symbol": "\\dot\\cup",
+        "meaning": "Disjoint union."
+      }
+    ],
+    "definition": "A data split assigns different examples or groups to training, validation, and test roles. The test set should not influence parameter fitting, preprocessing, or repeated model-selection decisions. Leakage occurs when information unavailable in the intended deployment setting enters these processes. Sequential data require particular care because neighboring frames are correlated. Disjoint frame indices are insufficient when nearly identical frames or future information from the same trajectory appear across split boundaries.",
+    "example": "Take ten recorded episodes. Assign six complete episodes to training, two to validation, and two to testing, then create temporal windows within each partition. Computing normalization statistics on all ten episodes would still leak test information. Likewise, making a transition pair from the last frame of one episode and first frame of another would create an artificial state jump.",
+    "role_en": "ID-WM learns from offline trajectories, so correct episode boundaries and future-state alignment are essential. Data splitting supports honest tests of generalization to held-out trajectories or goal configurations and prevents an apparently accurate predictor from benefiting from leaked future observations."
+  },
+  {
+    "id": "ml_bias_variance",
+    "title": "偏差、方差与泛化",
+    "latex": "\\mathbb E_{\\mathcal D,\\varepsilon}\\!\\left[(\\hat f_{\\mathcal D}(x)-Y)^2\\right]=\\operatorname{Bias}(x)^2+\\operatorname{Var}_{\\mathcal D}[\\hat f_{\\mathcal D}(x)]+\\sigma_\\varepsilon^2",
+    "notation": [
+      {
+        "symbol": "Y=f^*(x)+\\varepsilon",
+        "meaning": "Response with zero-mean independent noise."
+      },
+      {
+        "symbol": "\\hat f_{\\mathcal D}",
+        "meaning": "Predictor fitted on random training dataset D."
+      },
+      {
+        "symbol": "\\operatorname{Bias}(x)",
+        "meaning": "Difference between the mean fitted prediction and f*(x)."
+      },
+      {
+        "symbol": "\\sigma_\\varepsilon^2",
+        "meaning": "Irreducible observation-noise variance under the stated model."
+      }
+    ],
+    "definition": "The bias-variance decomposition describes expected squared prediction error under a specified data-generating model. Bias measures how the average fitted predictor differs from the true conditional mean. Variance measures how fitted predictions change across random training datasets. Noise is the response variation not explained by the input under that model. Underfitting and overfitting are practical patterns, not quantities fully determined by one loss curve or a universal statement that larger models always generalize worse.",
+    "example": "Fit a straight line to many small datasets sampled from a strongly curved function. The average line may systematically miss the curve, indicating bias. Fit a highly flexible model that changes greatly whenever the small dataset changes, and prediction variance may be large. Repeated training datasets are the conceptual comparison; merely inspecting different examples within one fixed test set does not isolate this variance term.",
+    "role_en": "Generalization determines whether ID-WM predictions remain useful for planner-generated state-action combinations. This node motivates held-out evaluation and regularization, but the decomposition alone cannot predict closed-loop success or guarantee reliability under distribution shift."
+  },
+  {
+    "id": "ml_regularization",
+    "title": "正则化与权重衰减",
+    "latex": "\\mathcal L_{\\mathrm{total}}(\\theta)=\\mathcal L_{\\mathrm{data}}(\\theta)+\\lambda\\|\\theta\\|_2^2,\\qquad\\lambda\\geq0",
+    "notation": [
+      {
+        "symbol": "\\mathcal L_{\\mathrm{data}}",
+        "meaning": "Data-fitting objective."
+      },
+      {
+        "symbol": "\\lambda",
+        "meaning": "Penalty strength."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Parameters being penalized."
+      },
+      {
+        "symbol": "\\|\\theta\\|_2^2",
+        "meaning": "Squared Euclidean parameter magnitude."
+      }
+    ],
+    "definition": "Regularization adds preferences or restrictions to an optimization problem to improve statistical or numerical behavior. An L2 parameter penalty discourages large weights relative to the data-fitting objective. It changes the optimization target and must be selected using an appropriate validation process. Weight decay can coincide with L2 regularization for some update rules, but decoupled weight decay in adaptive optimizers is not generally identical to adding that penalty to the loss.",
+    "example": "Consider \\(\\mathcal L(w)=(w-2)^2+\\lambda w^2\\). Setting the derivative to zero gives \\(w=2/(1+\\lambda)\\). With \\(\\lambda=0\\), the optimum is \\(2\\); with \\(\\lambda=1\\), it is \\(1\\). The penalized solution accepts more data residual in exchange for a smaller coefficient. Whether this helps new examples must be measured. This trade-off depends on the scale of the data loss and cannot be chosen independently of normalization conventions.",
+    "role_en": "ID-WM training can use regularized optimizers, while high-level planning uses a separate noise-coordinate penalty. Both modify an objective, but they penalize different variables: learned weights during training versus searched noise decisions during inference."
+  },
+  {
+    "id": "ml_normalize",
+    "title": "标准化与数值尺度",
+    "latex": "\\tilde x=\\frac{x-\\mu_{\\mathrm{train}}}{\\sigma_{\\mathrm{train}}+\\epsilon},\\qquad x=\\tilde x(\\sigma_{\\mathrm{train}}+\\epsilon)+\\mu_{\\mathrm{train}}",
+    "notation": [
+      {
+        "symbol": "\\mu_{\\mathrm{train}},\\sigma_{\\mathrm{train}}",
+        "meaning": "Feature mean and standard deviation fitted on training data."
+      },
+      {
+        "symbol": "\\epsilon>0",
+        "meaning": "Small stabilizing constant."
+      },
+      {
+        "symbol": "\\tilde x",
+        "meaning": "Standardized feature."
+      }
+    ],
+    "definition": "Standardization centers a numerical feature and scales it using a reference standard deviation. Statistics should be fitted on training data and reused unchanged on validation, testing, and inference inputs. This operation can improve conditioning and prevent differently scaled features from dominating an unweighted loss. It does not make a non-Gaussian distribution Gaussian. Features with physical limits, periodic angles, or very small variance may require more specific preprocessing choices.",
+    "example": "If training positions have mean \\(10\\) metres and standard deviation \\(2\\) metres, a position of \\(14\\) metres becomes approximately \\(2\\) after standardization. A predicted standardized value of \\(-1\\) converts back to approximately \\(8\\) metres. Using different test-set statistics would change the representation and expose information from the evaluation data. The same stored training statistics must be used when transforming future goals and predicted states.",
+    "role_en": "Consistent feature scaling matters for dynamics losses, state distances, Gaussian modelling, and optimization. Any ID-WM implementation that standardizes states must apply the same transformation to current states, future targets, and goals, and invert it when physical interpretation is required."
+  },
+  {
+    "id": "ml_pca",
+    "title": "主成分分析",
+    "latex": "z=W_k^{\\mathsf T}(x-\\mu),\\qquad Cw_j=\\lambda_jw_j,\\quad\\lambda_1\\geq\\lambda_2\\geq\\cdots",
+    "notation": [
+      {
+        "symbol": "\\mu",
+        "meaning": "Training-data feature mean."
+      },
+      {
+        "symbol": "C",
+        "meaning": "Covariance matrix of centered data."
+      },
+      {
+        "symbol": "W_k",
+        "meaning": "Matrix containing the top k orthonormal covariance eigenvectors."
+      },
+      {
+        "symbol": "z",
+        "meaning": "Reduced-dimensional coordinates."
+      }
+    ],
+    "definition": "Principal component analysis finds orthogonal directions capturing the greatest variance in centered data. Projecting onto the leading directions gives a linear lower-dimensional representation and minimizes squared linear reconstruction error under the usual orthonormal formulation. The result depends on feature scaling and the data used to estimate the mean and covariance. High variance is not necessarily task relevance, and PCA does not use labels or directly optimize planning success.",
+    "example": "If a centered two-dimensional dataset has covariance \\(\\operatorname{diag}(9,1)\\), retaining the horizontal eigenvector keeps variance \\(9\\) out of total variance \\(10\\). A sample \\([2,3]^{\\mathsf T}\\) projects to the one-dimensional coordinate \\(2\\), and its rank-one reconstruction is \\([2,0]^{\\mathsf T}\\). The discarded vertical variation may still matter for a downstream task. Keeping the largest variance direction therefore solves a reconstruction objective, not automatically the task objective.",
+    "role_en": "PCA offers a concrete comparison for learned representations and latent dimensionality. ID-WM visual features follow neural representation-learning methods rather than PCA. PCA may support diagnostics or preprocessing, but it is not a mandatory predecessor of DINO or clustering."
+  },
+  {
+    "id": "ml_clustering",
+    "title": "聚类与高斯混合模型",
+    "latex": "p(x)=\\sum_{k=1}^{K}\\pi_k\\mathcal N(x;\\mu_k,\\Sigma_k),\\qquad\\pi_k\\geq0,\\quad\\sum_k\\pi_k=1",
+    "notation": [
+      {
+        "symbol": "K",
+        "meaning": "Number of mixture components."
+      },
+      {
+        "symbol": "\\pi_k",
+        "meaning": "Probability weight of component k."
+      },
+      {
+        "symbol": "\\mu_k,\\Sigma_k",
+        "meaning": "Component mean and covariance."
+      },
+      {
+        "symbol": "p(x)",
+        "meaning": "Mixture probability density."
+      }
+    ],
+    "definition": "Clustering organizes unlabeled observations according to a chosen similarity or probabilistic model. K-means minimizes within-cluster squared Euclidean distances to cluster centers, producing hard assignments in its basic form. A Gaussian mixture instead models a density as a weighted sum of Gaussian components and can give probabilistic component assignments. These methods make different assumptions. Their clusters need not correspond to semantic categories, and PCA preprocessing is optional rather than mathematically required.",
+    "example": "Imagine future object positions concentrated near two doorways. A single Gaussian centered between them may assign substantial density to an intervening obstacle, while two Gaussian components can represent both concentrations separately. A mixture with equal weights and means \\(-2\\) and \\(2\\) illustrates this multimodality. Fitting it successfully still does not establish that every sampled position is dynamically reachable.",
+    "role_en": "Mixture models explain why future-state distributions can have multiple modes and why predicting only a mean can be inadequate. ID-WM uses a conditional diffusion model for high-level futures; it does not require fitting a Gaussian mixture as part of the method."
+  },
+  {
+    "id": "ml_evaluation",
+    "title": "评估指标与不确定性",
+    "latex": "\\hat p=\\frac{k}{N},\\qquad\\operatorname{SE}(\\hat p)\\approx\\sqrt{\\frac{\\hat p(1-\\hat p)}{N}}",
+    "notation": [
+      {
+        "symbol": "k",
+        "meaning": "Number of successful trials."
+      },
+      {
+        "symbol": "N",
+        "meaning": "Number of evaluated trials."
+      },
+      {
+        "symbol": "\\hat p",
+        "meaning": "Observed success fraction."
+      },
+      {
+        "symbol": "\\operatorname{SE}",
+        "meaning": "Approximate standard error under independent Bernoulli trials."
+      }
+    ],
+    "definition": "Evaluation measures model or algorithm performance using metrics matched to the intended task and a specified test distribution. Prediction error, task success, completion time, and computation cost answer different questions. A finite test result has sampling uncertainty; approximate Bernoulli standard error assumes suitably independent trials and can be poor near probability boundaries or for small samples. Failures, repeated seeds, and consistent success definitions are necessary for interpreting aggregate scores.",
+    "example": "If \\(80\\) of \\(100\\) independent trials succeed, \\(\\hat p=0.8\\), and the approximate standard error is \\(0.04\\). This is not a guarantee that the true success probability lies in any particular interval, and repeated nearly identical trials may not behave as independent samples. Report the tested initial-goal distribution alongside the rate so the result has a clear scope.",
+    "role_en": "ID-WM reports task success and manipulation coverage under specified environments and budgets. Evaluation should distinguish model prediction from executed closed-loop success and compare methods using matched data, goals, search budgets, and timing definitions whenever possible."
+  },
+  {
+    "id": "ml_distribution_shift",
+    "title": "分布偏移与多步误差",
+    "latex": "s_{t+1}=F(s_t,a_t),\\qquad\\hat s_{t+1}=F_\\theta(\\hat s_t,a_t),\\qquad P_{\\mathrm{train}}\\ne P_{\\mathrm{deploy}}",
+    "notation": [
+      {
+        "symbol": "F",
+        "meaning": "True environment transition."
+      },
+      {
+        "symbol": "F_\\theta",
+        "meaning": "Learned predictor."
+      },
+      {
+        "symbol": "\\hat s_t",
+        "meaning": "Predicted state used recursively in a rollout."
+      },
+      {
+        "symbol": "P_{\\mathrm{train}},P_{\\mathrm{deploy}}",
+        "meaning": "Training and deployment input distributions."
+      }
+    ],
+    "definition": "Distribution shift occurs when the data encountered in evaluation or deployment differ from the training distribution. A learned dynamics model can also encounter its own imperfect predicted states during recursive rollout, creating inputs unlike recorded training states. Planning compounds this issue because optimization actively selects candidate actions or latent decisions according to model predictions. Small average training error therefore does not bound errors at the particular states selected by an optimizer.",
+    "example": "A model trained only on slow forward vehicle motion may predict backward or high-speed motion poorly. A planner can nevertheless choose those inputs if erroneous predictions make them appear to reach the goal quickly. Even using familiar actions can move predicted states progressively away from recorded trajectories. Test both single-step errors on held-out data and multi-step, executed task performance.",
+    "role_en": "ID-WM addresses long-horizon planning through hierarchy and regularizes high-level noise to discourage extreme searched inputs. These measures reduce particular failure modes but do not guarantee correctness for unseen environments, unsupported contacts, or arbitrary out-of-distribution goals."
+  },
+  {
+    "id": "m_explog",
+    "title": "指数与对数",
+    "latex": "\\log(ab)=\\log a+\\log b,\\quad\\log(e^x)=x,\\quad e^{\\log x}=x\\;(x>0)",
+    "notation": [
+      {
+        "symbol": "e^x=\\exp(x)",
+        "meaning": "Natural exponential function."
+      },
+      {
+        "symbol": "\\log x=\\ln x",
+        "meaning": "Natural logarithm unless a different base is specified."
+      },
+      {
+        "symbol": "a,b>0",
+        "meaning": "Positive arguments required for the displayed real logarithms."
+      }
+    ],
+    "definition": "The exponential function maps real inputs to positive values, and the natural logarithm is its inverse on positive inputs. Logarithms convert products into sums and powers into scalar multiples, which simplifies probability calculations and optimization. Exponentials appear in Gaussian densities and probability-normalization functions such as softmax. Numerical implementations must avoid overflow, underflow, and logarithms of zero; algebraically equivalent formulas can differ greatly in floating-point stability.",
+    "example": "The product \\(0.1\\times0.2\\) is \\(0.02\\), and its log equals \\(\\log0.1+\\log0.2\\). A likelihood containing thousands of small probabilities may underflow when multiplied directly, while summing their logarithms is more manageable. For softmax, subtracting the largest input score before exponentiation preserves the normalized output and reduces overflow risk. A mathematically valid calculation still needs a numerically stable implementation in finite precision.",
+    "role_en": "Exponentials and logarithms support Gaussian noise models, likelihood, entropy, and softmax attention. They are foundational for reading diffusion and Transformer equations even though the planner itself can be implemented using sampled candidates and scalar scores."
+  },
+  {
+    "id": "m_sum",
+    "title": "求和与索引",
+    "latex": "\\sum_{i=1}^{N}x_i=x_1+x_2+\\cdots+x_N,\\qquad\\bar x=\\frac1N\\sum_{i=1}^{N}x_i",
+    "notation": [
+      {
+        "symbol": "i",
+        "meaning": "Index indicating the current term."
+      },
+      {
+        "symbol": "N",
+        "meaning": "Number of terms."
+      },
+      {
+        "symbol": "x_i",
+        "meaning": "The ith value."
+      },
+      {
+        "symbol": "\\bar x",
+        "meaning": "Arithmetic mean of the indexed values."
+      }
+    ],
+    "definition": "Summation notation expresses repeated addition over an explicitly specified index set. An index identifies a position rather than introducing another measured physical quantity. Its range must be clear, particularly when batch, time, feature, and diffusion-step indices coexist. A mean divides the relevant sum by the number of included terms. Nested sums can average different axes, and those choices change a reported loss or statistic unless the normalization convention is held fixed.",
+    "example": "For values \\(x_1=2\\), \\(x_2=4\\), and \\(x_3=9\\), the sum is \\(15\\) and the mean is \\(5\\). In a dataset with two examples and three output coordinates each, summing all squared residuals and dividing by two produces a mean per example; dividing by six produces a mean per scalar coordinate. State which version is intended.",
+    "role_en": "Sums and averages occur in minibatch losses, covariance estimates, attention-weighted combinations, CEM distribution updates, and noise regularization. Keeping index meanings distinct prevents confusion between environment time, diffusion steps, model dimensions, and sampled planning candidates."
+  }
+]

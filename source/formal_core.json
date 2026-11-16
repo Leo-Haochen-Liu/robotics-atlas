@@ -1,0 +1,606 @@
+[
+  {
+    "id": "r_state",
+    "latex": "o_t=h(x_t),\\quad s_t=\\operatorname{enc}(o_t),\\quad a_t\\in\\mathcal A",
+    "notation": [
+      {
+        "symbol": "x_t",
+        "meaning": "Physical state at environment time t."
+      },
+      {
+        "symbol": "o_t",
+        "meaning": "Sensor observation."
+      },
+      {
+        "symbol": "s_t",
+        "meaning": "Representation used by the learned model."
+      },
+      {
+        "symbol": "a_t",
+        "meaning": "Executable action."
+      }
+    ],
+    "definition": "A physical state contains the information needed to determine the distribution of future states under actions. An observation is a measurement of that state and may omit information. A learned representation encodes observations into features for prediction. These quantities can have different dimensions and should not be used interchangeably.",
+    "example": "For PushT, an observation may be an RGB image. A state representation may contain the pusher position and the T-block position and angle. An action can command pusher displacement. Two images with identical positions can correspond to different velocities; a single image may therefore be insufficient for future prediction.",
+    "role_en": "ID-WM encodes current and goal observations into compatible representations. Both levels plan using these representations; the action sequence is sent to the environment."
+  },
+  {
+    "id": "r_frames",
+    "latex": "\\mathbf p^A=R^A_B\\mathbf p^B+\\mathbf t^A_B",
+    "notation": [
+      {
+        "symbol": "\\mathbf p^A,\\mathbf p^B",
+        "meaning": "Coordinates of the same point in frames A and B."
+      },
+      {
+        "symbol": "R^A_B",
+        "meaning": "Rotation mapping B-frame vectors to A-frame vectors."
+      },
+      {
+        "symbol": "\\mathbf t^A_B",
+        "meaning": "B-frame origin expressed in frame A."
+      }
+    ],
+    "definition": "A reference frame specifies the origin and basis used to express positions and directions. A rigid transformation combines rotation and translation. Coordinate values depend on the chosen frame even when the physical point is fixed. Units, frame conventions and multiplication order must be explicit.",
+    "example": "If the frames have the same orientation and the B origin is one metre to the right of the A origin, then a point at zero in B has x-coordinate one in A. A rotating robot can observe changing body-frame ball coordinates even when the ball is stationary.",
+    "role_en": "Coordinate consistency is required when constructing robot state labels and goal distances. General 3D rigid transformations are an application extension, not a prerequisite for every state-based ID-WM experiment."
+  },
+  {
+    "id": "r_dynamics",
+    "latex": "\\dot q=v,\\qquad \\dot v=a,\\qquad x_{t+1}=F(x_t,u_t)",
+    "notation": [
+      {
+        "symbol": "q,v,a",
+        "meaning": "Position, velocity and acceleration."
+      },
+      {
+        "symbol": "u_t",
+        "meaning": "Control input."
+      },
+      {
+        "symbol": "F",
+        "meaning": "Discrete-time state transition."
+      }
+    ],
+    "definition": "Kinematics relates configurations to geometric quantities such as end-effector position. Dynamics describes how state evolves under inputs and forces. A discrete dynamics model predicts the next state from the current state and action. Contact, friction and omitted variables can make this mapping difficult to learn.",
+    "example": "A one-dimensional constant-velocity model with time step 0.02 seconds and velocity 1 metre per second predicts a displacement of 0.02 metres. If a control changes velocity, position alone no longer specifies the next state; velocity and relevant inputs are required.",
+    "role_en": "The low-level world model learns action-conditioned transitions. Robot applications additionally require appropriate contact states and action interfaces; the paper does not establish full-body G1 performance."
+  },
+  {
+    "id": "r_markov",
+    "latex": "p(s_{t+1}\\mid s_{0:t},a_{0:t})\\approx p(s_{t+1}\\mid s_{t-k:t},a_{t-k:t})",
+    "notation": [
+      {
+        "symbol": "k",
+        "meaning": "Number of previous time steps retained."
+      },
+      {
+        "symbol": "s_{i:j}",
+        "meaning": "States from index i through j."
+      },
+      {
+        "symbol": "p(\\cdot\\mid\\cdot)",
+        "meaning": "Conditional distribution."
+      }
+    ],
+    "definition": "A Markov state makes the future conditionally independent of earlier history once the current state and action are given. When observations omit relevant variables, a finite history can supply additional information. A history window is an approximation and does not guarantee complete observability.",
+    "example": "Two successive positions allow an estimate of velocity using position difference divided by elapsed time. With only one position, opposite velocities remain possible. Window construction must stop at episode boundaries; the reset state of another episode is not a valid next observation.",
+    "role_en": "ID-WM low-level prediction uses histories of states and actions. Window length determines input context, not the number of future planning steps."
+  },
+  {
+    "id": "r_feedback",
+    "latex": "a_t=\\pi(o_{0:t},g)",
+    "notation": [
+      {
+        "symbol": "\\pi",
+        "meaning": "Decision rule or controller."
+      },
+      {
+        "symbol": "o_{0:t}",
+        "meaning": "Observed history."
+      },
+      {
+        "symbol": "g",
+        "meaning": "Goal specification."
+      }
+    ],
+    "definition": "Open-loop execution applies a planned input sequence without using new measurements to change it. Feedback uses measured or estimated state to revise subsequent control. Feedback can reduce the effect of disturbances and model error, but its effectiveness depends on observation quality, delay and available actions.",
+    "example": "A pusher executes a movement and the block slips less than predicted. A feedback controller measures the resulting position and updates its next action. Continuing to use the original imagined block position would ignore the execution error.",
+    "role_en": "ID-WM observes the actual state after executing low-level plans and replans according to its execution schedule. An imagined rollout is not evidence that the real environment reached the same states."
+  },
+  {
+    "id": "r_goal",
+    "latex": "J(A)=d(\\hat s_H,s_g)+\\lambda\\sum_{t=0}^{H-1}\\|a_t\\|_2^2,\\quad a_{\\min}\\le a_t\\le a_{\\max}",
+    "notation": [
+      {
+        "symbol": "A=(a_0,\\ldots,a_{H-1})",
+        "meaning": "Candidate action sequence."
+      },
+      {
+        "symbol": "d",
+        "meaning": "Distance or task-specific terminal cost."
+      },
+      {
+        "symbol": "\\lambda",
+        "meaning": "Action-penalty weight in this general teaching example."
+      }
+    ],
+    "definition": "A goal specifies a desired outcome. A cost assigns a scalar score to a candidate plan, while constraints restrict admissible plans. Different state components may require different scales or weights. The displayed action penalty is a general control example, not an additional term claimed for the ID-WM paper.",
+    "example": "If block position matches the target but its orientation is reversed, position error alone can be zero while the task remains incomplete. A suitable goal representation or success criterion must include the relevant orientation or overlap requirement.",
+    "role_en": "ID-WM scores predicted goal distance. Its high-level objective also penalizes selected noise values. Costs and success metrics must be distinguished."
+  },
+  {
+    "id": "r_rollout",
+    "latex": "\\hat s_{t+1}=f(\\hat s_t,a_t),\\qquad e_{t+1}\\le L e_t+\\delta",
+    "notation": [
+      {
+        "symbol": "\\hat s_t",
+        "meaning": "Predicted state, reused as the next input."
+      },
+      {
+        "symbol": "e_t",
+        "meaning": "Prediction error at time t."
+      },
+      {
+        "symbol": "L,\\delta",
+        "meaning": "Local error amplification and one-step model error in an illustrative bound."
+      }
+    ],
+    "definition": "A rollout repeatedly applies a transition model to predict a state sequence. Errors affect later predictions because predicted states become subsequent inputs. Near contact transitions, small state errors can change whether a collision occurs. A one-step prediction metric does not fully characterize long-horizon reliability.",
+    "example": "A one-step positional bias of one millimetre can accumulate over repeated predictions. With contact, the error can alter the contact event itself, so later error need not grow linearly. Evaluate rollout error at several horizons and compare actual execution.",
+    "role_en": "Compounding error is a central motivation for the ID-WM hierarchy. Local prediction, subgoal organization and feedback address different parts of the problem."
+  },
+  {
+    "id": "r_search",
+    "latex": "N_{\\mathrm{discrete}}=b^H,\\qquad D_{\\mathrm{continuous}}=H d_a",
+    "notation": [
+      {
+        "symbol": "b",
+        "meaning": "Number of discrete action choices at each step."
+      },
+      {
+        "symbol": "H",
+        "meaning": "Planning horizon."
+      },
+      {
+        "symbol": "d_a",
+        "meaning": "Continuous action dimension per step."
+      }
+    ],
+    "definition": "Planning searches over candidate decisions. Discrete sequence counts can grow exponentially with horizon; continuous action optimization has a decision dimension proportional to horizon. Sample count, search iterations and model evaluation cost jointly determine practical runtime.",
+    "example": "Four choices per step produce 1,048,576 possible sequences over ten steps. For two-dimensional continuous actions and twenty steps, a candidate sequence contains forty scalar decision variables before accounting for the number of candidates.",
+    "role_en": "ID-WM separates high-level noise-sequence search from local action-sequence search. This changes the organization of the search rather than eliminating its computation."
+  },
+  {
+    "id": "r_shooting",
+    "latex": "A^*=\\mathop{\\arg\\min}_{i\\in\\{1,\\ldots,N\\}}J(A^{(i)})",
+    "notation": [
+      {
+        "symbol": "N",
+        "meaning": "Number of sampled candidates."
+      },
+      {
+        "symbol": "A^{(i)}",
+        "meaning": "Candidate action sequence i."
+      },
+      {
+        "symbol": "J",
+        "meaning": "Predicted planning cost."
+      }
+    ],
+    "definition": "Random shooting samples complete candidate action sequences, predicts their outcomes and returns the lowest-cost candidate. The procedure is derivative-free. Its performance depends on the sampling distribution and budget, especially when successful sequences occupy a small part of the search space.",
+    "example": "Sample one hundred pusher sequences and predict the final block state for each. Compute its distance to the target and choose the smallest. The network weights remain fixed while candidate actions vary.",
+    "role_en": "Random shooting supplies the basic sample-evaluate-select structure that CEM improves by adapting the next sampling distribution."
+  },
+  {
+    "id": "r_cem",
+    "latex": "\\mu^{\\mathrm{new}}=\\frac1K\\sum_{i\\in E}u^{(i)},\\qquad (\\sigma^2)^{\\mathrm{new}}=\\frac1K\\sum_{i\\in E}(u^{(i)}-\\mu^{\\mathrm{new}})^2",
+    "notation": [
+      {
+        "symbol": "u^{(i)}",
+        "meaning": "Candidate decision vector; an action sequence or noise sequence."
+      },
+      {
+        "symbol": "E,K",
+        "meaning": "Elite index set and number of elites."
+      },
+      {
+        "symbol": "\\mu,\\sigma^2",
+        "meaning": "Coordinate-wise mean and variance of the sampling distribution."
+      }
+    ],
+    "definition": "The Cross-Entropy Method repeatedly samples decisions, evaluates cost, selects a low-cost elite subset and fits a new proposal distribution to that subset. The displayed diagonal-Gaussian update uses empirical means and variances. Practical implementations may smooth updates or impose a minimum variance to avoid premature concentration.",
+    "example": "To minimize a squared distance to three, sample sixty scalar candidates from a broad Gaussian, retain ten with smallest cost, and update the mean and variance using those ten. Repeating the operation usually concentrates samples near three; it does not guarantee a global optimum in arbitrary objectives.",
+    "role_en": "ID-WM uses CEM at both levels. High-level decision vectors contain initial diffusion noise; low-level decision vectors contain executable actions."
+  },
+  {
+    "id": "r_mpc",
+    "latex": "A_t^*=\\arg\\min_A J(A;s_t),\\qquad s_{t+\\ell}\\leftarrow\\operatorname{Observe}(\\operatorname{Execute}(A_{t,0:\\ell-1}^*))",
+    "notation": [
+      {
+        "symbol": "s_t",
+        "meaning": "Newly observed or estimated state at planning time."
+      },
+      {
+        "symbol": "\\ell",
+        "meaning": "Number of actions executed before the next observation/update."
+      },
+      {
+        "symbol": "J",
+        "meaning": "Finite-horizon planning objective."
+      }
+    ],
+    "definition": "Model Predictive Control repeatedly solves a finite-horizon planning problem, executes part of the selected plan and updates the initial state from new observations. Execution granularity varies by implementation. The classic one-action receding-horizon case is not the only valid schedule.",
+    "example": "A controller plans five actions, executes two, measures the resulting state and plans again. If the measured state differs from the predicted state, the next optimization starts from the measurement. Planning changes decisions; it need not retrain model weights.",
+    "role_en": "ID-WM organizes high-level subgoal search and low-level realization in an execution loop. The paper specifies action-block and high-level replanning schedules."
+  },
+  {
+    "id": "r_reach",
+    "latex": "\\mathcal R_\\Delta(s)=\\{s^\\prime:\\exists\\ a_{0:\\Delta-1}\\ \\text{admissible with }s\\rightsquigarrow s^\\prime\\}",
+    "notation": [
+      {
+        "symbol": "\\mathcal R_\\Delta(s)",
+        "meaning": "Set of states reachable from s within the stated budget."
+      },
+      {
+        "symbol": "\\Delta",
+        "meaning": "Time-step budget."
+      },
+      {
+        "symbol": "\\rightsquigarrow",
+        "meaning": "Transition under dynamics and admissible actions."
+      }
+    ],
+    "definition": "Reachability concerns whether a state can be attained under dynamics, action limits and environmental constraints within a specified time. A data manifold describes structured states represented in training data. A learned approximation to this structure does not provide a formal guarantee that every generated state is physically reachable.",
+    "example": "Two positions on opposite sides of a wall can be close in Euclidean distance, yet require a long path through a doorway. If the time budget is too short, the second position is not reachable even though its coordinates are nearby.",
+    "role_en": "The high-level model estimates distributions of local future states. Its predictions must remain compatible with what the low-level controller can realize."
+  },
+  {
+    "id": "r_policy",
+    "latex": "a\\sim\\pi(\\cdot\\mid s),\\qquad V^\\pi(s)=\\mathbb E_\\pi\\!\\left[\\sum_{t=0}^{\\infty}\\gamma^t r_t\\mid s_0=s\\right]",
+    "notation": [
+      {
+        "symbol": "\\pi",
+        "meaning": "Policy distribution over actions."
+      },
+      {
+        "symbol": "V^\\pi",
+        "meaning": "Expected discounted return under the policy."
+      },
+      {
+        "symbol": "\\gamma,r_t",
+        "meaning": "Discount factor and reward."
+      }
+    ],
+    "definition": "A policy selects actions from observations or states. A value function estimates future return under a policy. Reinforcement learning improves decisions using reward-related objectives. A world model predicts transitions and can support planning without learning a task-specific reward policy.",
+    "example": "A next-state predictor can evaluate the consequence of moving left, but does not by itself decide whether left is desirable. A planner compares consequences against a goal, while a policy directly returns an action.",
+    "role_en": "Policy and value concepts support comparison with goal-conditioned imitation and hierarchical RL baselines. Implementing PPO is not necessary to understand ID-WM core planning."
+  },
+  {
+    "id": "r_offline",
+    "latex": "\\mathcal D_{\\mathrm{train}}\\ne\\mathcal D_{\\mathrm{plan}},\\qquad A^*=\\arg\\min_A J_{\\hat F}(A)",
+    "notation": [
+      {
+        "symbol": "\\mathcal D_{\\mathrm{train}}",
+        "meaning": "Distribution represented by recorded trajectories."
+      },
+      {
+        "symbol": "\\mathcal D_{\\mathrm{plan}}",
+        "meaning": "Distribution induced by planning and execution."
+      },
+      {
+        "symbol": "\\hat F",
+        "meaning": "Learned transition model used for cost evaluation."
+      }
+    ],
+    "definition": "Offline model learning uses previously recorded transitions. Planning may select actions or states poorly covered by those records. Model exploitation occurs when an optimizer prefers predictions that look beneficial because of model error, rather than because the real system can achieve them.",
+    "example": "A predictor trained on ordinary pusher movements may incorrectly predict that an extreme movement crosses a wall. An optimizer can select this error because the imagined endpoint is close to the goal. Checking only random held-out transitions may miss the failure.",
+    "role_en": "ID-WM regularizes high-level noise to discourage extreme search inputs and evaluates closed-loop performance. These measures reduce selected risks without proving universal out-of-distribution reliability."
+  },
+  {
+    "id": "i_overview",
+    "latex": "\\hat s_{i+1}=G_\\theta(\\hat s_i,z_i;\\Delta),\\qquad \\hat s_{t+1}=f_\\phi(s_{t-k:t},a_{t-k:t})",
+    "notation": [
+      {
+        "symbol": "G_\\theta",
+        "meaning": "High-level conditional future-state generator."
+      },
+      {
+        "symbol": "f_\\phi",
+        "meaning": "Low-level action-conditioned forward model."
+      },
+      {
+        "symbol": "z_i,a_t",
+        "meaning": "High-level noise decision and environment action."
+      },
+      {
+        "symbol": "i,t",
+        "meaning": "High-level index and environment/model time index."
+      }
+    ],
+    "definition": "ID-WM is a hierarchical planning method that separates local future-state generation from action realization. A diffusion-based high-level model proposes subgoals. A low-level forward model evaluates candidate action sequences to reach those subgoals. Both are learned from offline transitions; goals are supplied for planning at test time.",
+    "example": "In PushT, a high-level plan proposes a sequence of pusher-and-block configurations. Low-level CEM searches movements that approach the next configuration. After action execution the algorithm reads the actual state and continues according to the planning schedule.",
+    "role_en": "This is the integration point for representations, conditional diffusion, CEM, local dynamics and execution feedback. The experiments concern state/feature-space planning, not a general video game renderer."
+  },
+  {
+    "id": "i_high",
+    "latex": "s^\\prime=G_\\theta(s,z;\\Delta),\\qquad z\\sim\\mathcal N(0,I)",
+    "notation": [
+      {
+        "symbol": "s,s^\\prime",
+        "meaning": "Current state and sampled future state."
+      },
+      {
+        "symbol": "\\Delta",
+        "meaning": "Temporal separation used to define local future targets."
+      },
+      {
+        "symbol": "z",
+        "meaning": "Initial diffusion noise vector."
+      }
+    ],
+    "definition": "The high-level world model learns a conditional distribution of local future states from pairs of states separated in time. It does not directly output the detailed action sequence between those states. Conditional generation can represent multiple plausible future configurations.",
+    "example": "From a state near a doorway, recorded trajectories may include turning left or right. A deterministic average can lie in an invalid region; a conditional generative model can produce distinct future alternatives. The low-level planner must then determine which alternatives it can execute.",
+    "role_en": "The model implements ID-WM local reachability abstraction. Training coverage and low-level planning budget limit what its generated subgoals can reliably support."
+  },
+  {
+    "id": "i_noise",
+    "latex": "\\hat s_{i+1}=G_\\theta(\\hat s_i,z_i;\\Delta),\\qquad Z=(z_0,\\ldots,z_{H_{\\mathrm{hi}}-1})",
+    "notation": [
+      {
+        "symbol": "z_i",
+        "meaning": "Initial noise used by deterministic DDIM for subgoal i."
+      },
+      {
+        "symbol": "Z",
+        "meaning": "High-level decision sequence optimized by CEM."
+      },
+      {
+        "symbol": "H_{\\mathrm{hi}}",
+        "meaning": "Number of high-level transitions in the candidate plan."
+      }
+    ],
+    "definition": "With fixed model parameters, conditioning state and deterministic DDIM settings, initial noise is mapped to a generated future state. Planning can therefore optimize noise vectors as implicit high-level actions. Individual noise coordinates need not have a direct physical interpretation.",
+    "example": "Hold the current state fixed and use two different noise vectors. The generator may produce different local future configurations. CEM evaluates chains of such configurations by goal distance. The selected noise is an input to the generator, not a command sent to a robot actuator.",
+    "role_en": "This connects high-level generative modeling to derivative-free decision search. A regular input space does not guarantee that every generated transition is physically valid."
+  },
+  {
+    "id": "i_low",
+    "latex": "\\mathcal L_{\\mathrm{lo}}=\\|f_\\phi(s_{t-k:t},a_{t-k:t})-s_{t+1}\\|_2,\\quad A^*=\\arg\\min_A\\|\\hat s_{H_{\\mathrm{lo}}}-s^*\\|_2",
+    "notation": [
+      {
+        "symbol": "\\phi",
+        "meaning": "Low-level predictor parameters."
+      },
+      {
+        "symbol": "s^*",
+        "meaning": "Subgoal to realize."
+      },
+      {
+        "symbol": "H_{\\mathrm{lo}}",
+        "meaning": "Local action planning horizon."
+      },
+      {
+        "symbol": "A",
+        "meaning": "Executable action sequence searched at inference."
+      }
+    ],
+    "definition": "The low-level model is trained as an action-conditioned forward predictor using state-action histories. It supports inverse planning by rolling out candidate action sequences and selecting those that reach a specified target. The inverse computation is performed by search rather than requiring a separate direct inverse-dynamics network.",
+    "example": "Given a block subgoal, CEM samples pusher movements. The forward model predicts the final state for each movement sequence. The sequence with the smallest subgoal distance is selected. The displayed training norm follows the paper; squared MSE is a related but distinct objective.",
+    "role_en": "ID-WM uses a Transformer predictor and an MLP action encoder for this level. The model supplies predictions; CEM supplies action selection."
+  },
+  {
+    "id": "i_objective",
+    "latex": "J_{\\mathrm{hi}}=\\|\\hat s_{H_{\\mathrm{hi}}}-s_g\\|_2+\\alpha\\mathcal L_{\\mathrm{reg}}(Z),\\qquad \\mathcal L_{\\mathrm{reg}}=\\mathbb E_j\\!\\left[\\max(0,|z_j|-\\tau)^p\\right]",
+    "notation": [
+      {
+        "symbol": "s_g",
+        "meaning": "Goal representation."
+      },
+      {
+        "symbol": "\\alpha",
+        "meaning": "Regularization weight."
+      },
+      {
+        "symbol": "\\tau,p",
+        "meaning": "Coordinate threshold and penalty exponent."
+      },
+      {
+        "symbol": "j",
+        "meaning": "Noise coordinate index in the regularizer."
+      }
+    ],
+    "definition": "The high-level objective combines predicted terminal distance with a penalty on noise coordinates whose magnitude exceeds a threshold. This discourages optimization from using extreme inputs outside typical training conditions. The penalty is not the exact Gaussian negative log likelihood and does not prove collision avoidance or physical feasibility.",
+    "example": "For threshold two, exponent one and a noise coordinate equal to three, the unaveraged penalty contribution is one. A coordinate of magnitude one contributes zero. Aggregate contributions as defined and multiply by the regularization weight before adding goal distance.",
+    "role_en": "The paper equations (5) and (6) couple goal search to prior-aware noise control. Weight and threshold choices should be evaluated with ablations."
+  },
+  {
+    "id": "i_hierarchy",
+    "latex": "s_0\\to s_1^*\\to\\cdots\\to s_{H_{\\mathrm{hi}}}^*,\\qquad \\hat s_{i+1}^*=G_\\theta(\\hat s_i^*,z_i;\\Delta)",
+    "notation": [
+      {
+        "symbol": "\\Delta",
+        "meaning": "Temporal scale of a high-level local transition."
+      },
+      {
+        "symbol": "H_{\\mathrm{hi}}",
+        "meaning": "Number of subgoals/transitions planned."
+      },
+      {
+        "symbol": "H_{\\mathrm{lo}}",
+        "meaning": "Low-level action horizon, a different quantity."
+      }
+    ],
+    "definition": "Temporal abstraction organizes a task into transitions over a coarser time scale. ID-WM composes local generated states into a subgoal chain and uses local action search to realize its transitions. High-level horizon, local training interval, low-level action horizon and environment frame skip are separate configuration choices.",
+    "example": "A long route through a maze can be specified by several intermediate states, each reachable by local control. Moving all subgoals farther apart can make local execution fail. Structural lookahead can grow through composition without guaranteeing an exact execution duration.",
+    "role_en": "The hierarchy extends local modeling to long-horizon search and is evaluated against flat world-model planning. Compatibility between high- and low-level time scales is essential."
+  },
+  {
+    "id": "i_loop",
+    "latex": "\\mathcal D\\xrightarrow{\\mathrm{training}}(\\theta,\\phi),\\qquad (s_{\\mathrm{now}},s_g;\\theta,\\phi)\\xrightarrow{\\mathrm{planning}}(Z,A)",
+    "notation": [
+      {
+        "symbol": "\\mathcal D",
+        "meaning": "Offline trajectory dataset."
+      },
+      {
+        "symbol": "\\theta,\\phi",
+        "meaning": "Learned model weights, normally fixed during planning."
+      },
+      {
+        "symbol": "Z,A",
+        "meaning": "High-level noise and low-level action decisions."
+      }
+    ],
+    "definition": "Training constructs targets from offline trajectories and updates model parameters. Inference receives current and goal observations and searches decisions with the learned models. Execution then produces new observations for subsequent planning. Candidate count and search iterations are inference budgets, distinct from training epochs and optimization steps.",
+    "example": "Changing the requested goal changes the planning objective and selected decisions. Within the learned environment coverage it need not require retraining both models. Using future test-trajectory states as model input would leak information and invalidate the claimed planning evaluation.",
+    "role_en": "This describes the paper execution dataflow. Implementations must specify context slicing, episode resets, action-block execution, stopping conditions and maximum replans."
+  },
+  {
+    "id": "i_compare",
+    "latex": "\\text{Flat WM: }\\min_A J(A),\\qquad \\text{ID-WM: }\\min_Z J_{\\mathrm{hi}}(Z)\\ \\text{and}\\ \\min_A J_{\\mathrm{lo}}(A)",
+    "notation": [
+      {
+        "symbol": "A",
+        "meaning": "Executable action sequence."
+      },
+      {
+        "symbol": "Z",
+        "meaning": "High-level diffusion-noise decision sequence."
+      },
+      {
+        "symbol": "J_{\\mathrm{hi}},J_{\\mathrm{lo}}",
+        "meaning": "Different objectives and models at the two levels."
+      }
+    ],
+    "definition": "Method comparison should identify prediction targets, decision variables, training data and additional dependencies. DINO-WM supplies action-conditioned feature prediction and planning. ID-WM adds a high-level local-future generator. Diffuser models trajectories with diffusion, while ID-WM uses diffusion for local future-state generation and composes outcomes through search.",
+    "example": "Two methods can both use diffusion yet generate different objects: one generates a complete trajectory, another generates a neighboring state. Their sampling procedures and success criteria cannot be equated from the shared term alone.",
+    "role_en": "These are methodological connections rather than mathematical prerequisites. Hierarchical policy/value baselines provide comparisons with different assumptions about task supervision."
+  },
+  {
+    "id": "i_evaluate",
+    "latex": "\\operatorname{SR}=\\frac{N_{\\mathrm{success}}}{N_{\\mathrm{trials}}},\\qquad \\operatorname{RelativeGain}=\\frac{\\operatorname{SR}_{\\mathrm{new}}-\\operatorname{SR}_{\\mathrm{base}}}{\\operatorname{SR}_{\\mathrm{base}}}",
+    "notation": [
+      {
+        "symbol": "\\operatorname{SR}",
+        "meaning": "Success rate under the specified task definition."
+      },
+      {
+        "symbol": "N_{\\mathrm{trials}}",
+        "meaning": "Number of evaluation trials."
+      },
+      {
+        "symbol": "\\operatorname{SR}_{\\mathrm{base}}",
+        "meaning": "Nonzero baseline success rate."
+      }
+    ],
+    "definition": "Evaluation measures outcomes under specified initial conditions, goals, data and planning budgets. Success rate and object coverage capture different aspects of completion. Ablations alter a selected component while controlling other relevant settings. Relative gain must be distinguished from percentage-point difference.",
+    "example": "A change from twenty percent success to forty-seven percent is a twenty-seven percentage-point increase and a one-hundred-thirty-five percent relative gain. One visually successful rollout does not determine a success rate or establish generalization.",
+    "role_en": "The paper evaluates Wall, PushT and Maze tasks with defined data and goal settings. These results are not direct evidence of physical humanoid or robot-soccer performance."
+  },
+  {
+    "id": "e_python",
+    "latex": "X\\in\\mathbb R^{B\\times T\\times D},\\qquad X_{\\mathrm{in}}=X_{:,0:T-1,:},\\quad X_{\\mathrm{target}}=X_{:,1:T,:}",
+    "notation": [
+      {
+        "symbol": "B,T,D",
+        "meaning": "Batch size, sequence length and feature dimension."
+      },
+      {
+        "symbol": ":",
+        "meaning": "All entries along that array axis in the slicing notation."
+      }
+    ],
+    "definition": "Array programming represents numerical data with explicitly ordered axes. Operations such as indexing, slicing, broadcasting and matrix multiplication must respect those axes and the meaning of each feature. A mathematically valid array operation can still be an incorrect data transformation.",
+    "example": "A batch of eight trajectories, each with ten time steps and four features, has shape eight by ten by four. Adjacent input-target windows each contain nine time steps. Python list addition concatenates lists; numerical array addition adds corresponding elements under its broadcasting rules.",
+    "role_en": "These skills implement trajectory preparation and batched planning. Preserve coordinate, unit and episode-boundary information alongside array shapes."
+  },
+  {
+    "id": "e_torch",
+    "latex": "g=\\nabla_\\theta\\mathcal L(\\theta),\\qquad \\theta\\leftarrow\\operatorname{OptimizerStep}(\\theta,g)",
+    "notation": [
+      {
+        "symbol": "\\mathcal L",
+        "meaning": "Scalar training objective."
+      },
+      {
+        "symbol": "g",
+        "meaning": "Parameter gradient computed by automatic differentiation."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Trainable model parameters."
+      }
+    ],
+    "definition": "A PyTorch training step clears old gradients, computes predictions and loss, differentiates the loss, then updates parameters. Automatic differentiation applies the chain rule to recorded tensor operations; it does not verify target alignment or task semantics. Evaluation mode and disabled gradient recording serve different purposes.",
+    "example": "Calling backward computes or accumulates parameter gradients. The optimizer step subsequently changes weights. If the target trajectory is shifted by an extra time step, the code may run and loss may decrease while fitting the wrong prediction task.",
+    "role_en": "The high-level denoising loss and low-level transition loss can both be implemented with this pattern. GPU activity alone does not demonstrate learning or task success."
+  },
+  {
+    "id": "e_dataset",
+    "latex": "\\mathcal E=\\mathcal E_{\\mathrm{train}}\\sqcup\\mathcal E_{\\mathrm{val}}\\sqcup\\mathcal E_{\\mathrm{test}},\\qquad t+\\Delta<T_{\\mathrm{episode}}",
+    "notation": [
+      {
+        "symbol": "\\mathcal E",
+        "meaning": "Collection of recorded episodes."
+      },
+      {
+        "symbol": "\\sqcup",
+        "meaning": "Disjoint union."
+      },
+      {
+        "symbol": "\\Delta",
+        "meaning": "Future target offset."
+      },
+      {
+        "symbol": "T_{\\mathrm{episode}}",
+        "meaning": "Episode length."
+      }
+    ],
+    "definition": "Trajectory dataset construction divides episodes or other independent collection units before constructing temporal windows. History, action and target indices must align. Windows must not cross resets, and test information must not enter training through near-duplicate adjacent frames or preprocessing fitted on test data.",
+    "example": "If an episode ends at time ninety-nine, a target offset of five is invalid for a window starting at time ninety-eight. Taking frames from the next reset episode creates a transition that never physically occurred.",
+    "role_en": "Both ID-WM levels depend on correct temporal pairing. Dataset manifests and fixed split indices make experiments reproducible."
+  },
+  {
+    "id": "e_reproduce",
+    "latex": "T_{\\mathrm{plan}}=T_{\\mathrm{encode}}+T_{\\mathrm{sample}}+T_{\\mathrm{rollout}}+T_{\\mathrm{score}}+T_{\\mathrm{interface}}",
+    "notation": [
+      {
+        "symbol": "T_{\\mathrm{plan}}",
+        "meaning": "End-to-end latency under a documented timing boundary."
+      },
+      {
+        "symbol": "T_{\\mathrm{rollout}}",
+        "meaning": "Candidate model-evaluation time."
+      },
+      {
+        "symbol": "T_{\\mathrm{interface}}",
+        "meaning": "Included interface overhead; specify whether environment time is excluded."
+      }
+    ],
+    "definition": "An ID-WM reproduction must fix paper version, data splits, environment, model settings and planning budget. Verify startup, prediction quality and closed-loop task outcomes separately. Timing must state which stages are included and account for asynchronous accelerator execution.",
+    "example": "Two planners can have equal candidate counts yet different runtimes because one repeatedly invokes diffusion sampling. Report both task success and measured wall-clock latency. A video played at twenty-four frames per second does not establish a twenty-four-hertz planner.",
+    "role_en": "This paper-specific implementation section guides evidence collection. It distinguishes a runnable training script from completed training and validated reproduction."
+  },
+  {
+    "id": "e_project",
+    "latex": "\\text{Transition fit}\\to\\text{CEM/MPC}\\to\\text{Conditional generation}\\to\\text{Hierarchical ID-WM}",
+    "notation": [
+      {
+        "symbol": "\\text{Transition fit}",
+        "meaning": "Validate a local learned dynamics model."
+      },
+      {
+        "symbol": "\\text{CEM/MPC}",
+        "meaning": "Validate search and feedback with known dynamics."
+      },
+      {
+        "symbol": "\\text{Hierarchical ID-WM}",
+        "meaning": "Integrate high-level noise search with low-level action search."
+      }
+    ],
+    "definition": "These milestones are an implementation plan for ID-WM. Start with isolated state-based components, measure each component, then integrate the hierarchy. Add visual representations after separating dynamics and planning failures. The sequence is a teaching recommendation rather than an author-provided reproduction benchmark.",
+    "example": "First fit synthetic one-step state transitions and check them numerically. Next implement CEM and closed-loop MPC on a small state environment. Then learn conditional future-state samples and search their initial noise. Finally connect high- and low-level models and evaluate unseen start-goal pairs before adding images.",
+    "role_en": "Each milestone should produce saved configurations, held-out metrics and failure trajectories. Completing a simplified teaching environment is not equivalent to reproducing the paper."
+  }
+]

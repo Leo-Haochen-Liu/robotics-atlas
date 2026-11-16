@@ -1,0 +1,297 @@
+{
+  "nodes": [
+    {
+      "id": "rl_mdp",
+      "en": "Markov Decision Processes",
+      "title": "马尔可夫决策过程",
+      "group": "robot_basics",
+      "kind": "concept",
+      "summary": "A Markov Decision Process specifies states, actions, transition probabilities and a reward objective under a Markov assumption.",
+      "prereqs": [
+        "r_state",
+        "p_conditional"
+      ],
+      "latex": "\\mathcal M=(\\mathcal S,\\mathcal A,P,r,\\gamma),\\qquad s_{t+1}\\sim P(\\cdot\\mid s_t,a_t)",
+      "notation": [
+        {
+          "symbol": "\\mathcal S,\\mathcal A",
+          "meaning": "State and action spaces."
+        },
+        {
+          "symbol": "P,r,\\gamma",
+          "meaning": "Transition distribution, reward and discount."
+        }
+      ],
+      "definition": "A Markov Decision Process specifies states, actions, transition probabilities and a reward objective under a Markov assumption. A partially observed setting additionally separates observations from hidden states. The formalism identifies what information the controller has, how decisions affect future states and what return is optimized. A learned transition model and a learned policy are distinct components of this description.",
+      "example": "For a moving cart, state may contain position and velocity while action specifies force. The transition describes its next state, and a reward may penalize target distance. If a camera observes only position, the controller may require a history or state estimate to handle missing velocity.",
+      "role_en": "This provides a shared language for model-based RL and goal planning. Reward-free dynamics learning can still use state/action/transition concepts without learning a task-specific reward policy.",
+      "sources": [
+        {
+          "title": "Primary RL/world-model source",
+          "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+        }
+      ]
+    },
+    {
+      "id": "rl_bellman",
+      "en": "Returns and Bellman Equations",
+      "title": "回报与贝尔曼方程",
+      "group": "robot_basics",
+      "kind": "concept",
+      "summary": "The Bellman equation decomposes expected return into immediate reward and discounted future value.",
+      "prereqs": [
+        "rl_mdp",
+        "p_expectation",
+        "r_policy"
+      ],
+      "latex": "V^\\pi(s)=\\mathbb E_{a,s^\\prime}\\!\\left[r(s,a,s^\\prime)+\\gamma V^\\pi(s^\\prime)\\right]",
+      "notation": [
+        {
+          "symbol": "V^\\pi",
+          "meaning": "Expected discounted return under policy pi."
+        },
+        {
+          "symbol": "s^\\prime",
+          "meaning": "Next state sampled from the transition."
+        },
+        {
+          "symbol": "\\gamma",
+          "meaning": "Discount factor."
+        }
+      ],
+      "definition": "The Bellman equation decomposes expected return into immediate reward and discounted future value. It expresses a consistency relation under a specified policy and transition distribution. Algorithms estimate or enforce this relation using sampled transitions, learned models or dynamic programming. Bootstrapping replaces an unknown future return with a value estimate and can introduce bias when that estimate is inaccurate.",
+      "example": "If a transition gives reward one and leads to a state with estimated value ten under discount 0.9, the one-step target is ten. That target is an estimate, not a directly measured ten-step reward. Changes to the transition or policy change the relevant value equation.",
+      "role_en": "Dreamer-style imagination learning and value-guided planners depend on value targets. ID-WM core goal search does not require a learned value function.",
+      "sources": [
+        {
+          "title": "Primary RL/world-model source",
+          "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+        }
+      ]
+    },
+    {
+      "id": "rl_actorcritic",
+      "en": "Actor–Critic Learning",
+      "title": "演员—评论家学习",
+      "group": "robot_basics",
+      "kind": "concept",
+      "summary": "Actor–critic methods maintain a policy and a value-related estimator.",
+      "prereqs": [
+        "rl_bellman",
+        "d_backprop"
+      ],
+      "latex": "\\mathcal L_V=\\mathbb E[(V_\\psi(s)-y)^2],\\qquad \\max_\\theta\\ \\mathbb E[\\hat A\\log\\pi_\\theta(a\\mid s)]",
+      "notation": [
+        {
+          "symbol": "\\pi_\\theta,V_\\psi",
+          "meaning": "Actor policy and critic value estimate."
+        },
+        {
+          "symbol": "y,\\hat A",
+          "meaning": "Value target and estimated advantage."
+        }
+      ],
+      "definition": "Actor–critic methods maintain a policy and a value-related estimator. The critic estimates return or advantage information; the actor uses that information to improve action selection. The displayed policy-gradient objective is a general teaching form rather than a universal update rule. Model-based variants can generate training trajectories in a learned model, introducing model error alongside value-estimation error.",
+      "example": "An imagined rollout predicts reward for a candidate action. A critic supplies a continuation estimate beyond the short rollout, and the actor update uses the resulting training signal. A successful actor does not by itself prove that the model predicts arbitrary out-of-distribution actions accurately.",
+      "role_en": "This connects latent world-model learning to decision learning in Dreamer and helps interpret policy/critic roles in differentiable controller training.",
+      "sources": [
+        {
+          "title": "Primary RL/world-model source",
+          "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+        }
+      ]
+    },
+    {
+      "id": "rl_ppo",
+      "en": "Proximal Policy Optimization",
+      "title": "近端策略优化",
+      "group": "robot_basics",
+      "kind": "concept",
+      "summary": "PPO is a family of policy-gradient methods that restricts the incentive for large updates relative to a policy used to collect data.",
+      "prereqs": [
+        "rl_actorcritic",
+        "p_likelihood"
+      ],
+      "latex": "\\max_\\theta\\ \\mathbb E\\!\\left[\\min\\left(r_t(\\theta)\\hat A_t,\\operatorname{clip}(r_t(\\theta),1-\\epsilon,1+\\epsilon)\\hat A_t\\right)\\right]",
+      "notation": [
+        {
+          "symbol": "r_t(\\theta)",
+          "meaning": "New-policy to old-policy probability ratio, not reward in this equation."
+        },
+        {
+          "symbol": "\\hat A_t,\\epsilon",
+          "meaning": "Advantage estimate and clipping range."
+        }
+      ],
+      "definition": "PPO is a family of policy-gradient methods that restricts the incentive for large updates relative to a policy used to collect data. The clipped surrogate uses an action-probability ratio and estimated advantage. It is not a hard guarantee on every measure of policy change. Implementation also requires value estimation, data collection, optimization schedules and appropriate action distributions.",
+      "example": "If a new policy greatly increases the probability of a sampled action with positive advantage, clipping limits the surrogate improvement for that sample. The same clipping expression behaves differently for negative advantage. Reusing too much stale data can still invalidate the intended near-on-policy training assumptions.",
+      "role_en": "PPO is a common baseline for robot control and simulation training. Comparing SuperMimic to PPO requires matching data, dynamics access, compute and task metrics rather than assuming a fixed speedup.",
+      "sources": [
+        {
+          "title": "Primary RL/world-model source",
+          "url": "https://spinningup.openai.com/en/latest/algorithms/ppo.html"
+        }
+      ]
+    },
+    {
+      "id": "wm_rssm",
+      "en": "Recurrent State-Space Models",
+      "title": "循环状态空间模型",
+      "group": "generative",
+      "kind": "concept",
+      "summary": "A recurrent state-space model combines deterministic recurrent memory with a stochastic latent variable.",
+      "prereqs": [
+        "g_latent",
+        "d_rnn",
+        "p_conditional"
+      ],
+      "latex": "h_t=f_\\theta(h_{t-1},z_{t-1},a_{t-1}),\\quad z_t\\sim p_\\theta(z_t\\mid h_t),\\quad z_t\\sim q_\\phi(z_t\\mid h_t,o_t)",
+      "notation": [
+        {
+          "symbol": "h_t",
+          "meaning": "Deterministic recurrent state."
+        },
+        {
+          "symbol": "z_t",
+          "meaning": "Stochastic latent state."
+        },
+        {
+          "symbol": "p_\\theta,q_\\phi",
+          "meaning": "Predictive prior and observation-conditioned posterior."
+        }
+      ],
+      "definition": "A recurrent state-space model combines deterministic recurrent memory with a stochastic latent variable. The predictive prior evolves without the current observation, while a posterior uses the observation to infer latent state during training or filtering. Decoders or prediction heads supervise observations and task quantities. Distributional regularization connects posterior inference to the predictive model used for imagined rollouts.",
+      "example": "During training, an image helps infer the current latent state. During an imagined future rollout, that image is unavailable, so the model samples or predicts using its prior. A model that works only with posterior access has not demonstrated autonomous future prediction.",
+      "role_en": "PlaNet and Dreamer use related recurrent latent dynamics to separate observation inference from imagination. Later variants change latent distributions and training details.",
+      "sources": [
+        {
+          "title": "Primary RL/world-model source",
+          "url": "https://arxiv.org/abs/1811.04551"
+        }
+      ]
+    },
+    {
+      "id": "wm_uncertainty",
+      "en": "Predictive Uncertainty and Model Ensembles",
+      "title": "预测不确定性与模型集成",
+      "group": "generative",
+      "kind": "concept",
+      "summary": "Predictive uncertainty can reflect variation in outcomes and uncertainty about a model estimated from finite data.",
+      "prereqs": [
+        "p_variance",
+        "r_offline"
+      ],
+      "latex": "\\operatorname{Var}(Y)=\\mathbb E[\\operatorname{Var}(Y\\mid M)]+\\operatorname{Var}(\\mathbb E[Y\\mid M])",
+      "notation": [
+        {
+          "symbol": "M",
+          "meaning": "Model or conditioning variable in the variance decomposition."
+        },
+        {
+          "symbol": "Y",
+          "meaning": "Predicted quantity."
+        }
+      ],
+      "definition": "Predictive uncertainty can reflect variation in outcomes and uncertainty about a model estimated from finite data. Ensembles compare predictions across several fitted models, but disagreement is not a universal calibrated measure of physical risk. The total-variance identity separates within-condition variation from variation of conditional means; interpreting its components requires an explicit probabilistic model and evaluation.",
+      "example": "Several learned transition models may agree on common training states and disagree on unusual contact states. A planner can penalize disagreement, but confidently shared errors can remain. Calibration requires checking prediction intervals or uncertainty scores against held-out outcomes, including relevant distribution changes.",
+      "role_en": "Uncertainty-aware planning is a reusable extension when offline coverage and model exploitation matter; it is not an assumption that every paper implements an ensemble.",
+      "sources": [
+        {
+          "title": "PETS: Deep Reinforcement Learning in a Handful of Trials",
+          "url": "https://arxiv.org/abs/1805.12114"
+        },
+        {
+          "title": "Mathematics for Machine Learning: Probability",
+          "url": "https://mml-book.github.io/"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "r_state",
+      "to": "rl_mdp",
+      "type": "prereq",
+      "why_en": "Markov Decision Processes uses r state to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "p_conditional",
+      "to": "rl_mdp",
+      "type": "prereq",
+      "why_en": "Markov Decision Processes uses p conditional to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "rl_mdp",
+      "to": "rl_bellman",
+      "type": "prereq",
+      "why_en": "Returns and Bellman Equations uses rl mdp to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "p_expectation",
+      "to": "rl_bellman",
+      "type": "prereq",
+      "why_en": "Returns and Bellman Equations uses p expectation to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "r_policy",
+      "to": "rl_bellman",
+      "type": "prereq",
+      "why_en": "Returns and Bellman Equations uses r policy to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "rl_bellman",
+      "to": "rl_actorcritic",
+      "type": "prereq",
+      "why_en": "Actor–Critic Learning uses rl bellman to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "d_backprop",
+      "to": "rl_actorcritic",
+      "type": "prereq",
+      "why_en": "Actor–Critic Learning uses d backprop to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "rl_actorcritic",
+      "to": "rl_ppo",
+      "type": "prereq",
+      "why_en": "Proximal Policy Optimization uses rl actorcritic to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "p_likelihood",
+      "to": "rl_ppo",
+      "type": "prereq",
+      "why_en": "Proximal Policy Optimization uses p likelihood to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "g_latent",
+      "to": "wm_rssm",
+      "type": "prereq",
+      "why_en": "Recurrent State-Space Models uses g latent to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "d_rnn",
+      "to": "wm_rssm",
+      "type": "prereq",
+      "why_en": "Recurrent State-Space Models uses d rnn to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "p_conditional",
+      "to": "wm_rssm",
+      "type": "prereq",
+      "why_en": "Recurrent State-Space Models uses p conditional to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "p_variance",
+      "to": "wm_uncertainty",
+      "type": "prereq",
+      "why_en": "Predictive Uncertainty and Model Ensembles uses p variance to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    },
+    {
+      "from": "r_offline",
+      "to": "wm_uncertainty",
+      "type": "prereq",
+      "why_en": "Predictive Uncertainty and Model Ensembles uses r offline to define its transition, expectation or learning update; see the receiving formula for the corresponding quantity."
+    }
+  ],
+  "research": []
+}

@@ -1,0 +1,783 @@
+[
+  {
+    "id": "r_state",
+    "title": "状态、观察与动作",
+    "en": "State / Observation / Action",
+    "group": "robot",
+    "level": 2,
+    "prereqs": [
+      "m_vectors"
+    ],
+    "summary": "先决定模型到底看见什么、能够做什么。",
+    "explain": "想象桌上有一个圆形推杆和一个 T 形积木。摄像头拍到的 RGB 图像是观察；推杆位置、积木位置和朝向可以组成状态；给推杆的位移指令是动作。图像可能看不到被遮挡的部分，单张图像也通常不能确定速度。因此观察不一定包含未来预测所需的全部信息。工程上要把每个量的单位、坐标系和采样时刻写清楚。ID-WM 文中的 s 还可以表示编码后的特征，不能默认它一定是完整物理状态。",
+    "formula": "oₜ = h(xₜ)；sₜ = enc(oₜ)；aₜ ∈ A",
+    "symbols": "x：物理状态；o：传感器观察；s：模型表示；a：动作；t：环境时刻",
+    "role": "ID-WM 的输入、目标和两个层级必须采用兼容的状态表示。",
+    "pitfall": "把一张图片当成完全可观测的物理状态。",
+    "quiz": "两张位置相同、运动方向相反的球的照片，未来会相同吗？",
+    "answer": "不会。速度不同；增加历史帧或测量速度可以消除这种歧义。",
+    "sources": [
+      {
+        "title": "Spinning Up：状态、动作与策略",
+        "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_frames",
+    "title": "坐标系与刚体变换",
+    "en": "Reference Frames / SE(3)",
+    "group": "robot",
+    "level": 3,
+    "prereqs": [
+      "m_matrix",
+      "m_vectors"
+    ],
+    "summary": "同一个位置，必须说明相对谁测量。",
+    "explain": "你站在机器人前面说“球在左边”，机器人自己的左边可能和你的左边相反。坐标系给一组数赋予几何意义。旋转矩阵把方向从一个坐标系转换到另一个，平移向量处理原点不同。对二维 PushT 先学平面位置和角度即可；三维机器人再扩展到旋转矩阵与四元数。角度在 −π 与 π 附近数值不连续，直接相减可能给出错误的距离。",
+    "formula": "pᴬ = Rᴬᴮ pᴮ + tᴬᴮ",
+    "symbols": "pᴮ：B 系中的坐标；Rᴬᴮ：把 B 系向量转到 A 系；tᴬᴮ：B 原点在 A 系中的位置",
+    "role": "机器人迁移扩展；保证状态距离与训练标签的坐标一致。",
+    "pitfall": "混用世界坐标速度和机身坐标速度。",
+    "quiz": "机器人转身后世界坐标固定的球，机身坐标是否会变化？",
+    "answer": "会。坐标表达改变，球本身可以没有移动。",
+    "sources": [
+      {
+        "title": "Modern Robotics 在线教材",
+        "url": "https://modernrobotics.northwestern.edu/"
+      }
+    ]
+  },
+  {
+    "id": "r_dynamics",
+    "title": "运动学与动力学",
+    "en": "Kinematics / Dynamics",
+    "group": "robot",
+    "level": 3,
+    "prereqs": [
+      "r_state",
+      "m_derivative"
+    ],
+    "summary": "姿态几何和受力后的时间变化是不同问题。",
+    "explain": "已知胳膊每个关节的角度，求手在哪里，是运动学。已知当前角度、速度和电机力矩，求下一刻怎么动，是动力学。先用小车理解：位置变化由速度决定，速度变化由加速度决定。学习型世界模型把这些变化从数据中拟合出来，也必须面对接触、摩擦和未观察变量。机器人全身模型的困难常来自碰撞与接触切换，而不只是坐标有三个维度。",
+    "formula": "q̇ = v；v̇ = a；xₜ₊₁ = F(xₜ,uₜ)",
+    "symbols": "q：位置或关节角；v：速度；u：输入；F：一步动力学",
+    "role": "解释 ID-WM 为什么需要动作条件的低层模型；G1 扩展需单独处理动力学和接触。",
+    "pitfall": "用静态姿态重建成功证明动态控制成功。",
+    "quiz": "知道关节角就能唯一预测下一刻姿态吗？",
+    "answer": "通常不能，还需要速度、动作、接触等相关信息。",
+    "sources": [
+      {
+        "title": "Modern Robotics 在线教材",
+        "url": "https://modernrobotics.northwestern.edu/"
+      },
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      }
+    ]
+  },
+  {
+    "id": "r_markov",
+    "title": "马尔可夫性与历史窗口",
+    "en": "Markov Property / Context",
+    "group": "robot",
+    "level": 3,
+    "prereqs": [
+      "r_state",
+      "p_conditional"
+    ],
+    "summary": "保留足够的信息，才能预测未来。",
+    "explain": "如果当前状态已经包含位置和速度，理想小车的下一步通常不需要知道昨天在哪里，这就是马尔可夫建模的直觉。若只给位置，过去两帧的位置差能够帮助估计速度。用历史窗口是补充信息的一种办法，但有限窗口不保证完全恢复隐藏状态。ID-WM 低层读取过去若干状态和动作；工程上要检查序列切片是否跨越重置边界，以及目标帧有没有意外进入输入。",
+    "formula": "p(sₜ₊₁ | s₀:ₜ,a₀:ₜ) ≈ p(sₜ₊₁ | sₜ₋ₖ:ₜ,aₜ₋ₖ:ₜ)",
+    "symbols": "k：历史窗口长度；p：条件概率",
+    "role": "理解低层 Transformer 的上下文输入和部分可观测问题。",
+    "pitfall": "把增加历史长度当成必然解决遮挡和隐藏变量。",
+    "quiz": "只有球位置的观测，最少还想补什么信息？",
+    "answer": "速度，或足以估计速度的相邻历史观测；噪声下可能需要更长窗口。",
+    "sources": [
+      {
+        "title": "Spinning Up：状态、动作与策略",
+        "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_feedback",
+    "title": "开环、反馈与执行闭环",
+    "en": "Open-loop / Feedback",
+    "group": "robot",
+    "level": 3,
+    "prereqs": [
+      "r_dynamics"
+    ],
+    "summary": "边走边看，修正预测误差。",
+    "explain": "闭眼按预先写好的路线走十步，是开环；走一步看一次位置再调整，是反馈。模型误差和外界扰动会让开环轨迹逐渐偏离。反馈控制把实际观察重新带回决策。重新规划也有成本：频率更高可能反应更及时，却需要更多计算。ID-WM 规划出的子目标不能当成已经真实到达的状态，执行后仍要读取环境实际观察。",
+    "formula": "aₜ = π(o₀:ₜ,g)",
+    "symbols": "π：决策规则；g：目标；o₀:ₜ：到当前的观察历史",
+    "role": "连接世界模型的想象轨迹和真实环境执行。",
+    "pitfall": "把模型想象成功等同于机器人执行成功。",
+    "quiz": "有风的小车按预测动作走偏了，下一步应从哪个状态规划？",
+    "answer": "从重新测得或估计的实际状态出发。",
+    "sources": [
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_goal",
+    "title": "目标、代价与约束",
+    "en": "Goal / Cost / Constraint",
+    "group": "robot",
+    "level": 3,
+    "prereqs": [
+      "m_norm",
+      "r_state"
+    ],
+    "summary": "告诉规划器什么算好，什么必须满足。",
+    "explain": "推积木时，可以用最终位置误差表示离目标还有多远；但位置近并不保证积木角度对，推杆也可能没有到位。代价是越小越好的评分，约束是必须满足的限制，例如动作幅度上限。给不同维度加权相当于规定厘米误差与角度误差的重要性。学习表征里的欧氏距离是否对应任务成功，需要用真实任务指标检验。",
+    "formula": "J(A)=d(ŝ_H,s_g)+λΣₜ‖aₜ‖²；a_min ≤ aₜ ≤ a_max",
+    "symbols": "A：动作序列；H：预测长度；d：状态距离；λ：权重；此式为教学通用形式",
+    "role": "论文规划使用目标距离与高层噪声正则；不要将教学动作代价误认为原文公式。",
+    "pitfall": "忽略量纲，直接把米和弧度的数值相加。",
+    "quiz": "位置重合但积木朝向相反，能直接判定成功吗？",
+    "answer": "不能。成功判据必须包含任务要求的朝向或覆盖率等量。",
+    "sources": [
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_rollout",
+    "title": "多步推演与误差累积",
+    "en": "Rollout / Compounding Error",
+    "group": "robot",
+    "level": 4,
+    "prereqs": [
+      "r_dynamics",
+      "ml_loss"
+    ],
+    "summary": "把自己的预测再喂回模型，错误会传播。",
+    "explain": "一步预测误差很小的模型，连续预测很多步仍可能失败。比如每步位置偏一点，下一步就从偏掉的位置继续计算；接触是否发生还可能因此改变，造成更大的分岔。下面的不等式是示意：局部误差 δ 与系统对输入误差的放大程度 L 共同决定长期误差。它说明为什么必须测多步推演，不能只汇报一步均方误差。分层与反馈都能改变问题结构，但不会使误差消失。",
+    "formula": "eₜ₊₁ ≤ L eₜ + δ （局部误差传播示意）",
+    "symbols": "e：状态预测误差；L：局部敏感程度；δ：单步模型误差",
+    "role": "ID-WM 解决长时域规划的核心动机之一。",
+    "pitfall": "认为一步误差降低一半就保证任务成功率翻倍。",
+    "quiz": "什么时候小误差会导致完全不同的后续轨迹？",
+    "answer": "接触切换、障碍物边界或不稳定动力学附近，误差可能被显著放大。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      },
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      }
+    ]
+  },
+  {
+    "id": "r_search",
+    "title": "搜索空间与组合爆炸",
+    "en": "Search Space / Complexity",
+    "group": "robot",
+    "level": 4,
+    "prereqs": [
+      "r_goal",
+      "p_sampling"
+    ],
+    "summary": "动作选项和时间长度一起放大搜索难度。",
+    "explain": "假设每一步只选左、右、上、下四个动作，十步就有 4¹⁰ 种序列。连续动作不是有限枚举，但维数仍随时域增长：每步 d 个数，H 步共有 H×d 个待优化量。穷举很快不可行，于是使用随机采样、优化与层级抽象。分层让高层先选择几个中途地点，低层处理局部控制；它减少某些搜索困难，同时增加了子目标可执行性这一要求。",
+    "formula": "离散候选数 bᴴ；连续决策维数 H·dₐ",
+    "symbols": "b：每步候选动作数；H：步数；dₐ：动作维数",
+    "role": "解释 ID-WM 高层搜索噪声、低层搜索动作的设计动机。",
+    "pitfall": "把搜索算法最坏情况复杂度直接当成实际运行时间。",
+    "quiz": "每步 2 维动作、规划 20 步，序列含多少标量？",
+    "answer": "40 个标量；这还没有算候选轨迹数量。",
+    "sources": [
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_shooting",
+    "title": "随机射击规划",
+    "en": "Random Shooting",
+    "group": "robot",
+    "level": 4,
+    "prereqs": [
+      "r_search",
+      "r_rollout"
+    ],
+    "summary": "先随机试很多条计划，再选最好的一条。",
+    "explain": "你可以先生成 100 条不同的推杆动作序列，在模型里分别试跑，给每条末端误差打分，再执行最优的一条。这就是随机射击的基本流程。它不需要对模型求导，便于处理难以微分的代价，但好轨迹在大空间里可能极少。它是理解 CEM 的起点：CEM 会利用当前较好的样本，调整下一轮从哪里采样。",
+    "formula": "A* = argmin_{A⁽ⁱ⁾, i=1…N} J(A⁽ⁱ⁾)",
+    "symbols": "N：候选数；A⁽ⁱ⁾：第 i 个动作序列；J：代价",
+    "role": "CEM 规划的算法先修。",
+    "pitfall": "采样最多的方案必然在所有任务中最优。",
+    "quiz": "随机射击与训练模型的参数更新是否相同？",
+    "answer": "不同。射击在推理时挑选动作，训练改变模型权重。",
+    "sources": [
+      {
+        "title": "CEM 与梯度规划原论文",
+        "url": "https://arxiv.org/abs/2004.08763"
+      },
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      }
+    ]
+  },
+  {
+    "id": "r_cem",
+    "title": "交叉熵方法：采样—精英—重拟合",
+    "en": "Cross-Entropy Method / CEM",
+    "group": "robot",
+    "level": 5,
+    "prereqs": [
+      "r_shooting",
+      "p_gaussian",
+      "p_expectation"
+    ],
+    "summary": "让下一轮尝试集中在较好的候选附近。",
+    "explain": "先给每个待优化数设置均值和标准差，从高斯分布采一批候选。用模型推演并打分，留下代价最低的一小批“精英”。用精英计算新的均值和方差，再重复。比如推杆应向右移动约 0.3，第一轮散布在各方向，精英集中在向右附近，下一轮就在该区域密集探索。方差过早变小会失去探索，因此实现常设方差下界或平滑更新。CEM 的名字与交叉熵有关，实际循环可以先从采样和拟合学会。",
+    "formula": "μ_new = mean(A_elite)；σ²_new = mean((A_elite−μ_new)²)",
+    "symbols": "μ、σ²：逐维采样参数；elite：按代价选出的精英；优化变量也可换成 Z",
+    "role": "ID-WM 高层和低层均采用 CEM；高层优化 Z，低层优化 A。",
+    "pitfall": "把 CEM 当成神经网络的一种层或把精英比例当成功率。",
+    "quiz": "高层与低层的 CEM 分别在修改什么？",
+    "answer": "高层修改生成子目标的噪声序列 Z；低层修改可执行动作序列 A。",
+    "sources": [
+      {
+        "title": "CEM 与梯度规划原论文",
+        "url": "https://arxiv.org/abs/2004.08763"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_mpc",
+    "title": "模型预测控制",
+    "en": "Model Predictive Control / MPC",
+    "group": "robot",
+    "level": 5,
+    "prereqs": [
+      "r_cem",
+      "r_feedback"
+    ],
+    "summary": "预测一段未来，执行后用新观察重新规划。",
+    "explain": "从当前状态出发，规划未来 H 步，执行一部分，再观察实际状态，重复这一循环，就是 MPC 的核心。它把有限计算预算持续分配给当前问题。经典实现常只执行第一个动作，实际系统也可以按块执行；ID-WM 的算法按子目标执行低层计划，再更新实际状态，完成一轮高层计划后重新规划。阅读论文时要明确其执行和重规划粒度，不能把所有 MPC 都画成同一种逐帧循环。",
+    "formula": "观察 → 预测候选 → 最小化代价 → 执行动作块 → 再观察",
+    "symbols": "H：每次前看的有限时域；动作块长度影响闭环反应与算力",
+    "role": "ID-WM 的推理总体框架。",
+    "pitfall": "认为每次重新规划意味着重新训练网络。",
+    "quiz": "环境执行后的状态偏离想象，MPC 为什么还有机会修正？",
+    "answer": "后续规划从新观察出发，而不一直沿用旧的预测起点。",
+    "sources": [
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_reach",
+    "title": "可达性与流形",
+    "en": "Reachability / Manifold",
+    "group": "robot",
+    "level": 5,
+    "prereqs": [
+      "r_dynamics",
+      "r_goal"
+    ],
+    "summary": "看起来接近的状态，可能无法在短时间内到达。",
+    "explain": "墙两侧的点在直线距离上很近，但机器人必须绕过门才能过去。可达性询问在动力学、动作限制和时间预算下能否到达。流形可以先理解为高维空间中符合约束的一片结构：二维地图里的合法点避开墙，机械臂合法姿态还受关节和接触限制。训练数据只能提供有限覆盖，生成模型学到的可达结构是一种经验近似，不能提供所有状态的物理可达保证。",
+    "formula": "R_Δ(s) = {s′：存在允许的动作使 s 在 Δ 步内到 s′}",
+    "symbols": "R_Δ：Δ 步可达集合；Δ：时间预算；此式为概念定义",
+    "role": "高层模型学习局部未来状态分布；低层仍需验证子目标能否实现。",
+    "pitfall": "把每个生成样本都视为有形式证明的可达状态。",
+    "quiz": "隔墙两个点距离短，为什么仍需多个子目标？",
+    "answer": "合法路径受障碍物和动力学约束，需要绕行。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      },
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      }
+    ]
+  },
+  {
+    "id": "r_policy",
+    "title": "策略、价值与强化学习",
+    "en": "Policy / Value / RL",
+    "group": "robot",
+    "level": 4,
+    "prereqs": [
+      "r_state",
+      "p_expectation"
+    ],
+    "summary": "理解规划方法与直接策略方法的关系。",
+    "explain": "策略把观察变成动作，价值函数评估一个状态或动作在长期上有多好。强化学习通常利用奖励改进策略。世界模型可以作为强化学习中的一部分，也可以独立用于目标规划。ID-WM 从无奖励标注的离线转移数据学习动力学，再在测试时按目标距离规划；理解 MDP 很有用，但读懂主方法不必先实现 PPO。价值学习这一分支帮助理解论文对 HIQL 等基线的比较。",
+    "formula": "a~π(a|s)；Vπ(s)=E[Σₜ γᵗ rₜ | s₀=s]",
+    "symbols": "π：策略；V：价值；r：奖励；γ：折扣因子",
+    "role": "背景比较分支；ID-WM 核心不依赖先训练一个任务奖励策略。",
+    "pitfall": "把 world model、策略和价值函数混成同一个输出动作的网络。",
+    "quiz": "预测下一状态的网络是否已经是一条策略？",
+    "answer": "没有。还需要根据目标选择动作的机制，例如规划器。",
+    "sources": [
+      {
+        "title": "Spinning Up：状态、动作与策略",
+        "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "r_offline",
+    "title": "离线数据、分布外与模型利用",
+    "en": "Offline Data / OOD / Model Exploitation",
+    "group": "robot",
+    "level": 5,
+    "prereqs": [
+      "ml_split",
+      "ml_generalization",
+      "r_rollout"
+    ],
+    "summary": "规划器会主动寻找模型可能出错的地方。",
+    "explain": "离线数据是事先记录的状态—动作—后续状态，不会自动覆盖规划器日后提出的所有尝试。一个模型可能在常见动作上准确，却对极端动作产生“穿墙”的假象。优化器只看到代价，可能偏爱这些假象，这叫模型利用。测试时目标没见过，不等于所有物理环境都能泛化。可以通过动作限制、噪声正则、分布外检查、多步真实执行验证来减轻问题，但不能将这些措施当作完备保证。",
+    "formula": "训练分布 D_train ≠ 规划诱导分布 D_plan",
+    "symbols": "OOD：out of distribution，分布外；分布差异不一定能只用一个数概括",
+    "role": "解释 ID-WM 为什么给噪声设置正则、为什么要做真实环境闭环评测。",
+    "pitfall": "把测试目标未见过说成无需数据也能处理任意环境。",
+    "quiz": "为什么模型误差可能在优化后反而更严重？",
+    "answer": "优化器会选择预测有利的区域，其中可能包含训练覆盖不足导致的系统性错误。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_overview",
+    "title": "ID-WM：全方法总览",
+    "en": "Implicit Dynamics World Models",
+    "group": "idwm",
+    "level": 8,
+    "prereqs": [
+      "i_high",
+      "i_low",
+      "i_hierarchy",
+      "i_objective",
+      "i_loop"
+    ],
+    "summary": "先规划去哪里，再求怎么走过去。",
+    "explain": "继续用推 T 形积木的例子：只看终点，连续搜索几百步动作非常困难。ID-WM 用一个高层模型从当前状态生成若干局部未来可能性，规划器挑出一串中途状态。随后低层模型帮助搜索真正能够推动推杆的动作。执行后读取真实状态继续规划。高层和低层是两个模型，规划器是搜索过程；它们共同形成算法。核心学习目标来自离线转移数据，推理时才给出具体目标。这里的世界模型主要服务于状态与表征空间规划，不能将其等同于大型视频生成游戏。",
+    "formula": "高层：ŝᵢ₊₁=Gθ(ŝᵢ,zᵢ)；低层：ŝₜ₊₁=fφ(sₜ₋ₖ:ₜ,aₜ₋ₖ:ₜ)",
+    "symbols": "θ、φ：两个模型参数；z：高层隐式决策；a：环境动作；i：高层索引；t：低层时间",
+    "role": "终点节点：把数学、生成建模与控制三条主线汇合。",
+    "pitfall": "把高层生成的目标直接发送给电机。",
+    "quiz": "给出当前状态与目标后，哪些量在推理时被搜索，哪些一般固定？",
+    "answer": "搜索高层 Z 和低层 A；训练好的模型权重一般固定。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_high",
+    "title": "高层：生成局部未来状态",
+    "en": "Conditional Reachable-State Generator",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "g_conditional",
+      "g_ddim",
+      "r_reach"
+    ],
+    "summary": "给定当前状态，学习附近有哪些未来可能。",
+    "explain": "把离线轨迹中间隔一定时间的两个状态组成训练对：前一个作为条件，后一个作为生成目标。高层模型学习的是数据所呈现的局部未来分布，不需要为每一种未来同时标注完整动作方案。拿“去左门”和“去右门”来说，可能存在多个合理未来；生成模型能表达这种多峰性。模型输出未来状态，低层随后负责寻找动作。在训练覆盖之外，生成状态仍可能不可达。",
+    "formula": "s′ = Gθ(s,z;Δ)，z~N(0,I)",
+    "symbols": "s：当前状态；s′：生成未来状态；Δ：训练状态对的时间间隔；z：初始噪声",
+    "role": "论文 §3.1.1 的高层世界模型。",
+    "pitfall": "把 Δ 当作空间直线距离；忽略 frameskip。",
+    "quiz": "高层为什么不一定需要输入每一步电机动作？",
+    "answer": "它学习局部未来状态的条件分布；具体动作由低层规划补上。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_noise",
+    "title": "噪声为何能当高层动作",
+    "en": "Implicit High-Level Action",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "g_ddim",
+      "p_gaussian",
+      "r_search"
+    ],
+    "summary": "固定采样器后，选择噪声就是选择一种未来。",
+    "explain": "DDIM 在固定模型、条件与确定性设置下，把初始噪声 z 映射到一个未来状态。于是高层决策可以写成“选哪个 z”。z 的某一维通常没有“向左几厘米”这样的人工含义，它是生成器的输入坐标。规划器采样并比较多组噪声，以找到朝目标推进的子目标链。高斯输入空间规则，不代表输出物理轨迹一定平滑安全；模型和优化分布仍需要验证。",
+    "formula": "z → 确定性 DDIM → Gθ(s,z)；Z=(z₀,…,z_Hhi−1)",
+    "symbols": "Z：高层整段决策；Hhi：子目标数；确定性依赖 DDIM 采样设置",
+    "role": "将生成模型与 CEM 搜索连接起来的关键概念。",
+    "pitfall": "把噪声直接当环境控制信号，或说改一个维度必定向固定方向移动。",
+    "quiz": "同一 z 换一个当前状态 s，未来一定相同吗？",
+    "answer": "不相同。当前状态是条件，映射结果依赖它。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_low",
+    "title": "低层：前向预测支持逆向求解",
+    "en": "Forward Model for Inverse Planning",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "d_transformer",
+      "r_rollout",
+      "r_cem"
+    ],
+    "summary": "网络负责预测，搜索负责找到动作。",
+    "explain": "训练数据里有历史状态、动作以及真实下一状态。低层网络先学“做这个动作会怎样”。推理时，给定一个子目标，CEM 提出多条动作序列，低层网络把每条序列向前滚动，比较末端离子目标多远。选择代价低的序列就完成了逆向求解。这里没有必要再假设存在一个直接输入两状态就输出动作的逆动力学网络。原文的一步损失写为 L2 范数；常见教学 MSE 要与其写法区分。",
+    "formula": "训练 Llo=‖fφ(s_history,a_history)−s_next‖₂；规划 A*=argmin_A ‖ŝ_Hlo−s*‖₂",
+    "symbols": "φ：低层参数；s*：子目标；Hlo：低层时域；A：动作序列",
+    "role": "论文 §3.1.2 和 §3.2；低层采用 Transformer 与 MLP 动作编码器。",
+    "pitfall": "看到论文说 inverse dynamics 就画成一个单独的直接逆模型。",
+    "quiz": "没有目标时，这个低层前向模型能输出下一状态吗？",
+    "answer": "给定历史与候选动作就可以；目标用于动作搜索代价。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_objective",
+    "title": "高层目标与噪声正则",
+    "en": "Planning Objective / Noise Regularization",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "i_noise",
+      "r_goal",
+      "ml_regularization"
+    ],
+    "summary": "既追目标，也避免搜索跑到先验极端区域。",
+    "explain": "如果高层只追求模型预测的终点距离，CEM 可能找到幅值异常的噪声，让生成器给出训练中罕见的“捷径”。原文加入超阈值惩罚：逐个噪声分量看绝对值，超过 τ 的部分才受罚，再按幂次 p 汇总。这个操作限制极端分量，不等同于计算整个高维高斯的精确密度，也不提供轨迹安全证明。α 是权衡系数，设为零就关闭这项惩罚，适合用消融研究其作用。",
+    "formula": "Jhi=‖ŝ_Hhi−s_g‖₂+α Lreg；Lreg=mean_i[max(0,|zᵢ|−τ)^p]",
+    "symbols": "α：正则权重；τ：分量阈值；p：惩罚幂次；i：噪声分量索引",
+    "role": "论文式 (5)(6)；连接高斯先验、优化与分布外风险。",
+    "pitfall": "把逐分量阈值惩罚说成精确高斯负对数似然。",
+    "quiz": "τ=2、p=1 时，分量 z=3 的惩罚贡献是多少？",
+    "answer": "max(0,3−2)=1；还要按定义平均，再乘 α。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_hierarchy",
+    "title": "时间抽象与子目标链",
+    "en": "Temporal Abstraction / Subgoal Chain",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "r_reach",
+      "r_search",
+      "i_high"
+    ],
+    "summary": "用若干短跳组合一条长路。",
+    "explain": "一条长任务可以先拆成“走到门口—穿门—绕过桌子—到达目标”。每一跳必须在低层能力范围内，高层才能获得有意义的抽象。ID-WM 用高层生成器反复产生后续状态，组成子目标链；CEM 评价整条链最终与目标的距离。高层子目标数、训练时间间隔、低层规划长度、底层环境 frameskip 是不同量。更多层级可以增大结构上的前看范围，但也增加不匹配和计算开销。",
+    "formula": "s₀ → s₁* → … → s_Hhi*；局部跳跃时间尺度 Δ",
+    "symbols": "Hhi：高层子目标数量；Δ：局部时间抽象；Hlo：低层动作步数",
+    "role": "解释长程组合能力以及对单层世界模型的改变。",
+    "pitfall": "把 Hhi×Δ 当成任意情况下精确的真实执行时长。",
+    "quiz": "为什么不能把所有子目标都放得越远越好？",
+    "answer": "生成误差和低层可执行性会恶化，远子目标可能无法在预算内到达。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_loop",
+    "title": "训练与推理的完整数据流",
+    "en": "Training / Inference Dataflow",
+    "group": "idwm",
+    "level": 8,
+    "prereqs": [
+      "i_high",
+      "i_low",
+      "i_objective",
+      "r_mpc"
+    ],
+    "summary": "逐项追踪哪些数据用于更新权重，哪些用于选择动作。",
+    "explain": "训练阶段：收集或读取离线轨迹，按 episode 划分数据，构造相隔 Δ 的状态对训练高层；构造历史状态动作和下一状态标签训练低层。视觉版本还要编码图像。推理阶段：读取当前状态与目标，CEM 在高层噪声中搜索子目标链，再在低层动作空间搜索执行方案；真实执行后读回状态。搜索候选数量是推理预算，训练 epoch 是训练预算，两者不可混用。完整实现还要处理失败、最大重规划次数和到达目标后的停止条件。",
+    "formula": "离线 D → (θ,φ)；在线 (s_now,s_goal,θ,φ) → 搜索(Z,A) → 环境",
+    "symbols": "D：轨迹数据；θ、φ：学习参数；Z、A：推理决策变量",
+    "role": "论文算法 1 / 2 的工程解释。",
+    "pitfall": "在推理演示中悄悄使用目标之后的真实轨迹作为上下文。",
+    "quiz": "换一个目标，是否必然需要重新训练两个模型？",
+    "answer": "方法设计是在已有环境动力学覆盖下进行目标条件规划，不必为每个新目标重新训练。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "i_compare",
+    "title": "方法之间的延续与改变",
+    "en": "DINO-WM / Diffuser / Hierarchy",
+    "group": "idwm",
+    "level": 7,
+    "prereqs": [
+      "v_dinowm",
+      "g_ddpm",
+      "r_policy"
+    ],
+    "summary": "比较预测对象、搜索变量与额外依赖。",
+    "explain": "DINO-WM 提供用视觉特征学习动作条件动力学并规划的思路。ID-WM 延续低层世界模型，再加上局部未来生成器来做长程组织。Diffuser 学生成轨迹的分布；ID-WM 把扩散重点放在局部可达未来，把长程组合交给搜索。分层强化学习也使用子目标或技能，但常配合策略和价值函数。比较时应逐一问：网络预测状态、动作还是整条轨迹？规划搜索什么？是否依赖任务奖励、技能或价值？这些是方法关系，不能画成数学先修的实线。",
+    "formula": "单层：搜索 A；ID-WM：高层搜 Z + 低层搜 A",
+    "symbols": "A：动作序列；Z：高层噪声序列；不同方法的训练数据与假设也需对齐",
+    "role": "方法沿革地图；此节点提供思路比较，不主张所有相关工作都是直接祖先。",
+    "pitfall": "用论文发表先后推断必然的因果继承。",
+    "quiz": "Diffuser 和 ID-WM 都用扩散，它们生成的对象必须相同吗？",
+    "answer": "不相同，轨迹生成与局部未来状态生成是不同建模选择。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      },
+      {
+        "title": "Diffuser 原论文",
+        "url": "https://proceedings.mlr.press/v162/janner22a.html"
+      }
+    ]
+  },
+  {
+    "id": "i_evaluate",
+    "title": "读实验：成功率、覆盖率与消融",
+    "en": "Evaluation / Ablation / Evidence",
+    "group": "idwm",
+    "level": 8,
+    "prereqs": [
+      "ml_split",
+      "r_offline",
+      "i_loop"
+    ],
+    "summary": "从公平实验判断方法到底解决了什么。",
+    "explain": "PushT 的积木覆盖率描述物体与目标形状重合程度；成功率还受具体任务完成条件影响。不同目标分布、训练数据增强、规划预算会改变结果，所以不能只摘最高数字。消融实验保持其他条件，移除高层、正则或改变时域，帮助判断贡献。也要看随机种子、失败轨迹与推理时间。原文的 Wall、PushT 和 Maze 证据不能直接当作 G1 全身控制或真实足球实验。",
+    "formula": "SR=成功次数/试验次数；ΔSR=SR_method−SR_baseline",
+    "symbols": "SR：成功率；百分点差与相对提升比需分别标注",
+    "role": "对应论文 §4 及附录；建立准确的论文结论边界。",
+    "pitfall": "把相对提升 135% 写成提高 135 个百分点。",
+    "quiz": "基线 20%、新方法 47%，相对提升与百分点差各是多少？",
+    "answer": "差 27 个百分点；相对提升 (47−20)/20=135%。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "e_python",
+    "title": "Python 与数组编程",
+    "en": "Python / NumPy",
+    "group": "engineering",
+    "level": 2,
+    "prereqs": [
+      "m_vectors"
+    ],
+    "summary": "把数学中的一串数落实为可检查的数据。",
+    "explain": "从列表、循环、函数开始，再学习数组的形状和逐元素运算。比如一批轨迹形状是 [B,T,D]：B 条片段、每条 T 个时间步、每步 D 个特征。切片 x[:, :-1] 与 x[:, 1:] 构造相邻训练对。广播可以减少循环，但也会悄悄把两个错误形状组合成一个巨大的数组；每一步都写出预期形状。代码应从小的、可以手算的样本起步，而不是直接训练巨型模型。",
+    "formula": "X.shape=(B,T,D)；input=X[:,:−1]；target=X[:,1:]",
+    "symbols": "B：批大小；T：时间长度；D：特征维数",
+    "role": "实现数据处理、CEM 候选批次与学习循环的基础。",
+    "pitfall": "把 Python 列表相加误认为向量数值相加。",
+    "quiz": "[2,3] 的列表加法与数组逐元素加法有什么区别？",
+    "answer": "列表加法拼接；数值数组可以得到逐元素和，须确认对象类型。",
+    "sources": [
+      {
+        "title": "PyTorch 官方入门",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+      }
+    ]
+  },
+  {
+    "id": "e_torch",
+    "title": "PyTorch 训练最小闭环",
+    "en": "Tensors / Autograd / Optimizer",
+    "group": "engineering",
+    "level": 4,
+    "prereqs": [
+      "e_python",
+      "d_backprop"
+    ],
+    "summary": "数据进入模型，损失反传，优化器更新。",
+    "explain": "一个训练步的顺序是清梯度、前向计算、算损失、反向传播、更新参数。自动微分记录张量运算图，替你应用链式法则，但不会自动检查标签含义。推理时设置 eval 并在适合场景关闭梯度；训练中的 dropout 等行为可能不同。先在几十个合成样本上验证损失下降和预测正确，再使用真实轨迹。看到 GPU 在运行只能说明计算启动，不能说明模型学会任务。",
+    "formula": "optimizer.zero_grad(); loss=model_loss(batch); loss.backward(); optimizer.step()",
+    "symbols": "loss：标量目标；grad：参数梯度；optimizer：更新规则",
+    "role": "可以实现低层监督训练与扩散噪声预测训练。",
+    "pitfall": "遗漏清梯度、把目标张量对齐错一步、在训练中误 detach。",
+    "quiz": "loss.backward() 是否已经修改了模型权重？",
+    "answer": "通常只计算/累积梯度；optimizer.step() 才更新参数。",
+    "sources": [
+      {
+        "title": "PyTorch 官方入门",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+      }
+    ]
+  },
+  {
+    "id": "e_dataset",
+    "title": "轨迹切片与防止时间泄漏",
+    "en": "Episode Dataset / Leakage",
+    "group": "engineering",
+    "level": 4,
+    "prereqs": [
+      "e_python",
+      "ml_split",
+      "r_markov"
+    ],
+    "summary": "同一段未来不能通过另一扇门进入训练输入。",
+    "explain": "轨迹数据有连续时间相关性。如果把所有帧打乱再分训练测试，邻近的几乎相同画面可能同时出现，两边指标会虚高。通常按 episode、场景或采集批次划分，再在各集合内部切片。每个窗口应含历史、动作与未来标签，并排除跨 reset 的窗口。高层状态对还要保证 Δ 没越过 episode 末尾。保存随机种子和索引清单，便于后来复现同一评价。",
+    "formula": "episode → train/val/test → window(history,action,target)",
+    "symbols": "reset：一次任务结束后的重置；泄漏：测试信息进入训练流程",
+    "role": "两个世界模型共用的数据质量基础。",
+    "pitfall": "按帧随机切分就宣称跨轨迹泛化。",
+    "quiz": "跨 episode 取最后一帧与下一 episode 第一帧作转移会怎样？",
+    "answer": "制造不存在的动力学跳跃，模型会学到错误标签。",
+    "sources": [
+      {
+        "title": "PyTorch 官方入门",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "e_reproduce",
+    "title": "复现预算、计时与消融",
+    "en": "Reproducibility / Profiling",
+    "group": "engineering",
+    "level": 6,
+    "prereqs": [
+      "e_torch",
+      "e_dataset",
+      "i_evaluate"
+    ],
+    "summary": "把可运行、训练完成与任务达标分开记录。",
+    "explain": "复现先锁定论文版本、数据、环境、硬件和配置。先做小规模训练启动检查，再检验模型预测，最后运行闭环目标任务。推理计时要写清是否包含编码、CEM 多轮、模型 rollout 和环境交互；GPU 异步执行还需要同步后测量。对比算法时尽量对齐数据与搜索预算，并分别报告成功率和延迟。一次可视化成功只是一例，不能替代多种初始目标和种子的统计。",
+    "formula": "总延迟≈编码+候选采样+模型推演+评分+执行接口",
+    "symbols": "各项应使用同一计时口径；GPU 小时、墙钟时间、控制频率是不同指标",
+    "role": "从读懂公式走向可审查的算法工程实现。",
+    "pitfall": "用视频播放帧率冒充模型实际生成/规划速度。",
+    "quiz": "代码能启动、loss下降、闭环成功，这三个证明相同吗？",
+    "answer": "不同，分别证明启动、优化发生、特定条件下任务执行成功。",
+    "sources": [
+      {
+        "title": "PyTorch 官方入门",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+      },
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      }
+    ]
+  },
+  {
+    "id": "e_project",
+    "title": "分阶段实践与验收",
+    "en": "Implementation Milestones",
+    "group": "engineering",
+    "level": 8,
+    "prereqs": [
+      "e_reproduce",
+      "i_overview"
+    ],
+    "summary": "用四个小项目逐层验证自己真的学会了。",
+    "explain": "项目一：用 NumPy 拟合二维小车的一步变化，手算并核对梯度。项目二：在带障碍的小平面环境实现随机射击、CEM 和闭环 MPC，记录失败与计算量。项目三：在离线转移上学习条件未来分布，验证多模态采样，再把 DDIM 初始噪声交给 CEM 搜索。项目四：连接高低层，先在状态输入上复现分层闭环，再单独增加视觉编码。每步都保存数据划分、配置、轨迹和指标；教学小车成功不能标成原论文复现成功。",
+    "formula": "手算 → 合成数据 → 状态控制 → 分层生成规划 → 视觉扩展",
+    "symbols": "阶段输出：代码、固定测试集、指标与失败样本，而非仅阅读完成勾选",
+    "role": "课程出口；把知识转换成工程能力的建议路线，非作者官方课程。",
+    "pitfall": "从零基础直接跳到视觉大模型，把失败原因混在一起。",
+    "quiz": "为什么先用状态输入再加视觉？",
+    "answer": "先隔离动力学与规划问题，再检验表征带来的额外误差。",
+    "sources": [
+      {
+        "title": "ID-WM 原文 §3 / 附录",
+        "url": "https://arxiv.org/html/2610.42146v1"
+      },
+      {
+        "title": "PyTorch 官方入门",
+        "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+      },
+      {
+        "title": "MIT Underactuated Robotics：轨迹优化",
+        "url": "https://underactuated.mit.edu/trajopt.html"
+      }
+    ]
+  }
+]

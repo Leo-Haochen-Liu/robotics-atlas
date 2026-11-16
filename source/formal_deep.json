@@ -1,0 +1,798 @@
+[
+  {
+    "id": "d_tensor",
+    "title": "张量与形状",
+    "latex": "X\\in\\mathbb{R}^{B\\times T\\times d},\\quad W\\in\\mathbb{R}^{d\\times h},\\quad Y=XW+b\\in\\mathbb{R}^{B\\times T\\times h}",
+    "notation": [
+      {
+        "symbol": "B",
+        "meaning": "Number of sequences in a batch."
+      },
+      {
+        "symbol": "T",
+        "meaning": "Number of time steps per sequence."
+      },
+      {
+        "symbol": "d,h",
+        "meaning": "Input and output feature dimensions."
+      }
+    ],
+    "definition": "A tensor is an array indexed along a specified number of axes. Its shape records the length of each axis; the interpretation of an axis is part of the data definition. In sequence learning, batch, time, and feature axes have different meanings even when two axes happen to have the same length. A linear layer can act on the final feature axis while preserving the batch and time axes. Broadcasting, reshaping, and transposition change how values participate in operations and must be checked explicitly.",
+    "example": "A batch of eight trajectory windows, each containing five observations with six state features, has shape \\(8\\times5\\times6\\). Multiplying its last axis by a weight matrix of shape \\(6\\times16\\) gives an output of shape \\(8\\times5\\times16\\). Exchanging the time and feature axes changes the modeled operation; it does not merely rename two dimensions. Write down the meaning of all three axes before using a Transformer.",
+    "role_en": "ID-WM conditions its low-level predictor on a history of states and actions. Tensor shapes specify which entries belong to a trajectory, time step, state feature, or action embedding, and make input-label alignment errors visible."
+  },
+  {
+    "id": "d_linear",
+    "title": "全连接层与仿射变换",
+    "latex": "y=Wx+b,\\quad W\\in\\mathbb{R}^{h\\times d},\\quad x\\in\\mathbb{R}^{d},\\quad \\#\\theta=hd+h",
+    "notation": [
+      {
+        "symbol": "x,y",
+        "meaning": "Input and output column vectors."
+      },
+      {
+        "symbol": "W,b",
+        "meaning": "Trainable weight matrix and bias vector."
+      },
+      {
+        "symbol": "d,h",
+        "meaning": "Input and output dimensions."
+      }
+    ],
+    "definition": "An affine layer forms each output as a weighted sum of all input components plus a bias. The weight matrix defines a linear transformation; the bias allows a nonzero output at zero input. A fully connected layer is dense because every output can depend on every input component. Composing affine layers without nonlinear activations still produces one affine transformation. Feature dimensions and vector orientation determine whether a code implementation multiplies by a matrix or its transpose.",
+    "example": "Let \\(x=(2,3)^\\top\\), \\(W=(4,-1)\\), and \\(b=2\\). The scalar output is \\(4\\cdot2-3+2=7\\). A layer with two input features and three outputs has six weights and three biases. Applying the same learned layer at every time step changes feature coordinates consistently across the sequence; it does not yet mix information between time steps.",
+    "role_en": "The low-level ID-WM action encoder uses an MLP built from affine layers and nonlinearities. Attention projections and feed-forward sublayers also use affine transformations to produce compatible feature dimensions. These projections are learned from offline data."
+  },
+  {
+    "id": "d_activation",
+    "title": "激活函数与非线性",
+    "latex": "\\operatorname{ReLU}(x)=\\max(0,x),\\qquad \\sigma(x)=\\frac{1}{1+e^{-x}}",
+    "notation": [
+      {
+        "symbol": "x",
+        "meaning": "A scalar pre-activation; vector inputs are usually processed elementwise."
+      },
+      {
+        "symbol": "\\sigma",
+        "meaning": "The logistic sigmoid function."
+      }
+    ],
+    "definition": "An activation function transforms a layer output, usually component by component. A nonlinear activation allows a composition of layers to represent functions that cannot be reduced to one affine transformation. The function also determines local derivatives used during training. ReLU is zero for negative inputs and linear for positive inputs; sigmoid maps real inputs into the interval between zero and one. The choice affects approximation, gradient propagation, numerical behavior, and the interpretation of outputs.",
+    "example": "For inputs \\((-2,0,3)\\), ReLU returns \\((0,0,3)\\). Sigmoid maps zero to \\(1/2\\), but this value is a probability only when a modeling objective gives it that interpretation. Combining affine layers with nonlinear activations can approximate a transition with different behavior before and after contact, although successful learning still requires suitable data and training.",
+    "role_en": "Nonlinear transformations let the action encoder, transition predictor, and high-level denoiser represent more than affine relationships. Activation functions are components of these learned maps, not separate planning algorithms. They act within learned model components."
+  },
+  {
+    "id": "d_mlp",
+    "title": "多层感知机",
+    "latex": "h=\\phi(W_1x+b_1),\\qquad \\hat y=W_2h+b_2",
+    "notation": [
+      {
+        "symbol": "\\phi",
+        "meaning": "An elementwise nonlinear activation."
+      },
+      {
+        "symbol": "W_1,W_2,b_1,b_2",
+        "meaning": "Trainable parameters."
+      },
+      {
+        "symbol": "h",
+        "meaning": "Hidden feature vector."
+      }
+    ],
+    "definition": "A multilayer perceptron is a composition of affine layers and nonlinear activations. Hidden layers transform the input into intermediate features, and the output layer maps those features to the requested prediction. The number of hidden layers measures depth, while their feature dimensions measure width. Both affect parameter count and computation. An MLP does not intrinsically know which input components represent time, spatial neighbors, or joints; the data representation and learning objective supply that structure.",
+    "example": "An action \\(a_t\\in\\mathbb{R}^{2}\\) can pass through a hidden layer with 32 units and an output layer with 64 features. The resulting action embedding can be combined with a state representation for sequence prediction. A three-hidden-layer MLP with width 2048 is shallow in depth but contains millions of parameters, so layer count alone does not measure model size.",
+    "role_en": "ID-WM uses an MLP to encode raw actions before the low-level Transformer processes them. MLPs also provide a general basis for understanding feed-forward sublayers and compact robot dynamics predictors; their exact task depends on the input and target."
+  },
+  {
+    "id": "d_backprop",
+    "title": "反向传播",
+    "latex": "\\frac{\\partial L}{\\partial w}=\\frac{\\partial L}{\\partial\\hat y}\\frac{\\partial\\hat y}{\\partial w},\\qquad \\hat y=wx,\\quad L=(\\hat y-y)^2",
+    "notation": [
+      {
+        "symbol": "L",
+        "meaning": "Scalar training objective."
+      },
+      {
+        "symbol": "w",
+        "meaning": "A trainable scalar parameter."
+      },
+      {
+        "symbol": "x,y,\\hat y",
+        "meaning": "Input, target, and prediction."
+      }
+    ],
+    "definition": "Backpropagation evaluates derivatives of a scalar objective with respect to intermediate variables and parameters by applying the chain rule in reverse computational order. The forward pass computes outputs and the loss; the reverse pass propagates their derivative contributions. When a variable influences the loss through multiple paths, those contributions are added. Backpropagation computes gradients but does not itself choose a learning rate or update parameters. Automatic differentiation implements this bookkeeping for supported operations.",
+    "example": "For \\(x=2\\), \\(y=5\\), and \\(w=1\\), the prediction is 2 and the loss is 9. The gradient is \\(2(wx-y)x=-12\\). A gradient step with learning rate 0.1 changes the weight to 2.2, producing prediction 4.4 and loss 0.36. This hand calculation checks the signs and scaling of a minimal training implementation. Check the input and output shapes before comparing the result with a numerical implementation.",
+    "role_en": "Both the low-level transition model and the high-level noise predictor require training gradients. ID-WM uses CEM for test-time planning, so its action and noise search does not require differentiating the planning objective through the models."
+  },
+  {
+    "id": "d_sgd",
+    "title": "小批量随机梯度下降",
+    "latex": "\\theta_{k+1}=\\theta_k-\\eta\\frac{1}{B}\\sum_{i=1}^{B}\\nabla_\\theta\\ell_i(\\theta_k)",
+    "notation": [
+      {
+        "symbol": "\\theta_k",
+        "meaning": "Model parameters at training iteration k."
+      },
+      {
+        "symbol": "B",
+        "meaning": "Mini-batch size."
+      },
+      {
+        "symbol": "\\eta",
+        "meaning": "Learning rate."
+      },
+      {
+        "symbol": "\\ell_i",
+        "meaning": "Loss of one training example."
+      }
+    ],
+    "definition": "Mini-batch stochastic gradient descent updates parameters using the mean gradient of a subset of training examples. A batch provides a computationally manageable estimate of the dataset objective gradient. Sampling, shuffling, batch size, and learning rate affect gradient variability and optimization. One update is not one full pass through the dataset; an epoch denotes a data pass under a specified sampling procedure. Samples from trajectories can be correlated, so dataset construction remains important even when gradients are averaged.",
+    "example": "If three examples produce scalar gradients 2, 4, and 6, their mean is 4. With learning rate 0.05, the parameter decreases by 0.2. If an implementation sums gradients instead of averaging, the same learning rate produces a larger update. For sequential data, draw windows without crossing episode boundaries and compare training and validation errors after multiple updates.",
+    "role_en": "ID-WM learns from offline trajectory windows using supervised losses. Mini-batch optimization explains how many transition pairs or noisy future states contribute to one parameter update, independently of how many candidates CEM evaluates during planning."
+  },
+  {
+    "id": "d_adam",
+    "title": "动量与 Adam",
+    "latex": "\\begin{aligned}m_k&=\\beta_1m_{k-1}+(1-\\beta_1)g_k,\\\\v_k&=\\beta_2v_{k-1}+(1-\\beta_2)g_k^2,\\\\\\hat m_k&=\\frac{m_k}{1-\\beta_1^k},\\quad\\hat v_k=\\frac{v_k}{1-\\beta_2^k},\\\\\\theta_k&=\\theta_{k-1}-\\eta\\frac{\\hat m_k}{\\sqrt{\\hat v_k}+\\epsilon}.\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "g_k",
+        "meaning": "Current parameter gradient; powers and division are elementwise."
+      },
+      {
+        "symbol": "m_k,v_k",
+        "meaning": "Moving averages of gradients and squared gradients."
+      },
+      {
+        "symbol": "\\beta_1,\\beta_2",
+        "meaning": "Decay coefficients between zero and one."
+      },
+      {
+        "symbol": "\\epsilon",
+        "meaning": "Small positive numerical constant."
+      }
+    ],
+    "definition": "Adam maintains moving estimates of the first and second moments of each gradient component. Bias correction compensates for estimates initially set to zero, and the corrected second moment scales the update per parameter. Momentum averages gradient directions across updates; adaptive scaling changes their magnitudes. Adam is a training optimizer rather than a neural layer. Its convergence behavior still depends on the objective and hyperparameters, and it does not guarantee good generalization or remove the need for validation.",
+    "example": "At the first step with zero-initialized statistics, bias correction gives \\(\\hat m_1=g_1\\) and \\(\\hat v_1=g_1^2\\). Ignoring epsilon, a nonzero scalar gradient therefore gives an update approximately equal to the learning rate times its sign. Later updates depend on the full moving history. Weight decay settings must be read separately because Adam and decoupled AdamW treat regularization differently.",
+    "role_en": "This node supports reading world-model training configurations. Adam changes neural network weights from training losses; CEM changes candidate noise or action distributions while trained weights remain fixed. These two optimization roles should be kept distinct."
+  },
+  {
+    "id": "d_norm",
+    "title": "层归一化",
+    "latex": "\\operatorname{LN}(x)_i=\\gamma_i\\frac{x_i-\\mu}{\\sqrt{v+\\epsilon}}+\\beta_i,\\quad\\mu=\\frac1d\\sum_{j=1}^{d}x_j,\\quad v=\\frac1d\\sum_{j=1}^{d}(x_j-\\mu)^2",
+    "notation": [
+      {
+        "symbol": "x\\in\\mathbb{R}^{d}",
+        "meaning": "Feature vector for one token."
+      },
+      {
+        "symbol": "\\mu,v",
+        "meaning": "Mean and variance across that token’s selected feature dimensions."
+      },
+      {
+        "symbol": "\\gamma,\\beta",
+        "meaning": "Learned per-feature scale and shift."
+      }
+    ],
+    "definition": "Layer normalization standardizes a selected set of features within each example or token, then applies learned scale and shift. Unlike batch normalization, it does not estimate those normalization statistics across different batch examples. The normalized dimensions must be specified by the implementation. LayerNorm is commonly placed before or after attention and feed-forward sublayers, and this placement changes the block structure. It does not replace dataset-level state normalization or guarantee a meaningful distance between task states.",
+    "example": "For a token \\(x=(1,3)\\), the feature mean is 2 and the variance is 1. With unit scale, zero shift, and negligible epsilon, the normalized vector is \\((-1,1)\\). Another token is normalized with its own feature statistics. This is different from using the same training-set mean and variance to normalize all measured robot velocities.",
+    "role_en": "LayerNorm is a standard component when interpreting Transformer blocks. ID-WM also uses state or feature distances, where input scaling is a separate issue. The architecture diagram must distinguish pre-normalization examples from the original post-normalization Transformer."
+  },
+  {
+    "id": "d_residual",
+    "title": "残差连接",
+    "latex": "y=x+F_\\theta(x),\\qquad \\frac{\\partial y}{\\partial x}=I+\\frac{\\partial F_\\theta}{\\partial x}",
+    "notation": [
+      {
+        "symbol": "x,y",
+        "meaning": "Input and output with compatible shapes."
+      },
+      {
+        "symbol": "F_\\theta",
+        "meaning": "Learned sublayer."
+      },
+      {
+        "symbol": "I",
+        "meaning": "Identity derivative through the direct path."
+      }
+    ],
+    "definition": "A residual connection adds a sublayer output to a direct copy of its input. Both terms must have compatible shapes, or an explicit projection must align them. This structure allows a sublayer to learn a correction relative to the input and creates a direct derivative path during backpropagation. Residual addition is not concatenation. It also differs from a physical dynamics model that explicitly predicts state increments, although both use an additive mathematical form.",
+    "example": "For \\(x=(2,1)\\) and \\(F(x)=(0.3,-0.2)\\), residual addition returns \\((2.3,0.8)\\). A sublayer producing five features cannot be added directly to a three-feature input. In an attention block with model dimension 64, attention is projected back to 64 features before the residual sum, preserving the representation size across the block. Check the input and output shapes before comparing the result with a numerical implementation.",
+    "role_en": "Residual connections link attention and feed-forward outputs inside a Transformer. They help explain the repeated block used by the low-level predictor. Their architectural role should not be confused with the high-level and low-level hierarchy of ID-WM."
+  },
+  {
+    "id": "d_cnn",
+    "title": "卷积神经网络",
+    "latex": "Y_{i,j,o}=b_o+\\sum_{u,v,c}K_{u,v,c,o}X_{i+u,j+v,c}",
+    "notation": [
+      {
+        "symbol": "X,Y",
+        "meaning": "Input and output feature maps."
+      },
+      {
+        "symbol": "K",
+        "meaning": "Shared local kernel weights."
+      },
+      {
+        "symbol": "i,j,u,v,c,o",
+        "meaning": "Spatial positions, kernel offsets, input channel, and output channel."
+      }
+    ],
+    "definition": "A convolutional layer applies a shared local filter at multiple spatial positions. Weight sharing and restricted neighborhoods provide an inductive bias appropriate for grid-like signals such as images. Stacking layers increases the spatial region that can influence a feature. Many machine-learning libraries implement cross-correlation under the name convolution, matching the displayed indexing without a flipped kernel. Padding, stride, channels, and dilation determine output shape and receptive field.",
+    "example": "A single-channel 5 by 5 image processed by a 3 by 3 filter with stride one and no padding gives a 3 by 3 output. The filter uses nine shared weights rather than a separate weight for every location. A filter can respond to a local edge pattern, while later layers combine responses. These properties differ from self-attention, where token-to-token weights depend on the current input.",
+    "role_en": "CNNs are an optional visual architecture comparison. They help distinguish local weight sharing from Transformer attention, but ID-WM’s state-based predictor does not require a CNN. The visual feature route discussed here uses DINOv2 features from a ViT backbone."
+  },
+  {
+    "id": "d_rnn",
+    "title": "循环神经网络",
+    "latex": "h_t=\\tanh(W_xx_t+W_hh_{t-1}+b),\\qquad \\hat y_t=W_oh_t+b_o",
+    "notation": [
+      {
+        "symbol": "x_t,h_t",
+        "meaning": "Input and recurrent hidden state at time t."
+      },
+      {
+        "symbol": "W_x,W_h,W_o",
+        "meaning": "Shared trainable matrices."
+      },
+      {
+        "symbol": "\\hat y_t",
+        "meaning": "Prediction derived from the hidden state."
+      }
+    ],
+    "definition": "A recurrent neural network processes a sequence by repeatedly updating a hidden state from the current input and the previous hidden state. The same update parameters are reused at every time step. This recurrence compresses earlier information into a fixed-size representation and imposes a sequential computation order. Training recurrent networks requires accounting for how shared parameters affect multiple steps. Long-range dependencies can be difficult when repeated derivatives shrink or grow strongly.",
+    "example": "Given position observations at times zero, one, and two, an RNN can update its hidden state after each observation and use that state to predict the next position. The hidden state need not equal physical velocity; it is learned under the prediction objective. Reordering the observations generally changes the result because each hidden update depends on the preceding state.",
+    "role_en": "RNNs are a comparison branch for sequence models and partially observed control. ID-WM uses a Transformer-based low-level predictor, so implementing an RNN is useful background rather than a required stage before understanding the method."
+  },
+  {
+    "id": "d_bptt",
+    "title": "时间反向传播",
+    "latex": "\\frac{\\partial L}{\\partial h_t}=\\frac{\\partial\\ell_t}{\\partial h_t}+\\left(\\frac{\\partial h_{t+1}}{\\partial h_t}\\right)^\\top\\frac{\\partial L}{\\partial h_{t+1}},\\qquad L=\\sum_t\\ell_t",
+    "notation": [
+      {
+        "symbol": "h_t",
+        "meaning": "Hidden state or differentiable state at time t."
+      },
+      {
+        "symbol": "\\ell_t",
+        "meaning": "Loss contribution at one time step."
+      },
+      {
+        "symbol": "L",
+        "meaning": "Total sequence loss."
+      }
+    ],
+    "definition": "Backpropagation through time applies reverse-mode differentiation to a computational graph unrolled across sequence steps. A state influences the current loss and later losses through later states, so all relevant derivative contributions must be accumulated. Shared parameters receive contributions from each of their uses. Truncating the backward graph limits memory and computation but also limits which temporal dependencies contribute gradients. The method applies to recurrent networks and other differentiable multi-step computations.",
+    "example": "For \\(h_{t+1}=wh_t\\) with \\(h_0=1\\), two steps give \\(h_2=w^2\\). A loss on \\(h_2\\) receives parameter-gradient contributions from both uses of \\(w\\). Treating the second step as independent would miss one contribution. In learned differentiable dynamics, longer rollouts similarly create longer derivative paths and can amplify modeling errors. Check the input and output shapes before comparing the result with a numerical implementation.",
+    "role_en": "This is optional background for comparing differentiable policy learning, including SuperMimic, with ID-WM. ID-WM’s CEM planner evaluates candidate rollouts without using gradients through the complete planning computation. Its relevance here is comparative rather than a required planning operation."
+  },
+  {
+    "id": "d_lstm",
+    "title": "长短期记忆网络",
+    "latex": "\\begin{aligned}i_t&=\\sigma(W_i[x_t;h_{t-1}]+b_i),\\\\f_t&=\\sigma(W_f[x_t;h_{t-1}]+b_f),\\\\o_t&=\\sigma(W_o[x_t;h_{t-1}]+b_o),\\\\\\tilde c_t&=\\tanh(W_c[x_t;h_{t-1}]+b_c),\\\\c_t&=f_t\\odot c_{t-1}+i_t\\odot\\tilde c_t,\\quad h_t=o_t\\odot\\tanh(c_t).\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "i_t,f_t,o_t",
+        "meaning": "Input, forget, and output gate vectors."
+      },
+      {
+        "symbol": "c_t,h_t",
+        "meaning": "Cell state and hidden state."
+      },
+      {
+        "symbol": "\\odot",
+        "meaning": "Elementwise multiplication."
+      }
+    ],
+    "definition": "An LSTM is a recurrent architecture with a cell state and input, forget, and output gates. The gates determine how the cell combines retained state with new candidate information and how it contributes to the hidden output. The additive cell update provides a different gradient path from a simple recurrent update and can help learn longer temporal dependencies. The actual memory duration is learned and data-dependent; an LSTM does not automatically preserve every past observation.",
+    "example": "In one cell dimension, let the previous cell value be 2, the forget gate 0.9, the input gate 0.1, and the candidate value 0.5. The updated cell is \\(0.9\\cdot2+0.1\\cdot0.5=1.85\\). The hidden output additionally depends on the output gate and the hyperbolic tangent. All these quantities are computed anew from the input and prior hidden state.",
+    "role_en": "LSTMs are an optional branch for recurrent robot policies and sequence prediction. They are not a mathematical prerequisite for attention or Transformer blocks, and they are not the low-level architecture reported by ID-WM."
+  },
+  {
+    "id": "d_softmax",
+    "title": "Softmax 与温度",
+    "latex": "p_i=\\frac{\\exp(z_i/T)}{\\sum_{j=1}^{n}\\exp(z_j/T)},\\qquad T>0",
+    "notation": [
+      {
+        "symbol": "z_i",
+        "meaning": "Real-valued score or logit."
+      },
+      {
+        "symbol": "T",
+        "meaning": "Positive temperature."
+      },
+      {
+        "symbol": "p_i",
+        "meaning": "Nonnegative normalized weight, summing to one."
+      }
+    ],
+    "definition": "Softmax converts a finite set of real scores into positive weights that sum to one. Adding the same constant to every score leaves the output unchanged; subtracting the maximum score is therefore a useful numerical stabilization. Temperature controls how concentrated the weights are: a smaller positive temperature makes the distribution more concentrated around larger scores. Softmax output has a probabilistic interpretation when the model defines one, but attention also uses it simply as normalized aggregation weights.",
+    "example": "For logits \\((0,\\log2)\\) and temperature one, exponentiation gives \\((1,2)\\), so softmax returns \\((1/3,2/3)\\). With equal logits, both weights are one half regardless of their common value. An attention query uses such weights to combine value vectors; it does not select exactly one value unless a separate hard selection is performed.",
+    "role_en": "Softmax normalizes attention scores and the teacher/student output distributions used in DINO. It explains both weighted token aggregation and distribution matching; those applications share the function but assign different meanings to its outputs."
+  },
+  {
+    "id": "d_attention",
+    "title": "查询、键和值",
+    "latex": "\\operatorname{Attention}(Q,K,V)=\\operatorname{softmax}\\!\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V",
+    "notation": [
+      {
+        "symbol": "Q\\in\\mathbb{R}^{n_q\\times d_k}",
+        "meaning": "Query matrix."
+      },
+      {
+        "symbol": "K\\in\\mathbb{R}^{n_k\\times d_k}",
+        "meaning": "Key matrix."
+      },
+      {
+        "symbol": "V\\in\\mathbb{R}^{n_k\\times d_v}",
+        "meaning": "Value matrix; output shape is n_q by d_v."
+      },
+      {
+        "symbol": "\\operatorname{softmax}",
+        "meaning": "Applied across keys for each query."
+      }
+    ],
+    "definition": "Scaled dot-product attention computes query-key compatibility scores, normalizes them across keys, and uses the resulting weights to combine value vectors. Queries specify which output positions request information; keys determine how strongly inputs match those requests; values contain the information being aggregated. Query and key feature dimensions must match, and the number of keys must equal the number of values. Scaling by the square root of key dimension moderates score magnitude under common initialization assumptions.",
+    "example": "With one query and two keys, suppose the scaled scores are \\((0,\\log3)\\). The normalized weights are \\((1/4,3/4)\\). If the associated scalar values are 2 and 6, the output is \\(2/4+18/4=5\\). For vector values, the same two weights multiply each vector component. The weights are computed from queries and keys, not from the values alone.",
+    "role_en": "The low-level Transformer can aggregate information across state/action history using attention. Understanding its matrix dimensions is necessary before interpreting multiple heads, causal masking, and the placement of attention in a Transformer block."
+  },
+  {
+    "id": "d_self_attention",
+    "title": "自注意力与因果遮罩",
+    "latex": "\\begin{aligned}Q&=XW^Q,\\quad K=XW^K,\\quad V=XW^V,\\\\A&=\\operatorname{softmax}\\!\\left(\\frac{QK^\\top}{\\sqrt{d_k}}+M\\right),\\\\M_{ij}&=\\begin{cases}0,&j\\leq i,\\\\-\\infty,&j>i.\\end{cases}\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "X",
+        "meaning": "Input token sequence."
+      },
+      {
+        "symbol": "M",
+        "meaning": "Additive causal mask, applied before softmax."
+      },
+      {
+        "symbol": "A_{ij}",
+        "meaning": "Weight from query position i to key position j."
+      }
+    ],
+    "definition": "Self-attention obtains queries, keys, and values from the same input sequence through separate learned projections. A causal mask prevents an output at one time position from using later positions. Forbidden scores are assigned negative infinity before softmax, yielding zero normalized weight in the ideal mathematical expression. A mask constrains information access; it does not by itself encode absolute time or guarantee that a dataset pipeline has no other source of future leakage.",
+    "example": "For three time-ordered tokens, the first output may use only token one, the second may use tokens one and two, and the third may use all three. A future state accidentally included as an extra feature in token one would still leak information despite this attention mask. Causal architecture and correct history-target construction must therefore be checked separately.",
+    "role_en": "The low-level predictor uses past states and actions to predict later states. Causal reasoning helps inspect which tokens may influence each prediction. Positional or temporal encoding supplies order information separately from the mask’s visibility constraints."
+  },
+  {
+    "id": "d_multihead",
+    "title": "多头注意力",
+    "latex": "\\begin{aligned}H_r&=\\operatorname{Attention}(QW_r^Q,KW_r^K,VW_r^V),\\\\\\operatorname{MHA}(Q,K,V)&=\\operatorname{Concat}(H_1,\\ldots,H_h)W^O.\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "h",
+        "meaning": "Number of heads."
+      },
+      {
+        "symbol": "W_r^Q,W_r^K\\in\\mathbb{R}^{d_{\\mathrm{model}}\\times d_k}",
+        "meaning": "Per-head query and key projections."
+      },
+      {
+        "symbol": "W_r^V\\in\\mathbb{R}^{d_{\\mathrm{model}}\\times d_v}",
+        "meaning": "Per-head value projection."
+      },
+      {
+        "symbol": "W^O\\in\\mathbb{R}^{hd_v\\times d_{\\mathrm{model}}}",
+        "meaning": "Projection after concatenation."
+      }
+    ],
+    "definition": "Multi-head attention performs several attention computations with different learned projections, concatenates their outputs, and projects the result to the model feature dimension. Each head can compute different input-dependent relationships, although there is no guarantee that heads specialize into human-interpretable roles. The number of heads differs from the number of Transformer layers. In a common configuration, the per-head query/key and value dimensions divide the model dimension, preserving approximately fixed total attention width.",
+    "example": "For model dimension 64 and eight heads, a common choice gives each head eight query/key features and eight value features. Each head returns eight output features per query. Concatenation produces 64 features, and the output projection maps them back to model dimension 64 before residual addition. Eight heads inside each of six blocks do not mean eight or 48 sequential network layers.",
+    "role_en": "ID-WM reports eight heads and a six-layer low-level predictor for its state-based configuration. The architecture diagram should highlight multi-head attention inside a block, then show its separate per-head projections, attention computations, concatenation, and output projection."
+  },
+  {
+    "id": "d_position",
+    "title": "位置编码与时间编码",
+    "latex": "\\begin{aligned}Z_t&=E(x_t)+P_t,\\\\P_{t,2i}&=\\sin\\!\\left(t/10000^{2i/d}\\right),\\\\P_{t,2i+1}&=\\cos\\!\\left(t/10000^{2i/d}\\right).\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "E(x_t)",
+        "meaning": "Content embedding for token t."
+      },
+      {
+        "symbol": "P_t",
+        "meaning": "Position or time encoding of compatible feature dimension."
+      },
+      {
+        "symbol": "d",
+        "meaning": "Encoding dimension; i indexes sine/cosine feature pairs."
+      }
+    ],
+    "definition": "Position encoding supplies information about where a token occurs in a sequence or spatial arrangement. Content-only self-attention is permutation-equivariant, so order must be represented when the task depends on it. The displayed sinusoidal encoding is the original Transformer choice; learned absolute embeddings and relative position methods are alternatives. Temporal encoding may represent sequence index, elapsed physical time, or a diffusion noise level. Those quantities have different meanings and must be specified rather than treated as interchangeable.",
+    "example": "Two trajectories may contain the same observed positions in opposite order, giving opposite velocity information. Content embeddings alone do not distinguish their ordering in an order-sensitive prediction. Adding different position encodings associates each observation with its sequence index. A physical time interval of 0.1 seconds is not equivalent to index one if sampling intervals vary; that application may require encoding measured elapsed time.",
+    "role_en": "This is a reusable component for temporal Transformers, spatial ViT patches, and diffusion-step conditioning. It belongs as a separate concept because several architectures use position or time information, not only the Transformer block immediately downstream."
+  },
+  {
+    "id": "d_transformer",
+    "title": "Transformer 模块",
+    "latex": "\\begin{aligned}X_1&=\\operatorname{LN}\\!\\left(X+\\operatorname{MHA}(X)\\right),\\\\Y&=\\operatorname{LN}\\!\\left(X_1+\\operatorname{FFN}(X_1)\\right).\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "X,Y\\in\\mathbb{R}^{T\\times d_{\\mathrm{model}}}",
+        "meaning": "Input and output token representations."
+      },
+      {
+        "symbol": "\\operatorname{MHA}",
+        "meaning": "Multi-head self-attention, with an optional mask."
+      },
+      {
+        "symbol": "\\operatorname{FFN}",
+        "meaning": "Position-wise feed-forward network."
+      },
+      {
+        "symbol": "\\operatorname{LN}",
+        "meaning": "Layer normalization; this equation uses the original post-normalization arrangement."
+      }
+    ],
+    "definition": "A Transformer block combines attention across tokens with a feed-forward transformation applied at each token, using residual connections and normalization. Stacking blocks repeatedly transforms the sequence representation. The displayed equation uses the original post-normalization encoder arrangement, matching the architecture figure below. A common pre-normalization variant instead applies layer normalization before each attention or feed-forward sublayer. Encoder and decoder blocks differ because the decoder can contain causal masking and cross-attention. Position information is usually supplied before, or within, the repeated attention computation.",
+    "example": "For five input tokens with 64 features, self-attention mixes information among the five positions while maintaining 64 output features per token. The feed-forward network transforms each position’s features independently, usually through a wider hidden dimension. Residual additions preserve the sequence shape. A causal mask changes which positions attention can use, while positional encoding supplies information about their ordering.",
+    "role_en": "The low-level ID-WM world model follows a Transformer-based transition predictor. Reading its block requires attention, feed-forward layers, normalization, residual paths, position information, and input history to be connected explicitly; the original translation decoder is not automatically the exact predictor architecture."
+  },
+  {
+    "id": "v_vit",
+    "title": "视觉 Transformer 与图像分块",
+    "latex": "N=\\frac{H}{P}\\frac{W}{P},\\qquad Z_0=[E(p_1),\\ldots,E(p_N)]+P_{\\mathrm{pos}}",
+    "notation": [
+      {
+        "symbol": "H,W",
+        "meaning": "Image height and width, assumed divisible by patch side length P."
+      },
+      {
+        "symbol": "p_i",
+        "meaning": "Flattened image patch."
+      },
+      {
+        "symbol": "E",
+        "meaning": "Patch embedding projection."
+      },
+      {
+        "symbol": "Z_0\\in\\mathbb{R}^{N\\times d}",
+        "meaning": "Initial spatial token representation."
+      }
+    ],
+    "definition": "A Vision Transformer divides an image into patches, converts each patch to a token embedding, supplies positional information, and processes the tokens with Transformer blocks. The token grid preserves an association with image regions even though attention can combine information globally. A classification token may be added for some tasks, but it is distinct from the spatial patch tokens. Patch size and image resolution determine token count and strongly affect attention computation.",
+    "example": "A 224 by 224 image divided into 16 by 16 patches gives a 14 by 14 grid, or 196 patch tokens. With three color channels, each flattened patch has 768 input values before embedding. A spatial feature map can retain one learned vector for each of the 196 patches; a single global classification vector would discard this explicit grid structure.",
+    "role_en": "DINOv2 supplies spatial patch features used by DINO-WM. ViT explains their spatial organization and computation. It is part of the visual planning branch; state-based ID-WM can be understood and tested without first implementing a visual encoder."
+  },
+  {
+    "id": "v_selfsupervised",
+    "title": "自监督学习",
+    "latex": "z_1=f_\\theta(a_1(x)),\\qquad z_2=f_\\theta(a_2(x)),\\qquad L=\\mathcal{L}(z_1,z_2)",
+    "notation": [
+      {
+        "symbol": "x",
+        "meaning": "An unlabeled training example."
+      },
+      {
+        "symbol": "a_1,a_2",
+        "meaning": "Two view or augmentation operations."
+      },
+      {
+        "symbol": "\\mathcal{L}",
+        "meaning": "A method-specific objective, with additional mechanisms when needed to avoid collapse."
+      }
+    ],
+    "definition": "Self-supervised learning constructs training signals from the data itself rather than requiring a human class label for each example. Objectives may predict missing content, match representations of related views, or discriminate between examples. The desired invariances and retained information depend on those objectives and the chosen transformations. Agreement between two outputs alone permits constant representations, so practical methods need mechanisms that preserve informative variation. Self-supervision is a training strategy and is not restricted to a particular neural architecture.",
+    "example": "Create two crops of the same image and train a representation to capture compatible semantic information across them. A horizontal flip may be appropriate for object recognition but can reverse a robot scene’s left-right geometry. Whether such an invariance helps visual dynamics must be tested. Self-supervised pretraining may supply useful features, while later world-model training still needs time-aligned observations and actions.",
+    "role_en": "This explains how DINO-family encoders can be pretrained without manually assigned class labels. In the visual world-model route, pretraining and offline dynamics learning are distinct stages with different objectives and data requirements."
+  },
+  {
+    "id": "v_collapse",
+    "title": "表征坍缩",
+    "latex": "f_\\theta(x)=c\\ \\text{for all }x\\quad\\Longrightarrow\\quad\\operatorname{Var}_{x}[f_\\theta(x)]=0",
+    "notation": [
+      {
+        "symbol": "f_\\theta",
+        "meaning": "Learned representation function."
+      },
+      {
+        "symbol": "c",
+        "meaning": "A constant representation independent of the input."
+      },
+      {
+        "symbol": "\\operatorname{Var}_{x}",
+        "meaning": "Variation across different input examples."
+      }
+    ],
+    "definition": "Representation collapse occurs when many distinct inputs receive the same or nearly indistinguishable representations, losing information needed for downstream tasks. A constant representation can minimize a simple agreement objective because all paired outputs already match. Preventing collapse requires more than observing a small agreement loss. Different methods use contrasting examples, variance constraints, normalization, teacher updates, output sharpening, or combinations of these mechanisms. The appropriate diagnostic checks variation and task-relevant distinguishability across different inputs.",
+    "example": "If an encoder maps every scene to the zero vector, two augmented views always agree and their squared distance is zero. Yet a planner comparing current and goal features also sees zero distance for every scene. Inspecting representations of different object locations exposes this failure. A nonzero numerical variance alone still does not prove that the representation preserves the geometry required by a particular manipulation task.",
+    "role_en": "This is background for understanding DINO’s training mechanisms and the importance of informative frozen features. A world-model planner needs representations that distinguish task-relevant states, not merely a low feature-prediction loss on collapsed targets."
+  },
+  {
+    "id": "v_dino",
+    "title": "DINO 自蒸馏",
+    "latex": "\\begin{aligned}\\theta_t&\\leftarrow\\lambda\\theta_t+(1-\\lambda)\\theta_s,\\\\L&=-\\sum_i p_{t,i}\\log p_{s,i}.\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "\\theta_s,\\theta_t",
+        "meaning": "Student and teacher parameters."
+      },
+      {
+        "symbol": "\\lambda",
+        "meaning": "Teacher exponential moving-average coefficient."
+      },
+      {
+        "symbol": "p_t,p_s",
+        "meaning": "Teacher and student output distributions for related views; centering and temperatures are method components."
+      }
+    ],
+    "definition": "DINO trains a student network to match the output distribution of a teacher on different views of an image. The teacher parameters are updated by an exponential moving average of the student rather than by its own backpropagated matching loss. Output centering, sharpening, and multi-view training are important parts of the method, not optional explanations of a plain agreement objective. Its self-distillation setup learns useful visual representations without human class labels for the pretraining examples.",
+    "example": "For a teacher distribution \\((0.8,0.2)\\) and a student distribution \\((0.5,0.5)\\), the cross-entropy is \\(-0.8\\log0.5-0.2\\log0.5\\). Student gradients change the output toward the teacher target. After a student update, the moving-average rule changes teacher parameters gradually. These output categories are learned representation coordinates and should not automatically be interpreted as named human object classes.",
+    "role_en": "DINO is methodological background for DINOv2 and frozen visual features. Its teacher/student pair is unrelated to ID-WM’s high-level/low-level planning hierarchy: those two world models have different prediction targets rather than a teacher-student distillation objective."
+  },
+  {
+    "id": "v_dinov2",
+    "title": "DINOv2 视觉特征",
+    "latex": "Z_t=E_{\\mathrm{DINOv2}}(o_t),\\qquad Z_t\\in\\mathbb{R}^{N\\times d}",
+    "notation": [
+      {
+        "symbol": "o_t",
+        "meaning": "Image observation at environment time t."
+      },
+      {
+        "symbol": "E_{\\mathrm{DINOv2}}",
+        "meaning": "Pretrained visual encoder."
+      },
+      {
+        "symbol": "N,d",
+        "meaning": "Number of spatial patch tokens and feature dimension."
+      }
+    ],
+    "definition": "DINOv2 is a family of pretrained visual encoders developed through large-scale self-supervised training. It extends the DINO line with training and data improvements, including both image-level and patch-level objectives. Spatial patch representations can be reused for tasks that need local image structure. Freezing the encoder preserves a fixed target representation during downstream dynamics learning, but neither freezing nor pretraining guarantees complete physical state information or invariance suitable for every control task.",
+    "example": "Encode two images of the same tabletop before and after a push. Each image yields a grid of patch features. A world model can learn to predict the later grid from earlier features and an action sequence, while a goal image supplies a target grid. Changes in viewpoint, lighting, and object geometry may affect feature distances differently, so their relation to task success requires evaluation.",
+    "role_en": "DINO-WM predicts frozen DINOv2 patch features rather than training the transition model to reconstruct every pixel. This representation choice supports visual planning and forms background for ID-WM’s visual model branch; it is not needed for the state-only experiments."
+  },
+  {
+    "id": "v_dinowm",
+    "title": "DINO-WM",
+    "latex": "\\begin{aligned}Z_t&=E(o_t),\\\\\\hat Z_{t+1}&=f_\\theta(Z_{t-k:t},a_{t-k:t}),\\\\A^*&\\approx\\operatorname*{arg\\,min}_{A}\\|\\hat Z_H(A)-Z_g\\|_2.\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "E",
+        "meaning": "Frozen DINOv2 patch encoder."
+      },
+      {
+        "symbol": "f_\\theta",
+        "meaning": "Learned action-conditioned transition predictor."
+      },
+      {
+        "symbol": "A,H,Z_g",
+        "meaning": "Candidate action sequence, planning horizon, and goal features."
+      }
+    ],
+    "definition": "DINO-WM learns visual transition dynamics from offline trajectories in the feature space of a frozen pretrained encoder. Its transition model predicts later spatial patch features from a history of features and actions. At test time, a planner evaluates action sequences by their predicted distance to features of a goal observation. A decoder can support interpretation of imagined states, but pixel reconstruction is not required by the central feature prediction and planning objective.",
+    "example": "Given a current tabletop image and a goal image, encode both with the same fixed encoder. Propose several pushing action sequences, roll the transition model forward for each sequence, and compare predicted final features with the goal features. Execute selected actions and update from new observations. A small feature error must still be checked against actual object placement and task completion.",
+    "role_en": "ID-WM follows the Transformer-based low-level transition and planning formulation of DINO-WM. It adds a high-level generator of local future states and searches its noise variables to organize longer-horizon subgoals rather than relying only on a flat action sequence search."
+  },
+  {
+    "id": "g_latent",
+    "title": "潜变量与表示空间",
+    "latex": "z=E(x)\\qquad\\text{or}\\qquad z\\sim p(z),\\quad x=G(z,c)",
+    "notation": [
+      {
+        "symbol": "E(x)",
+        "meaning": "An encoded representation of observed data."
+      },
+      {
+        "symbol": "p(z)",
+        "meaning": "A prior distribution over an unobserved generative input."
+      },
+      {
+        "symbol": "G(z,c)",
+        "meaning": "Generator conditioned on context c."
+      }
+    ],
+    "definition": "A latent variable is not directly observed in the data description but participates in the model. A representation can also be a deterministic encoding of an observation. These related uses of latent space must be distinguished: a visual feature encodes an observed image, while an initial diffusion noise vector is sampled from a prior and transformed into an output. Latent dimension alone does not determine interpretability, physical meaning, or whether interpolation corresponds to valid behavior.",
+    "example": "A visual encoder may turn an image into patch feature vectors that the dynamics model predicts. Separately, a diffusion generator starts with Gaussian noise and converts it into a possible future state. Both vectors may be called latent variables in informal discussions, yet they have different origins and roles. Write down whether each vector is observed through encoding, randomly sampled, optimized, or decoded.",
+    "role_en": "ID-WM uses state or visual representations for prediction and Gaussian initial noise for high-level decisions. Their notation and roles should remain distinct, especially when CEM optimizes noise while the generated output is a future state representation."
+  },
+  {
+    "id": "g_autoencoder",
+    "title": "自编码器",
+    "latex": "z=E_\\theta(x),\\qquad\\hat x=D_\\phi(z),\\qquad L=\\|x-\\hat x\\|_2^2",
+    "notation": [
+      {
+        "symbol": "E_\\theta,D_\\phi",
+        "meaning": "Encoder and decoder."
+      },
+      {
+        "symbol": "z",
+        "meaning": "Intermediate representation."
+      },
+      {
+        "symbol": "x,\\hat x",
+        "meaning": "Input and reconstruction."
+      }
+    ],
+    "definition": "An autoencoder learns an encoder and decoder using a reconstruction objective. The encoder converts the input into an intermediate representation, and the decoder attempts to recover the input from it. A dimensional bottleneck or other constraints can encourage useful structure, but low reconstruction error alone does not guarantee disentangled physical variables or a suitable planning distance. An ordinary deterministic autoencoder does not necessarily define a well-behaved prior from which meaningful representations can be sampled.",
+    "example": "An encoder compresses a 20-dimensional measurement vector to three features, and a decoder reconstructs the original vector. Evaluate error on held-out data as well as training data. If certain measurement components matter much more for control than others, equal reconstruction weights may preserve the wrong information. Sampling arbitrary three-dimensional vectors may decode to outputs unlike the training data.",
+    "role_en": "Autoencoders are optional background for representation and reconstruction. ID-WM’s high-level conditional diffusion model does not require an autoencoder stage. DINO-WM can use a decoder for interpretation without making pixel reconstruction the main transition-learning objective."
+  },
+  {
+    "id": "g_vae",
+    "title": "变分自编码器",
+    "latex": "\\begin{aligned}z&=\\mu_\\phi(x)+\\sigma_\\phi(x)\\odot\\epsilon,\\quad\\epsilon\\sim\\mathcal N(0,I),\\\\L&=\\mathbb E_{q_\\phi(z\\mid x)}[-\\log p_\\theta(x\\mid z)]+D_{\\mathrm{KL}}(q_\\phi(z\\mid x)\\|p(z)).\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "q_\\phi(z\\mid x)",
+        "meaning": "Approximate posterior over latent variables."
+      },
+      {
+        "symbol": "p_\\theta(x\\mid z)",
+        "meaning": "Observation likelihood under the decoder."
+      },
+      {
+        "symbol": "p(z)",
+        "meaning": "Latent prior."
+      },
+      {
+        "symbol": "\\mu_\\phi,\\sigma_\\phi",
+        "meaning": "Encoder outputs for a diagonal Gaussian posterior."
+      }
+    ],
+    "definition": "A variational autoencoder is a probabilistic latent-variable model trained with a variational bound. Its encoder approximates a posterior distribution rather than only producing one deterministic code. The objective combines expected negative log-likelihood of reconstruction with a divergence between the approximate posterior and a prior. Reparameterization expresses a sampled latent using deterministic encoder outputs and an independent random variable, allowing ordinary pathwise gradients under suitable differentiability conditions. This is more specific than an autoencoder with arbitrary added noise.",
+    "example": "For a one-dimensional approximate posterior with mean 2 and standard deviation 0.5, noise sample \\(\\epsilon=-1\\) gives latent value 1.5. The reconstruction term evaluates how well this sample explains the input, while the KL term discourages an arbitrary mismatch from the chosen prior. A different noise sample changes reconstruction even though the encoder parameters remain fixed.",
+    "role_en": "VAE is an optional branch useful for understanding latent generative models and some video model components. The core ID-WM method uses conditional diffusion and planning; its high-level noise variable should not be described as a VAE posterior sample."
+  },
+  {
+    "id": "g_diffusion",
+    "title": "扩散生成模型",
+    "latex": "x_j=\\sqrt{\\bar\\alpha_j}\\,x_0+\\sqrt{1-\\bar\\alpha_j}\\,\\epsilon,\\quad\\epsilon\\sim\\mathcal N(0,I),\\quad\\bar\\alpha_j=\\prod_{r=1}^{j}(1-\\beta_r)",
+    "notation": [
+      {
+        "symbol": "x_0",
+        "meaning": "Clean training target."
+      },
+      {
+        "symbol": "x_j",
+        "meaning": "Target corrupted at diffusion step j."
+      },
+      {
+        "symbol": "\\beta_r,\\bar\\alpha_j",
+        "meaning": "Noise schedule and cumulative retained signal factor."
+      },
+      {
+        "symbol": "\\epsilon",
+        "meaning": "Independent standard Gaussian noise."
+      }
+    ],
+    "definition": "A diffusion generative model defines a process that progressively corrupts data and trains a model related to reversing that corruption. The displayed closed form samples a noisy target at any selected diffusion step without simulating all previous forward steps. The target may be an image, action sequence, or future state vector. Diffusion step indexes noise level, while environment time indexes physical evolution; those two indices must remain distinct in a world-model explanation.",
+    "example": "For a scalar clean target \\(x_0=2\\), cumulative signal factor \\(\\bar\\alpha_j=0.64\\), and sampled noise \\(\\epsilon=-1\\), the noisy value is \\(0.8\\cdot2+0.6(-1)=1\\). A denoiser learns from many such targets, noise levels, and noise samples. This corruption operation itself does not simulate a physical action or advance the robot by one control step. Check the input and output shapes before comparing the result with a numerical implementation.",
+    "role_en": "ID-WM trains its high-level model to generate future state representations using conditional diffusion. Its clean target is a future state from an offline trajectory, and the current state provides conditioning information; the model is not required to generate pixels."
+  },
+  {
+    "id": "g_ddpm",
+    "title": "DDPM 噪声预测训练",
+    "latex": "\\mathcal L_{\\mathrm{simple}}=\\mathbb E_{x_0,\\epsilon,j}\\!\\left[\\left\\|\\epsilon-\\epsilon_\\theta\\!\\left(\\sqrt{\\bar\\alpha_j}x_0+\\sqrt{1-\\bar\\alpha_j}\\epsilon,j,c\\right)\\right\\|_2^2\\right]",
+    "notation": [
+      {
+        "symbol": "\\epsilon_\\theta",
+        "meaning": "Trainable noise prediction network."
+      },
+      {
+        "symbol": "c",
+        "meaning": "Condition supplied to the denoiser."
+      },
+      {
+        "symbol": "j",
+        "meaning": "Sampled diffusion noise step."
+      },
+      {
+        "symbol": "x_0,\\epsilon",
+        "meaning": "Clean target and sampled Gaussian noise."
+      }
+    ],
+    "definition": "The simplified DDPM training objective teaches a neural network to predict the noise used to corrupt a clean data sample. Each training example supplies a clean target, a randomly chosen noise step, and sampled Gaussian noise. The corrupted target, noise step, and optional condition enter the predictor; the sampled noise is the supervised label. This parameterization is connected to generative reverse transitions, but a single noise prediction is not the entire multi-step sampling procedure.",
+    "example": "Select a recorded future state as \\(x_0\\), draw a noise step and Gaussian noise, and construct \\(x_j\\) with the forward equation. Compare the network prediction with the known sampled noise and backpropagate the squared error. The current state is passed as a condition. Future-state labels are available during training but cannot be supplied as hidden inputs when planning at test time.",
+    "role_en": "This is the high-level training objective in ID-WM. After learning the denoiser, deterministic DDIM sampling is used to map selected initial noise into candidate subgoals. Training changes network parameters; CEM planning later changes the initial noise variables."
+  },
+  {
+    "id": "g_conditional",
+    "title": "条件生成与多模态未来",
+    "latex": "p_\\theta(s_{t+\\Delta}\\mid s_t),\\qquad\\epsilon_\\theta(x_j,j,s_t)",
+    "notation": [
+      {
+        "symbol": "s_t",
+        "meaning": "Current state or encoded state."
+      },
+      {
+        "symbol": "s_{t+\\Delta}",
+        "meaning": "Future state used as a training target."
+      },
+      {
+        "symbol": "\\Delta",
+        "meaning": "Environment-time separation."
+      },
+      {
+        "symbol": "j",
+        "meaning": "Diffusion step, distinct from t and Delta."
+      }
+    ],
+    "definition": "A conditional generative model represents a distribution of outputs given additional information. Multiple plausible outputs may correspond to the same condition, so a distribution can retain alternatives that a single mean prediction merges. In local future-state generation, the current state is the condition and later states are outputs. The learned alternatives reflect training data coverage and the chosen time separation; conditioning alone does not guarantee that every generated state is reachable under the available controller.",
+    "example": "At a corridor junction, a dataset may contain futures passing to the left and futures passing to the right. A mean of those positions may lie in an obstacle, whereas a multimodal model can generate separate alternatives. Different noise samples can select different candidate futures under the same current-state condition. A low-level planner must still find executable actions for the chosen candidate.",
+    "role_en": "The high-level ID-WM generator uses the current state to generate a local future-state distribution. This differs from the low-level model, which conditions on an explicit action history to predict action consequences. Their targets and responsibilities should be kept separate."
+  },
+  {
+    "id": "g_ddim",
+    "title": "DDIM 确定性采样",
+    "latex": "\\begin{aligned}\\hat x_0&=\\frac{x_j-\\sqrt{1-\\bar\\alpha_j}\\,\\epsilon_\\theta(x_j,j,c)}{\\sqrt{\\bar\\alpha_j}},\\\\x_{j-1}&=\\sqrt{\\bar\\alpha_{j-1}}\\,\\hat x_0+\\sqrt{1-\\bar\\alpha_{j-1}}\\,\\epsilon_\\theta(x_j,j,c).\\end{aligned}",
+    "notation": [
+      {
+        "symbol": "x_j,x_{j-1}",
+        "meaning": "Consecutive chosen sampling states."
+      },
+      {
+        "symbol": "\\hat x_0",
+        "meaning": "Clean-target estimate inferred from the noise prediction."
+      },
+      {
+        "symbol": "c",
+        "meaning": "Fixed condition."
+      },
+      {
+        "symbol": "\\bar\\alpha_j",
+        "meaning": "Cumulative signal schedule; the displayed update has no added stochastic term."
+      }
+    ],
+    "definition": "DDIM defines a family of sampling processes compatible with the diffusion noise-prediction training objective. In the deterministic setting, a reverse update uses the current noisy state and predicted noise without drawing additional noise. Fixing the initial noise, model, condition, and sampling schedule therefore fixes the generated output, apart from numerical implementation effects. DDIM can use a subset of noise steps, but the trade-off between computation and output quality must be evaluated for the task.",
+    "example": "Start from an initial noise vector and keep the current state as the condition. Repeatedly estimate the clean future-state target and move to the next scheduled noise level using the displayed update. Repeating this process with the same inputs reproduces the same candidate. Changing only the initial noise can produce a different candidate, which permits a planner to compare alternative generated subgoals.",
+    "role_en": "ID-WM treats the complete deterministic sampler as a function from current state and initial noise to a future state. This deterministic mapping allows CEM to optimize initial noise rather than directly choosing a high-level physical action."
+  },
+  {
+    "id": "g_noise_action",
+    "title": "初始噪声与高层隐式动作",
+    "latex": "\\hat s_{t+\\Delta}=G_\\theta(s_t,z_t),\\quad z_t\\sim\\mathcal N(0,I),\\qquad Z^*\\approx\\operatorname*{arg\\,min}_{Z}J(Z;\\theta)",
+    "notation": [
+      {
+        "symbol": "G_\\theta",
+        "meaning": "Complete deterministic conditional DDIM sampler."
+      },
+      {
+        "symbol": "z_t",
+        "meaning": "Initial noise vector for one generated future state."
+      },
+      {
+        "symbol": "Z",
+        "meaning": "Sequence of high-level noise decisions."
+      },
+      {
+        "symbol": "J",
+        "meaning": "High-level planning objective."
+      }
+    ],
+    "definition": "When a fixed deterministic generator maps an input noise vector to a candidate future state, selecting that input selects one generated alternative. The input can therefore function as an implicit decision variable. Its coordinates usually lack named physical action meanings. A regular Gaussian input space does not imply that every output is physically valid, nor does it make the generator invertible. Search is needed to find useful input values under the current condition and objective.",
+    "example": "Generate twenty candidate future states from twenty noise vectors under the same current-state condition. Evaluate how each candidate advances toward the target and use the better noise vectors to update a CEM proposal distribution. The selected noise is never sent directly to the robot. A separate action-space planner must realize the selected subgoal through the low-level dynamics model.",
+    "role_en": "This connects diffusion sampling to ID-WM’s high-level CEM planning. It extends the earlier concept of a generated sample into a searchable decision interface, while the low-level CEM still optimizes executable environment action sequences."
+  },
+  {
+    "id": "d_train_infer",
+    "title": "训练、推理与测试时规划",
+    "latex": "\\theta^*=\\operatorname*{arg\\,min}_\\theta\\mathbb E_{(x,y)\\sim D}[\\ell(f_\\theta(x),y)],\\qquad A^*\\approx\\operatorname*{arg\\,min}_{A}J(A;\\theta^*)",
+    "notation": [
+      {
+        "symbol": "D",
+        "meaning": "Offline training dataset."
+      },
+      {
+        "symbol": "\\theta",
+        "meaning": "Neural model parameters."
+      },
+      {
+        "symbol": "A",
+        "meaning": "Test-time action sequence; high-level planning instead searches noise sequence Z."
+      },
+      {
+        "symbol": "\\ell,J",
+        "meaning": "Training loss and planning objective, respectively."
+      }
+    ],
+    "definition": "Training estimates model parameters from a dataset. Inference evaluates a trained model on new inputs, while test-time planning repeatedly evaluates it to choose decision variables under a goal objective. These processes may all involve computation called optimization, but they optimize different quantities. A large number of planning candidates is not a training batch size, and a diffusion sampling step is not a parameter update. Keeping parameters fixed during planning makes this distinction explicit.",
+    "example": "Train a transition model once on recorded state-action-next-state windows. At deployment, keep its weights unchanged and evaluate 300 candidate action sequences toward a new goal. Refitting a CEM proposal changes which actions are considered next, not the transition model itself. A high-level diffusion sampler likewise runs its learned denoiser repeatedly while CEM changes its starting noise sequence.",
+    "role_en": "ID-WM combines DDPM-style denoiser training, deterministic DDIM generation, low-level supervised dynamics learning, and two CEM planning searches. This node separates their data, objectives, and optimized variables so the full algorithm can be implemented and timed correctly."
+  }
+]

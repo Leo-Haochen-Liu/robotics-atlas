@@ -1,0 +1,2964 @@
+{
+  "nodes": [
+    {
+      "id": "c_integral",
+      "en": "Definite Integral",
+      "title": "定积分",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "A definite integral accumulates a function over an interval, using a limit of weighted sums when that limit exists.",
+      "definition": "A definite integral accumulates a function over an interval, using a limit of weighted sums when that limit exists. The variable of integration specifies which quantity changes across the interval. Signed values may cancel, so an integral is not always geometric area. Physical interpretation depends on units: integrating velocity over time gives displacement, while integrating a probability density over an event gives probability.",
+      "example": "A constant velocity of two metres per second over three seconds gives six metres of displacement. If velocity becomes negative during part of the interval, integrate the signed velocity to obtain displacement; integrating speed instead gives total distance travelled. State the interval explicitly.",
+      "role_en": "Integrals connect continuous dynamics, trajectory costs, probability densities and expected quantities. They are foundational for simulation and control, even when a learned discrete world model never evaluates an analytic integral explicitly.",
+      "latex": "\\int_a^b f(t)\\,dt=\\lim_{n\\to\\infty}\\sum_{i=1}^{n}f(\\xi_i)\\Delta t",
+      "notation": [
+        {
+          "symbol": "a,b",
+          "meaning": "Integration interval endpoints."
+        },
+        {
+          "symbol": "\\xi_i,\\Delta t",
+          "meaning": "Sample in interval i and interval width."
+        }
+      ],
+      "prereqs": [
+        "m_sum",
+        "m_function"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+        }
+      ]
+    },
+    {
+      "id": "c_ftc",
+      "en": "Fundamental Theorem of Calculus",
+      "title": "微积分基本定理",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "The fundamental theorem links differentiation and integration under suitable regularity assumptions.",
+      "definition": "The fundamental theorem links differentiation and integration under suitable regularity assumptions. The derivative of an accumulation function equals its continuous integrand. Conversely, a definite integral can be evaluated by subtracting endpoint values of an antiderivative. These statements justify converting known rates into state changes and checking a proposed analytic trajectory by differentiation. Their assumptions matter for discontinuities and impulses arising in contact dynamics.",
+      "example": "If acceleration is constant at three metres per second squared, velocity changes by six metres per second over two seconds. Differentiating the resulting linear velocity trajectory recovers the acceleration; this check verifies both the coefficient and the time units. This also checks sign conventions.",
+      "role_en": "This theorem connects physical rates to integrated trajectories. Contact impulses require separate treatment rather than applying a smooth acceleration formula across an instantaneous velocity jump.",
+      "latex": "F(x)=\\int_a^x f(t)\\,dt\\quad\\Rightarrow\\quad F^\\prime(x)=f(x),\\qquad\\int_a^b f(t)\\,dt=G(b)-G(a)",
+      "notation": [
+        {
+          "symbol": "F",
+          "meaning": "Accumulation function."
+        },
+        {
+          "symbol": "G",
+          "meaning": "An antiderivative of f under the theorem assumptions."
+        }
+      ],
+      "prereqs": [
+        "c_integral",
+        "m_derivative"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+        }
+      ]
+    },
+    {
+      "id": "c_taylor",
+      "en": "Taylor Expansion and Local Linearization",
+      "title": "泰勒展开",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "A Taylor approximation expresses how a function changes near a specified input using derivatives at that input.",
+      "definition": "A Taylor approximation expresses how a function changes near a specified input using derivatives at that input. The first-order multivariable approximation uses the Jacobian; higher orders include curvature. Approximation accuracy depends on displacement and smoothness. Linearization is therefore local rather than a claim that the underlying robot or network is globally linear. Contact switching can invalidate a smooth local approximation across the switching boundary.",
+      "example": "For a pendulum near zero angle, replacing sine of the angle by the angle yields a linear approximation. At larger angles the difference grows. Linearize around the intended operating point and compare the approximation with the original model over the expected state range.",
+      "role_en": "Taylor expansions support EKF, LQR, Newton-style optimization and sensitivity analysis of world models. Their validity region should be separated from empirical learned-model generalization. Check the approximation on nearby actual trajectories.",
+      "latex": "f(x+\\delta)\\approx f(x)+J_f(x)\\delta",
+      "notation": [
+        {
+          "symbol": "\\delta",
+          "meaning": "Small input perturbation."
+        },
+        {
+          "symbol": "J_f(x)",
+          "meaning": "Jacobian evaluated at the expansion point."
+        }
+      ],
+      "prereqs": [
+        "m_derivative",
+        "m_partial",
+        "m_jacobian"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "c_hessian",
+      "en": "Hessian and Curvature",
+      "title": "海森矩阵",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "The Hessian collects second partial derivatives of a scalar function.",
+      "definition": "The Hessian collects second partial derivatives of a scalar function. It describes local curvature and appears in second-order Taylor approximations and Newton-type optimization. For sufficiently smooth functions it is symmetric. Positive curvature in every nonzero direction helps characterize a strict local minimum, but a Hessian at one point does not establish global convexity. Large neural-network Hessians are often accessed through products rather than explicitly stored.",
+      "example": "For a loss equal to the first parameter squared plus three times the second parameter squared, the Hessian is diagonal with entries two and six. The second direction has greater curvature, so an identical coordinate displacement produces a larger quadratic loss increase.",
+      "role_en": "Curvature connects optimization conditioning, local trajectory optimization and numerical stability. It is useful background rather than a required explicit matrix in CEM-based ID-WM planning. Use curvature diagnostics with an explicit operating point.",
+      "latex": "H_{ij}(x)=\\frac{\\partial^2 f}{\\partial x_i\\partial x_j},\\qquad f(x+\\delta)\\approx f(x)+\\nabla f(x)^\\top\\delta+\\tfrac12\\delta^\\top H(x)\\delta",
+      "notation": [
+        {
+          "symbol": "H",
+          "meaning": "Hessian of a twice-differentiable scalar function."
+        },
+        {
+          "symbol": "\\delta",
+          "meaning": "Local perturbation vector."
+        }
+      ],
+      "prereqs": [
+        "m_partial",
+        "m_matrix"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        }
+      ]
+    },
+    {
+      "id": "c_ode",
+      "en": "Ordinary Differential Equations",
+      "title": "常微分方程",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "An ordinary differential equation specifies a time derivative in terms of state, input and time.",
+      "definition": "An ordinary differential equation specifies a time derivative in terms of state, input and time. An initial-value problem also supplies a starting state. Solving it produces a trajectory rather than a single scalar. Existence, uniqueness and numerical stability depend on properties of the dynamics. A simulator approximates that solution using finite steps, while a learned discrete transition may approximate the result directly.",
+      "example": "A freely moving point with constant velocity satisfies position derivative equal to that velocity. A spring adds a state-dependent acceleration, so position and velocity must be integrated together. Two simulations with different time steps need not produce identical numerical trajectories.",
+      "role_en": "ODEs connect physical dynamics to integrators, differentiable simulation and continuous-time flow models. They explain what a discrete learned transition is approximating in many robot environments.",
+      "latex": "\\dot x(t)=f(x(t),u(t),t),\\qquad x(t_0)=x_0",
+      "notation": [
+        {
+          "symbol": "x(t)",
+          "meaning": "Continuous-time state."
+        },
+        {
+          "symbol": "u(t)",
+          "meaning": "Input signal."
+        },
+        {
+          "symbol": "x_0",
+          "meaning": "Initial condition."
+        }
+      ],
+      "prereqs": [
+        "m_derivative",
+        "r_state"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "c_euler",
+      "en": "Euler and Semi-Implicit Integration",
+      "title": "欧拉与半隐式积分",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "Explicit Euler approximates the state derivative at the beginning of a step.",
+      "definition": "Explicit Euler approximates the state derivative at the beginning of a step. Semi-implicit Euler updates velocity first and uses the updated velocity for position. Their stability and energy behaviour differ, especially for oscillatory mechanical systems. Smaller steps usually reduce discretization error but increase computational work. Neither integration method removes errors caused by incorrect physical parameters or contact models. The update order is part of the implemented transition function.",
+      "example": "For a falling point initially at rest, explicit Euler leaves position unchanged on the first step while updating velocity. Semi-implicit Euler also moves the position using the new downward velocity. Over many steps these conventions produce different trajectories. Choose one convention consistently.",
+      "role_en": "Integrator choice and physics substeps affect simulator transitions used to train world models. Policy frequency, physics time step and data sampling interval must be documented separately.",
+      "latex": "x_{k+1}=x_k+h f(x_k,u_k),\\qquad v_{k+1}=v_k+h a_k,\\quad q_{k+1}=q_k+h v_{k+1}",
+      "notation": [
+        {
+          "symbol": "h",
+          "meaning": "Numerical time step."
+        },
+        {
+          "symbol": "q,v,a",
+          "meaning": "Position, velocity and acceleration."
+        }
+      ],
+      "prereqs": [
+        "c_ode",
+        "c_integral"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "c_runge_kutta",
+      "en": "Runge–Kutta Integration",
+      "title": "龙格—库塔积分",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "Runge–Kutta methods combine derivative evaluations at intermediate states to approximate an ODE solution.",
+      "definition": "Runge–Kutta methods combine derivative evaluations at intermediate states to approximate an ODE solution. Classical RK4 has fourth-order global accuracy for sufficiently smooth problems under standard assumptions, but it uses four derivative evaluations per step. Error order does not by itself establish stability for a stiff system. Discontinuous impacts require appropriate event or contact treatment rather than assuming a high-order smooth integrator resolves them automatically.",
+      "example": "Integrate a smooth pendulum trajectory with Euler and RK4 over the same interval. Compare error against a much finer reference solution and report both derivative evaluations and wall-clock time. At a contact event, examine whether the simulator changes modes inside the step.",
+      "role_en": "Higher-order integration explains simulation accuracy–cost tradeoffs and ODE-based generative sampling. It does not imply every robot training pipeline should choose RK4. Compare numerical error and wall-clock cost together.",
+      "latex": "k_1=f(x_k),\\quad k_2=f(x_k+\\tfrac h2k_1),\\quad k_3=f(x_k+\\tfrac h2k_2),\\quad k_4=f(x_k+h k_3),\\quad x_{k+1}=x_k+\\tfrac h6(k_1+2k_2+2k_3+k_4)",
+      "notation": [
+        {
+          "symbol": "k_i",
+          "meaning": "Intermediate derivative evaluations for autonomous RK4."
+        },
+        {
+          "symbol": "h",
+          "meaning": "Step size."
+        }
+      ],
+      "prereqs": [
+        "c_ode",
+        "c_euler"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "la_svd",
+      "en": "Singular Value Decomposition",
+      "title": "奇异值分解",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "Singular value decomposition expresses a matrix as orthogonal input and output directions together with nonnegative scale factors.",
+      "definition": "Singular value decomposition expresses a matrix as orthogonal input and output directions together with nonnegative scale factors. It exists for rectangular matrices and separates rank, dominant directions and near-singular directions. Small singular values indicate directions that are weakly mapped and can amplify errors in inversion. Truncation can provide a low-rank approximation, but the retained rank must fit the application and noise level.",
+      "example": "A robot Jacobian near a singular configuration has a small singular value. Requesting end-effector motion along the corresponding weak direction can require very large joint velocities if the matrix is inverted without regularization. Plotting singular values exposes that numerical issue.",
+      "role_en": "SVD supports pseudoinverses, damped inverse kinematics, PCA and conditioning diagnostics. It links linear algebra to geometric robot control and feature compression. Check singular values before commanding joint velocities.",
+      "latex": "A=U\\Sigma V^\\top,\\qquad\\sigma_i^2=\\lambda_i(A^\\top A)",
+      "notation": [
+        {
+          "symbol": "U,V",
+          "meaning": "Orthogonal singular-vector matrices."
+        },
+        {
+          "symbol": "\\Sigma",
+          "meaning": "Diagonal or rectangular diagonal matrix of nonnegative singular values."
+        }
+      ],
+      "prereqs": [
+        "m_matmul",
+        "m_eigen"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "la_pinv",
+      "en": "Pseudoinverse and Damped Least Squares",
+      "title": "伪逆与阻尼最小二乘",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "A pseudoinverse generalizes matrix inversion to rectangular or rank-deficient systems.",
+      "definition": "A pseudoinverse generalizes matrix inversion to rectangular or rank-deficient systems. It can select a least-squares solution and, under the standard criterion, a minimum-norm solution among alternatives. Damped least squares replaces unstable inversion of very small singular values with a regularized compromise. Damping changes the requested motion and does not guarantee joint-limit or collision avoidance. Those requirements need additional constraints or objectives.",
+      "example": "A seven-joint arm may have many joint increments producing the same small hand displacement. A pseudoinverse selects one according to its norm criterion. Near a singularity, damping prevents an arbitrarily large joint command at the cost of residual task error.",
+      "role_en": "This is a key link from Jacobians to inverse kinematics and local control. Compare its assumptions with learned inverse planning rather than equating the two algorithms.",
+      "latex": "A^+=V\\Sigma^+U^\\top,\\qquad\\delta q=J^\\top(JJ^\\top+\\lambda^2I)^{-1}\\delta x",
+      "notation": [
+        {
+          "symbol": "A^+",
+          "meaning": "Moore–Penrose pseudoinverse."
+        },
+        {
+          "symbol": "\\lambda",
+          "meaning": "Damping parameter."
+        },
+        {
+          "symbol": "\\delta q,\\delta x",
+          "meaning": "Joint and task-space increments."
+        }
+      ],
+      "prereqs": [
+        "la_svd",
+        "ml_mse"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "la_psd",
+      "en": "Positive Definite Matrices and Quadratic Forms",
+      "title": "正定矩阵与二次型",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "A symmetric positive semidefinite matrix gives a nonnegative quadratic form.",
+      "definition": "A symmetric positive semidefinite matrix gives a nonnegative quadratic form. Positive definite matrices give strictly positive values for all nonzero vectors. These properties determine whether weighted error costs can become negative and whether certain covariance or optimization operations are well defined. A covariance may be semidefinite rather than invertible. Numerical symmetry and small negative eigenvalues can reveal computation or modelling problems.",
+      "example": "Weight a planar position error using a diagonal matrix with entries one and four. An equal numerical error in the second coordinate contributes four times as much cost. Setting one weight to zero ignores that direction and makes the quadratic form semidefinite.",
+      "role_en": "Quadratic costs, covariance matrices, LQR weights and Lyapunov candidates all use these concepts. The mathematical conditions should be checked rather than inferred from a matrix name.",
+      "latex": "x^\\top Qx\\ge0\\ \\forall x\\quad\\Leftrightarrow\\quad Q\\succeq0\\quad\\text{for symmetric }Q",
+      "notation": [
+        {
+          "symbol": "Q\\succeq0",
+          "meaning": "Positive semidefinite matrix."
+        },
+        {
+          "symbol": "Q\\succ0",
+          "meaning": "Strictly positive quadratic form for every nonzero vector."
+        }
+      ],
+      "prereqs": [
+        "m_eigen",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        },
+        {
+          "title": "MIT Underactuated Robotics: LQR",
+          "url": "https://underactuated.mit.edu/lqr.html"
+        }
+      ]
+    },
+    {
+      "id": "c_constraints",
+      "en": "Constrained Optimization and KKT Conditions",
+      "title": "约束优化与KKT条件",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "Constrained optimization selects a decision while respecting equality and inequality restrictions.",
+      "definition": "Constrained optimization selects a decision while respecting equality and inequality restrictions. Under suitable constraint qualifications, KKT conditions combine stationarity, feasibility, multiplier nonnegativity and complementary slackness at a local solution. They are not an unrestricted global-optimality certificate for nonconvex problems. Robot trajectory constraints include dynamics, actuator bounds, joint limits and collision distances; penalties approximate some restrictions but are not automatically equivalent to hard constraints.",
+      "example": "Minimize joint motion subject to reaching a hand target and staying within joint limits. A joint limit can become active, meaning the solution lies exactly on the boundary. A soft penalty may permit a violation if reducing another cost is sufficiently attractive.",
+      "role_en": "This node supports trajectory optimization, contact formulations and constrained control. It helps distinguish ID-WM regularization from formally enforced physical feasibility. Solver feasibility and execution feasibility require separate checks.",
+      "latex": "\\min_x f(x)\\ \\text{s.t. }g(x)\\le0,\\ h(x)=0,\\quad\\nabla f+\\sum_i\\lambda_i\\nabla g_i+\\sum_j\\nu_j\\nabla h_j=0,\\quad\\lambda_i g_i=0",
+      "notation": [
+        {
+          "symbol": "\\lambda_i\\ge0,\\nu_j",
+          "meaning": "Inequality and equality multipliers."
+        },
+        {
+          "symbol": "g,h",
+          "meaning": "Inequality and equality constraint functions."
+        }
+      ],
+      "prereqs": [
+        "m_gradient",
+        "la_psd"
+      ],
+      "sources": [
+        {
+          "title": "Mathematics for Machine Learning",
+          "url": "https://mml-book.github.io/"
+        },
+        {
+          "title": "MIT Underactuated Robotics: trajectory optimization",
+          "url": "https://underactuated.mit.edu/trajopt.html"
+        }
+      ]
+    },
+    {
+      "id": "geo_so3",
+      "en": "Rotation Matrices and SO(3)",
+      "title": "旋转矩阵与SO(3)",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "SO(3) is the set of proper three-dimensional rotation matrices.",
+      "definition": "SO(3) is the set of proper three-dimensional rotation matrices. Orthogonality preserves vector lengths and angles, while determinant one excludes reflections. Rotations can express orientations, transform coordinate representations or actively rotate vectors; those uses require consistent conventions. Composition generally depends on order. A matrix with nine free entries is not automatically a valid rotation, so optimization and learning must handle its constraints.",
+      "example": "Rotate a vector by ninety degrees around the z-axis, then around the x-axis. Reversing the order generally gives a different result. If a learned matrix slowly loses orthogonality, it can distort lengths even though it is labelled a rotation. Check the rotation convention.",
+      "role_en": "Rotation representations enter robot state construction, camera extrinsics, pose estimation and dynamics. They are a geometric prerequisite rather than a distinct kind of neural network.",
+      "latex": "\\mathrm{SO}(3)=\\{R\\in\\mathbb R^{3\\times3}:R^\\top R=I,\\ \\det R=1\\}",
+      "notation": [
+        {
+          "symbol": "R",
+          "meaning": "Three-dimensional proper rotation matrix."
+        },
+        {
+          "symbol": "R^\\top",
+          "meaning": "Inverse rotation because the basis is orthonormal."
+        }
+      ],
+      "prereqs": [
+        "m_matmul",
+        "m_trig"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "geo_se3",
+      "en": "Rigid Transformations and SE(3)",
+      "title": "刚体变换与SE(3)",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "SE(3) combines a rotation with a translation using homogeneous coordinates.",
+      "definition": "SE(3) combines a rotation with a translation using homogeneous coordinates. Multiplication composes frame transformations, and inversion reverses their direction. The notation must specify source and target frames; otherwise the same numerical matrix can be used incorrectly. A pose is a geometric configuration, while a twist describes its instantaneous motion. Their dimensions and transformation rules differ, even when both appear in a robot state vector.",
+      "example": "Compose a world-to-base transform with a base-to-camera transform to locate the camera in the world. Reversing the product or using a camera-to-base matrix without inversion produces a different pose, often causing projected points to appear behind the camera. Write frame labels explicitly.",
+      "role_en": "Rigid transforms connect forward kinematics, camera calibration, SLAM and world-model state representations. Correct frame semantics are essential before learned-model errors can be interpreted. Keep source and target frames explicit.",
+      "latex": "T=\\begin{bmatrix}R&p\\\\0&1\\end{bmatrix}\\in\\mathrm{SE}(3),\\qquad\\begin{bmatrix}x^A\\\\1\\end{bmatrix}=T^A_B\\begin{bmatrix}x^B\\\\1\\end{bmatrix}",
+      "notation": [
+        {
+          "symbol": "R,p",
+          "meaning": "Orientation and position of one frame relative to another."
+        },
+        {
+          "symbol": "T^A_B",
+          "meaning": "Transform taking B-frame coordinates into A-frame coordinates."
+        }
+      ],
+      "prereqs": [
+        "geo_so3",
+        "r_frames"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "geo_quaternion",
+      "en": "Unit Quaternions",
+      "title": "单位四元数",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "A unit quaternion is a four-coordinate representation of a three-dimensional rotation.",
+      "definition": "A unit quaternion is a four-coordinate representation of a three-dimensional rotation. Its unit-norm constraint and double-cover property require care in losses and interpolation. Quaternion component ordering varies across APIs, commonly scalar-first or scalar-last. Normalization alone does not establish a consistent sign sequence or coordinate-frame convention. Orientation differences should use a rotation-aware metric rather than unrestricted Euclidean subtraction of four components.",
+      "example": "The quaternions with all signs reversed represent the same physical orientation. A direct squared component loss can report a large error between them. Before comparing recorded and predicted orientations, check ordering, normalization, sign equivalence and whether the pose is expressed in world or body coordinates.",
+      "role_en": "Quaternions are common in humanoid datasets and simulator state interfaces. Their conventions must match across data generation, policy input and evaluation. Audit the serialized data format before training.",
+      "latex": "q=(w,\\mathbf v),\\qquad\\|q\\|_2=1,\\qquad q=(\\cos(\\theta/2),\\mathbf u\\sin(\\theta/2))",
+      "notation": [
+        {
+          "symbol": "\\mathbf u,\\theta",
+          "meaning": "Unit rotation axis and angle."
+        },
+        {
+          "symbol": "q,-q",
+          "meaning": "Two quaternions representing the same rotation."
+        }
+      ],
+      "prereqs": [
+        "geo_so3",
+        "m_norm"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "geo_twist",
+      "en": "Angular Velocity, Twists and the Adjoint",
+      "title": "角速度、旋量与伴随变换",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "A twist combines angular and linear velocity for rigid-body motion.",
+      "definition": "A twist combines angular and linear velocity for rigid-body motion. Its coordinates depend on the chosen frame and reference point. The adjoint transformation converts between space and body representations under a consistent convention. The linear component is not always the velocity of whichever point is informally called the origin. Explicitly identifying ordering and frame prevents incorrect Jacobian, force and controller calculations.",
+      "example": "A rotating rigid body gives different point velocities at its centre and at a distant attached point. Translating the reference point therefore changes the linear twist component even when angular velocity is unchanged. The adjoint accounts for that coupling. Keep the reference point explicit.",
+      "role_en": "Twists connect geometric pose representations to robot Jacobians, operational-space control and rigid-body dynamics. Learned velocity states must preserve these same frame conventions. State ordering must match each consuming API.",
+      "latex": "V=\\begin{bmatrix}\\omega\\\\v\\end{bmatrix},\\qquad V^A=\\operatorname{Ad}_{T^A_B}V^B",
+      "notation": [
+        {
+          "symbol": "\\omega,v",
+          "meaning": "Angular and linear components under a stated twist convention."
+        },
+        {
+          "symbol": "\\operatorname{Ad}_T",
+          "meaning": "Adjoint matrix transforming twist coordinates."
+        }
+      ],
+      "prereqs": [
+        "geo_se3",
+        "m_jacobian"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "geo_expmap",
+      "en": "Exponential Coordinates of Rigid Motion",
+      "title": "刚体运动的指数坐标",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "Exponential coordinates represent finite rigid motion through an underlying infinitesimal generator.",
+      "definition": "Exponential coordinates represent finite rigid motion through an underlying infinitesimal generator. For a constant screw axis, the matrix exponential produces a rigid transformation. This formulation provides a compact way to compose joint motions and perform local pose updates on a group. The exponential and logarithm maps have conventions and local ambiguities; they are not ordinary elementwise exponentials or logarithms of matrix entries.",
+      "example": "A revolute joint rotates an attached link around its fixed axis. Exponentiating the joint screw axis times its angle yields the corresponding transform. Multiplying joint exponentials in chain order produces the end-effector pose relative to the reference configuration. The multiplication order is essential.",
+      "role_en": "The product-of-exponentials formulation supports forward kinematics, pose residuals and Lie-group state estimation. It connects calculus, matrix algebra and geometry. Use the same motion convention across every joint.",
+      "latex": "T(\\theta)=\\exp([\\mathcal S]\\theta)M",
+      "notation": [
+        {
+          "symbol": "\\mathcal S",
+          "meaning": "Screw axis represented as a twist."
+        },
+        {
+          "symbol": "[\\mathcal S]",
+          "meaning": "Matrix representation of the twist generator."
+        },
+        {
+          "symbol": "M",
+          "meaning": "Reference configuration."
+        }
+      ],
+      "prereqs": [
+        "geo_twist",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "ph_units",
+      "en": "Physical Quantities, Units and Dimensions",
+      "title": "物理量、单位与量纲",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Dimensional analysis checks whether terms in a physical equation have compatible units.",
+      "definition": "Dimensional analysis checks whether terms in a physical equation have compatible units. Numerical values alone do not specify a physical quantity: metres and centimetres, radians and degrees, and seconds and simulation steps require conversion. Normalized machine-learning features hide units but do not remove their physical meanings. A physically meaningful loss may require scaling heterogeneous state components before combining them. Units remain relevant after numerical normalization.",
+      "example": "A velocity of one metre per second integrated over twenty milliseconds changes position by two centimetres. Treating the number twenty as seconds produces a thousandfold error. Similarly, a force limit is not interchangeable with a torque limit unless a lever arm is specified.",
+      "role_en": "Unit audits are basic checks for simulator assets, dynamics labels, state normalization and controller commands. They often explain apparent model failures before architecture changes are needed.",
+      "latex": "[F]=\\mathrm{kg\\,m\\,s^{-2}},\\qquad [\\tau]=\\mathrm{N\\,m},\\qquad [E]=\\mathrm{J}",
+      "notation": [
+        {
+          "symbol": "[\\cdot]",
+          "meaning": "Physical dimension or unit annotation."
+        },
+        {
+          "symbol": "F,\\tau,E",
+          "meaning": "Force, torque and energy."
+        }
+      ],
+      "prereqs": [
+        "m_vector"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ph_newton",
+      "en": "Newtonian Translation Dynamics",
+      "title": "牛顿平动动力学",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Newtonian translation dynamics relates total external force to the acceleration of a constant-mass body in an inertial frame.",
+      "definition": "Newtonian translation dynamics relates total external force to the acceleration of a constant-mass body in an inertial frame. Momentum expresses the combined role of mass and velocity. Gravity, contact and actuator forces must be assembled in a consistent frame. Internal forces can cancel in whole-system momentum while still changing internal configuration. This simple relation is a building block rather than a complete articulated-robot model.",
+      "example": "A two-kilogram object acted on by a net horizontal force of four newtons accelerates at two metres per second squared. If friction also acts, subtract its force before applying the relation; a commanded motor value is not automatically the net force on the object.",
+      "role_en": "These mechanics underpin simulator transitions, contact reasoning and learned dynamics interpretation. They motivate why known state, physical parameters and action meaning all matter. The net-force definition must remain explicit.",
+      "latex": "\\sum_i F_i=m\\ddot x,\\qquad p=m\\dot x",
+      "notation": [
+        {
+          "symbol": "m",
+          "meaning": "Constant mass in the stated model."
+        },
+        {
+          "symbol": "F_i",
+          "meaning": "External forces."
+        },
+        {
+          "symbol": "p",
+          "meaning": "Linear momentum."
+        }
+      ],
+      "prereqs": [
+        "c_ode",
+        "ph_units"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "ph_torque",
+      "en": "Torque and Angular Momentum",
+      "title": "力矩与角动量",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Torque describes how a force applied away from a reference point tends to change angular momentum.",
+      "definition": "Torque describes how a force applied away from a reference point tends to change angular momentum. The reference point and coordinate frame must be specified. Force magnitude alone is insufficient: direction and lever arm determine rotational effect. For a general rigid body, angular momentum need not be parallel to angular velocity. Joint torque commands act through the robot mechanism and do not directly specify arbitrary Cartesian forces.",
+      "example": "The same ten-newton perpendicular force applied at a lever arm of one tenth of a metre produces one newton-metre of torque; doubling the perpendicular lever arm doubles the torque. A force directed along the lever arm produces no torque about that point.",
+      "role_en": "Torque and momentum connect actuator limits, rigid-body inertia, inverse dynamics and contact forces. They clarify the physical meaning of actions used to collect world-model training transitions.",
+      "latex": "\\tau=r\\times F,\\qquad \\dot L=\\tau_{\\mathrm{ext}}",
+      "notation": [
+        {
+          "symbol": "r",
+          "meaning": "Lever-arm vector from the reference point to force application."
+        },
+        {
+          "symbol": "L",
+          "meaning": "Angular momentum about the stated reference."
+        }
+      ],
+      "prereqs": [
+        "ph_newton",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ph_inertia",
+      "en": "Mass Distribution and Inertia Tensor",
+      "title": "质量分布与惯性张量",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "The inertia tensor summarizes how a rigid body mass distribution resists rotational acceleration about a specified point.",
+      "definition": "The inertia tensor summarizes how a rigid body mass distribution resists rotational acceleration about a specified point. Its entries depend on reference frame and origin. It also defines rotational kinetic energy. A total mass does not uniquely determine inertia. Imported robot assets can therefore have plausible visual geometry but incorrect dynamic behaviour if centre of mass or inertia is wrong. Physical consistency imposes constraints beyond merely having positive diagonal entries.",
+      "example": "Two bodies can have equal mass while one places more mass farther from the rotation axis. The latter has greater moment of inertia about that axis and needs more torque for the same angular acceleration. Changing the tensor frame without rotating its components is an asset error.",
+      "role_en": "Inertia is required for physically meaningful robot simulation and inverse dynamics. Parameter randomization should remain physically coherent rather than independently perturbing arbitrary tensor entries. Validate the asset before collecting training transitions.",
+      "latex": "I=\\int\\bigl(\\|r\\|^2I_3-rr^\\top\\bigr)\\,dm,\\qquad T_{\\mathrm{rot}}=\\tfrac12\\omega^\\top I\\omega",
+      "notation": [
+        {
+          "symbol": "I",
+          "meaning": "Inertia tensor about a specified point and frame."
+        },
+        {
+          "symbol": "r",
+          "meaning": "Mass-element displacement."
+        },
+        {
+          "symbol": "I_3",
+          "meaning": "Three-dimensional identity matrix."
+        }
+      ],
+      "prereqs": [
+        "ph_torque",
+        "la_psd",
+        "c_integral"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "ph_energy",
+      "en": "Work, Kinetic Energy and Potential Energy",
+      "title": "功、动能与势能",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Work transfers energy through force applied along displacement.",
+      "definition": "Work transfers energy through force applied along displacement. Kinetic energy depends on motion, while potential energy depends on configuration and the modeled force field. In conservative ideal mechanics their sum can be preserved; actuators, damping and contact losses alter that balance. Numerical integration can also introduce energy error. A learned dynamics model can fit short transitions while violating long-horizon energy behaviour.",
+      "example": "Lifting a one-kilogram mass by one metre near Earth increases gravitational potential energy by approximately 9.81 joules. Sliding friction dissipates mechanical energy. An undamped simulated pendulum whose amplitude steadily increases may reveal integration or modelling error rather than a real energy source.",
+      "role_en": "Energy helps derive robot equations, diagnose simulation drift and construct physically informed objectives. Conservation is conditional on the modeled system and must not be assumed during actuated or dissipative motion.",
+      "latex": "W=\\int F^\\top dx,\\quad T=\\tfrac12m\\|v\\|^2,\\quad U=mgh",
+      "notation": [
+        {
+          "symbol": "W,T,U",
+          "meaning": "Work, kinetic energy and gravitational potential energy."
+        },
+        {
+          "symbol": "h",
+          "meaning": "Height relative to a chosen potential reference."
+        }
+      ],
+      "prereqs": [
+        "c_integral",
+        "ph_newton"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "ph_lagrange",
+      "en": "Lagrangian and Euler–Lagrange Equations",
+      "title": "拉格朗日量与欧拉—拉格朗日方程",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Lagrangian mechanics derives equations of motion using generalized coordinates and energy expressions.",
+      "definition": "Lagrangian mechanics derives equations of motion using generalized coordinates and energy expressions. Euler–Lagrange equations combine derivatives with respect to coordinates, velocities and time. Generalized nonconservative forces account for actuation and dissipation not represented by the potential. Constraints require compatible coordinate choices or additional multipliers. The symbol L here means Lagrangian and must be distinguished from a neural-network training loss. Each derivative has a distinct mathematical role.",
+      "example": "For a pendulum, rotational kinetic energy and gravitational potential energy produce a nonlinear equation involving angular acceleration and sine of angle. Adding a motor torque places a generalized input on the right-hand side; adding damping requires a dissipative torque term.",
+      "role_en": "This derivation explains the mass, velocity-dependent and gravity terms used in articulated robot dynamics. It is a physical foundation for analytical models and simulation-generated learning data.",
+      "latex": "L(q,\\dot q)=T-U,\\qquad \\frac{d}{dt}\\frac{\\partial L}{\\partial\\dot q_i}-\\frac{\\partial L}{\\partial q_i}=Q_i",
+      "notation": [
+        {
+          "symbol": "q_i",
+          "meaning": "Generalized coordinate."
+        },
+        {
+          "symbol": "Q_i",
+          "meaning": "Generalized nonconservative force."
+        },
+        {
+          "symbol": "L",
+          "meaning": "Lagrangian, not a learning loss in this equation."
+        }
+      ],
+      "prereqs": [
+        "ph_energy",
+        "m_partial",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ph_manipulator",
+      "en": "Manipulator Equation and Generalized Dynamics",
+      "title": "机器人广义动力学方程",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "The manipulator equation describes coupled articulated-body acceleration under actuator and contact forces.",
+      "definition": "The manipulator equation describes coupled articulated-body acceleration under actuator and contact forces. The mass matrix depends on configuration, and velocity-dependent terms account for effects such as Coriolis and centrifugal coupling. A floating-base humanoid can have unactuated coordinates, represented by the input map. Different texts group velocity terms differently, so notation must be matched before comparing formulas. Contact adds force variables and often mode changes.",
+      "example": "Moving an arm joint can accelerate other links because the mass matrix couples coordinates. A humanoid joint torque cannot directly command every floating-base acceleration; feet-ground contact and momentum transfer mediate the whole-body response. Verify support contacts and actuator limits when evaluating the requested acceleration.",
+      "role_en": "This equation connects classical dynamics, inverse dynamics, model-based control and learned transition models. A neural world model may approximate its discrete consequences without explicitly recovering every physical term.",
+      "latex": "M(q)\\ddot q+C(q,\\dot q)\\dot q+g(q)=B\\tau+J_c(q)^\\top\\lambda",
+      "notation": [
+        {
+          "symbol": "M,C,g",
+          "meaning": "Mass matrix, velocity-dependent terms and gravity terms."
+        },
+        {
+          "symbol": "B\\tau",
+          "meaning": "Generalized actuator input."
+        },
+        {
+          "symbol": "J_c^\\top\\lambda",
+          "meaning": "Generalized contact force."
+        }
+      ],
+      "prereqs": [
+        "ph_lagrange",
+        "ph_inertia"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "ph_constraints",
+      "en": "Holonomic Constraints and Contact Impulses",
+      "title": "完整约束与接触冲量",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "A holonomic constraint restricts configuration through an equation, and differentiating it produces a velocity restriction.",
+      "definition": "A holonomic constraint restricts configuration through an equation, and differentiating it produces a velocity restriction. Constraint forces enforce the restriction rather than acting as arbitrary independent commands. Impacts can produce discontinuous velocity changes represented by impulses. Continuous accelerations and instantaneous impulses require different numerical handling. Contact events make a robot a hybrid system whose active constraints change with configuration and interaction.",
+      "example": "An ideal foot fixed to the ground has zero contact-point velocity during stance. At touchdown, the predicted pre-impact velocity may change abruptly through a contact impulse. Integrating a smooth unconstrained model through that instant can incorrectly predict penetration or continued free motion.",
+      "role_en": "Constraint and impact concepts explain difficult regions for learned dynamics, differentiable simulation and locomotion transfer. Smooth training losses do not remove the underlying contact-mode changes.",
+      "latex": "\\phi(q)=0,\\qquad J_c(q)\\dot q=0,\\qquad M(q)(v^+-v^-)=J_c(q)^\\top\\Lambda",
+      "notation": [
+        {
+          "symbol": "\\phi",
+          "meaning": "Configuration constraint."
+        },
+        {
+          "symbol": "\\Lambda",
+          "meaning": "Impulse integrated over an impact event."
+        },
+        {
+          "symbol": "v^-,v^+",
+          "meaning": "Velocities immediately before and after impact."
+        }
+      ],
+      "prereqs": [
+        "ph_manipulator",
+        "c_constraints"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "ph_friction",
+      "en": "Coulomb Friction and Contact Feasibility",
+      "title": "库仑摩擦与接触可行性",
+      "group": "physics",
+      "kind": "concept",
+      "summary": "Coulomb friction limits tangential contact force relative to normal force.",
+      "definition": "Coulomb friction limits tangential contact force relative to normal force. Sticking and sliding follow different conditions, and numerical simulators may use regularized or approximate friction models. A friction coefficient alone does not specify all contact behaviour; compliance, solver settings, geometry and restitution can also matter. Contact feasibility restricts which commanded accelerations or forces can be physically realized without slipping or losing support.",
+      "example": "A robot foot can slip if the required tangential force exceeds the available friction bound. Increasing the policy reward for speed does not increase that physical bound. Comparing simulation and hardware requires checking contact materials and the actual normal-force distribution.",
+      "role_en": "Friction is central to whole-body control, ball contact and sim-to-real transfer. Randomization can improve robustness only over the conditions represented and actually tested. Inspect both sticking and sliding failure cases.",
+      "latex": "\\|f_t\\|_2\\le\\mu f_n,\\qquad f_n\\ge0",
+      "notation": [
+        {
+          "symbol": "f_t,f_n",
+          "meaning": "Tangential contact force and nonnegative normal force."
+        },
+        {
+          "symbol": "\\mu",
+          "meaning": "Friction coefficient in the simplified Coulomb model."
+        }
+      ],
+      "prereqs": [
+        "ph_constraints",
+        "ph_torque"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "rb_fk",
+      "en": "Forward Kinematics",
+      "title": "正向运动学",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "Forward kinematics maps joint configuration to the pose of an end effector or other link.",
+      "definition": "Forward kinematics maps joint configuration to the pose of an end effector or other link. It uses robot geometry and joint conventions, without requiring forces or accelerations. Multiple configurations can produce the same task-space pose. Frame attachment, joint offsets and ordering are part of the model. A correct joint vector can produce an incorrect reported pose if the kinematic tree or reference frames are wrong.",
+      "example": "For a planar two-link arm, the hand position depends on both link lengths and the sum of joint rotations along the chain. Changing a link length changes the predicted hand location even if the recorded joint angles remain unchanged. Check the reference pose too.",
+      "role_en": "Forward kinematics validates retargeted robot data, computes task-space rewards and supplies geometric features. Kinematic agreement does not by itself demonstrate dynamic balance or successful contact execution.",
+      "latex": "T(q)=e^{[\\mathcal S_1]q_1}\\cdots e^{[\\mathcal S_n]q_n}M",
+      "notation": [
+        {
+          "symbol": "q_i",
+          "meaning": "Joint coordinate."
+        },
+        {
+          "symbol": "\\mathcal S_i",
+          "meaning": "Joint screw axis expressed in a consistent frame."
+        },
+        {
+          "symbol": "M",
+          "meaning": "Reference end-effector pose."
+        }
+      ],
+      "prereqs": [
+        "geo_expmap",
+        "geo_se3"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "rb_jacobian",
+      "en": "Robot Jacobian and Differential Kinematics",
+      "title": "机器人雅可比与微分运动学",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "The robot Jacobian maps joint velocities to an instantaneous end-effector twist.",
+      "definition": "The robot Jacobian maps joint velocities to an instantaneous end-effector twist. It depends on configuration and coordinate conventions. Rank loss identifies task directions that cannot be produced instantaneously. A geometric Jacobian and an analytical Jacobian of orientation parameters are related but not automatically identical. Differential kinematics is local; integrating a large joint increment using a single Jacobian can introduce substantial geometric error.",
+      "example": "At a stretched planar arm configuration, some hand-motion directions require very large joint velocities or cannot be produced instantaneously. Computing singular values of the Jacobian quantifies the loss of local control authority. Small requested displacements must still be verified by recomputing forward kinematics.",
+      "role_en": "Jacobians connect forward geometry to inverse kinematics, Cartesian control, contact forces and sensitivity. They also provide analytical checks for learned kinematic or dynamics gradients. Local predictions require geometric execution checks.",
+      "latex": "V=J(q)\\dot q",
+      "notation": [
+        {
+          "symbol": "J(q)",
+          "meaning": "Geometric robot Jacobian under a stated space/body convention."
+        },
+        {
+          "symbol": "V",
+          "meaning": "End-effector twist."
+        },
+        {
+          "symbol": "\\dot q",
+          "meaning": "Joint velocity vector."
+        }
+      ],
+      "prereqs": [
+        "rb_fk",
+        "geo_twist",
+        "m_jacobian"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "rb_ik",
+      "en": "Inverse Kinematics",
+      "title": "逆运动学",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Inverse kinematics finds joint configurations that realize a desired task-space pose.",
+      "definition": "Inverse kinematics finds joint configurations that realize a desired task-space pose. Numerical methods repeatedly compute a pose error and update joints using a local Jacobian. Solutions may be multiple, absent or constrained by joint limits and obstacles. Orientation errors require a compatible geometric representation. Reaching a pose kinematically does not prove that a torque-controlled robot can execute it dynamically or maintain balance.",
+      "example": "A redundant arm can reach one hand position with different elbow placements. An unconstrained numerical solver may choose a configuration near a joint limit. Adding a null-space objective or explicit constraints changes the solution criterion rather than merely improving numerical accuracy.",
+      "role_en": "IK supports retargeting, task-space command generation and motion initialization. It is distinct from ID-WM inverse planning, which searches actions through a learned forward transition model.",
+      "latex": "q_{k+1}=q_k+J(q_k)^+e_k",
+      "notation": [
+        {
+          "symbol": "e_k",
+          "meaning": "Compatible local task-space pose error."
+        },
+        {
+          "symbol": "J^+",
+          "meaning": "Pseudoinverse, often replaced by damped or constrained variants."
+        }
+      ],
+      "prereqs": [
+        "rb_jacobian",
+        "la_pinv"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "rb_inverse_dynamics",
+      "en": "Inverse Dynamics and Computed Torque",
+      "title": "逆动力学与计算力矩控制",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Inverse dynamics computes forces or torques required for a specified motion under a physical model.",
+      "definition": "Inverse dynamics computes forces or torques required for a specified motion under a physical model. Computed-torque control combines model compensation with feedback to track a trajectory. The displayed expression omits contacts and underactuation for clarity. Real robots require actuator limits, state estimation and contact feasibility. Errors in mass, friction, delay or unmodelled forces can make the computed torque insufficient or inaccurate.",
+      "example": "A joint moving upward against gravity needs torque even when its desired angular acceleration is zero. A gravity-compensating model supplies that contribution; feedback then corrects tracking error. Merely replaying desired joint positions does not perform inverse dynamics. Check actuator saturation separately.",
+      "role_en": "This provides a classical alternative and physical reference for learned control. It helps separate force prediction, position targets and the learned forward dynamics used for differentiable policy training.",
+      "latex": "\\tau=M(q)\\ddot q_d+C(q,\\dot q)\\dot q+g(q)",
+      "notation": [
+        {
+          "symbol": "\\ddot q_d",
+          "meaning": "Requested joint acceleration in this simplified fully actuated example."
+        },
+        {
+          "symbol": "\\tau",
+          "meaning": "Required joint torques before additional constraints and model errors."
+        }
+      ],
+      "prereqs": [
+        "ph_manipulator",
+        "rb_fk"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_pd",
+      "en": "Proportional–Derivative Control",
+      "title": "比例—微分控制",
+      "group": "control",
+      "kind": "concept",
+      "summary": "PD control applies a correction based on position error and velocity error.",
+      "definition": "PD control applies a correction based on position error and velocity error. Gains determine response speed, damping and sensitivity, while actuator saturation and measurement noise affect practical performance. The formula does not alone guarantee stability for every nonlinear robot, delay or contact regime. In many robot-learning systems, a policy outputs desired positions that are converted into torques by a lower-level PD controller.",
+      "example": "A policy output of 0.1 radians can mean a desired joint offset, not a torque. The actual torque depends on current position, velocity, gains and clipping. Two simulators using the same policy checkpoint can therefore move differently if their PD settings differ.",
+      "role_en": "PD control is essential context for humanoid policy action semantics and sim-to-real matching. Record gains, control frequency, decimation and effort limits alongside neural architecture. These parameters belong in reproducible experiment configurations.",
+      "latex": "\\tau=K_p(q_d-q)+K_d(\\dot q_d-\\dot q)",
+      "notation": [
+        {
+          "symbol": "K_p,K_d",
+          "meaning": "Proportional and derivative gain matrices."
+        },
+        {
+          "symbol": "q_d,\\dot q_d",
+          "meaning": "Desired joint position and velocity."
+        }
+      ],
+      "prereqs": [
+        "r_feedback",
+        "m_derivative"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_pid",
+      "en": "PID Control and Integral Action",
+      "title": "比例—积分—微分控制",
+      "group": "control",
+      "kind": "concept",
+      "summary": "PID control adds integral action to proportional and derivative feedback.",
+      "definition": "PID control adds integral action to proportional and derivative feedback. Accumulated error can remove certain steady-state offsets, but actuator saturation may cause integrator windup. Derivative measurements require filtering or careful state estimation. The controller needs a discrete implementation and timing convention on a computer. Tuning gains for one system does not establish robustness for a changed load, delay or contact condition.",
+      "example": "A velocity controller with a constant unmodelled resistance may settle below the requested speed under proportional control. Integral action increases the command while an error persists. If the motor saturates, anti-windup logic prevents unlimited accumulation that would delay recovery. Log the accumulated error.",
+      "role_en": "PID links calculus to practical robot and actuator loops. It is a classical control background component, not a prerequisite for every learned world-model planner. Its timing convention affects the discrete implementation.",
+      "latex": "u(t)=K_pe(t)+K_i\\int_0^t e(\\tau)\\,d\\tau+K_d\\dot e(t)",
+      "notation": [
+        {
+          "symbol": "e",
+          "meaning": "Tracking error."
+        },
+        {
+          "symbol": "K_i",
+          "meaning": "Integral gain, separate from proportional and derivative gains."
+        }
+      ],
+      "prereqs": [
+        "ctrl_pd",
+        "c_integral"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_statespace",
+      "en": "Linear State-Space Systems",
+      "title": "线性状态空间系统",
+      "group": "control",
+      "kind": "concept",
+      "summary": "A linear state-space model represents coupled state evolution and measurement with matrices.",
+      "definition": "A linear state-space model represents coupled state evolution and measurement with matrices. It can describe an exactly linear system or a local approximation around an operating point. The state dimension differs from the number of sensors or controls. Continuous- and discrete-time matrices are not interchangeable. Such models make concepts including controllability, observability, feedback eigenvalues and Kalman filtering mathematically explicit. The operating point and sampling convention must be stated.",
+      "example": "A point mass with position and velocity has a two-dimensional state even if only position is measured. Force is one control input. The model shows why velocity can matter for prediction despite not being directly observed at a single instant.",
+      "role_en": "State-space systems connect physical dynamics to LQR and state estimation. They are interpretable baselines and local approximations alongside neural world models. Keep continuous and discrete representations separate.",
+      "latex": "\\dot x=Ax+Bu,\\qquad y=Cx+Du",
+      "notation": [
+        {
+          "symbol": "x,u,y",
+          "meaning": "State, control input and measured output."
+        },
+        {
+          "symbol": "A,B,C,D",
+          "meaning": "Dynamics, input and measurement matrices."
+        }
+      ],
+      "prereqs": [
+        "m_matrix",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: LQR",
+          "url": "https://underactuated.mit.edu/lqr.html"
+        },
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_linearize",
+      "en": "Linearization Along Robot Trajectories",
+      "title": "沿机器人轨迹线性化",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Trajectory linearization differentiates nonlinear dynamics around a nominal state-input trajectory.",
+      "definition": "Trajectory linearization differentiates nonlinear dynamics around a nominal state-input trajectory. The resulting matrices can change with time. It describes local perturbations rather than replacing the complete nonlinear system. A valid nominal trajectory should itself satisfy dynamics, or an additional defect term must be retained. Crossing a contact-mode boundary requires appropriate hybrid treatment rather than applying an unchanged smooth linear approximation.",
+      "example": "Linearizing an upright pendulum and a downward pendulum produces different local behaviour. A controller designed for one equilibrium is not automatically valid near the other. Compare the linear approximation with nearby nonlinear rollouts before using it for control. Its validity is local.",
+      "role_en": "Linearization supports time-varying LQR, EKF, trajectory optimization and learned-model sensitivity analysis. Its local assumptions complement but do not replace empirical rollout validation. Test perturbations within the intended operating region.",
+      "latex": "\\delta\\dot x=A(t)\\delta x+B(t)\\delta u,\\quad A=\\left.\\frac{\\partial f}{\\partial x}\\right|_{x^*,u^*},\\quad B=\\left.\\frac{\\partial f}{\\partial u}\\right|_{x^*,u^*}",
+      "notation": [
+        {
+          "symbol": "x^*,u^*",
+          "meaning": "Nominal state and input trajectory."
+        },
+        {
+          "symbol": "\\delta x,\\delta u",
+          "meaning": "Perturbations relative to that trajectory."
+        }
+      ],
+      "prereqs": [
+        "c_taylor",
+        "ctrl_statespace"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: LQR",
+          "url": "https://underactuated.mit.edu/lqr.html"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_controllability",
+      "en": "Controllability and Observability",
+      "title": "可控性与可观性",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Controllability asks whether inputs can move a state through the required directions in a specified model.",
+      "definition": "Controllability asks whether inputs can move a state through the required directions in a specified model. Observability asks whether state can be inferred from outputs over time. Rank tests characterize these properties for finite-dimensional linear time-invariant systems. They do not directly prove global nonlinear reachability or sensor adequacy in all environments. An underactuated system may still be controllable through dynamic coupling.",
+      "example": "A position measurement over several times can reveal velocity for a moving point, although one position sample cannot. Conversely, an unmeasured coordinate with no effect on any future output remains unobservable in the model. State inference requires an observation history rather than one image alone.",
+      "role_en": "These concepts clarify action authority and hidden-state estimation. They help assess whether a world-model input or controller can support the intended robot task at all.",
+      "latex": "\\mathcal C=[B,AB,\\ldots,A^{n-1}B],\\qquad \\mathcal O=\\begin{bmatrix}C\\\\CA\\\\\\vdots\\\\CA^{n-1}\\end{bmatrix}",
+      "notation": [
+        {
+          "symbol": "n",
+          "meaning": "State dimension."
+        },
+        {
+          "symbol": "\\operatorname{rank}\\mathcal C,\\operatorname{rank}\\mathcal O",
+          "meaning": "Full rank gives controllability or observability for the linear model."
+        }
+      ],
+      "prereqs": [
+        "ctrl_statespace",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: LQR",
+          "url": "https://underactuated.mit.edu/lqr.html"
+        },
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_lqr",
+      "en": "Linear Quadratic Regulator",
+      "title": "线性二次调节器",
+      "group": "control",
+      "kind": "concept",
+      "summary": "LQR computes optimal linear feedback for linear dynamics and a quadratic objective under specified assumptions.",
+      "definition": "LQR computes optimal linear feedback for linear dynamics and a quadratic objective under specified assumptions. The Riccati equation determines the gain, with stabilizability and detectability conditions relevant to the infinite-horizon result. The controller balances state error against control effort. Applying LQR to a nonlinear robot typically means stabilizing a local model or tracking a nominal trajectory, not obtaining globally optimal robot behaviour.",
+      "example": "A cart position regulator can penalize large position error and large motor force. Increasing the force penalty generally reduces aggressive control. For a nonlinear pendulum, an upright LQR controller usually needs an appropriate initial region or a separate swing-up strategy.",
+      "role_en": "LQR is a fundamental classical comparison for model-based control, and its local reasoning supports modern trajectory optimization. It is not equivalent to CEM or a learned policy.",
+      "latex": "J=\\int_0^\\infty(x^\\top Qx+u^\\top Ru)\\,dt,\\qquad u=-Kx,\\qquad K=R^{-1}B^\\top P",
+      "notation": [
+        {
+          "symbol": "Q,R",
+          "meaning": "State and control cost matrices."
+        },
+        {
+          "symbol": "P",
+          "meaning": "Stabilizing algebraic Riccati solution under standard assumptions."
+        }
+      ],
+      "prereqs": [
+        "ctrl_statespace",
+        "la_psd",
+        "c_integral"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: LQR",
+          "url": "https://underactuated.mit.edu/lqr.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_lyapunov",
+      "en": "Lyapunov Stability",
+      "title": "李雅普诺夫稳定性",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Lyapunov analysis studies stability through a scalar function with suitable positivity and derivative properties.",
+      "definition": "Lyapunov analysis studies stability through a scalar function with suitable positivity and derivative properties. Nonincrease can establish stability under appropriate assumptions; asymptotic convergence generally requires stronger conditions or an invariance argument. The region where conditions hold matters. A plotted decreasing training loss is not a Lyapunov certificate for a physical robot, because the loss and closed-loop state evolution are different objects.",
+      "example": "For a damped linear oscillator, an energy-like function can decrease along trajectories. If that derivative condition is verified only near an equilibrium, the conclusion is local. A neural controller that succeeds on sampled rollouts has empirical evidence, not automatically a formal stability proof.",
+      "role_en": "This node distinguishes theoretical closed-loop guarantees from training objectives and task success rates. It is relevant to safe control and model-error reasoning around learned robot policies.",
+      "latex": "V(x)>0\\ (x\\ne0),\\quad V(0)=0,\\quad\\dot V(x)=\\nabla V(x)^\\top f(x)\\le0",
+      "notation": [
+        {
+          "symbol": "V",
+          "meaning": "Candidate scalar stability function."
+        },
+        {
+          "symbol": "f",
+          "meaning": "Closed-loop continuous dynamics."
+        }
+      ],
+      "prereqs": [
+        "m_gradient",
+        "la_psd",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: Lyapunov analysis",
+          "url": "https://underactuated.mit.edu/lyapunov.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_trajopt",
+      "en": "Trajectory Optimization",
+      "title": "轨迹优化",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Trajectory optimization jointly or implicitly chooses a finite state-input sequence to minimize cost while respecting dynamics and other constraints.",
+      "definition": "Trajectory optimization jointly or implicitly chooses a finite state-input sequence to minimize cost while respecting dynamics and other constraints. Direct shooting optimizes controls through rollouts; direct transcription also includes states as decision variables. Nonlinear problems can have local minima and infeasible initializations. The quality of a computed solution depends on the model, discretization, solver tolerances and whether execution follows the predicted trajectory.",
+      "example": "Plan an arm reach that avoids an obstacle while limiting joint torque. A kinematically smooth path can still be dynamically infeasible. Check the optimized trajectory by replaying it through the simulator with the actual controller and reporting constraint violations. Report the execution discrepancy.",
+      "role_en": "Trajectory optimization links classical control with model-based learning. MPC repeatedly solves finite-horizon versions, while ID-WM uses a different hierarchical model and CEM search organization. Validate the returned motion through execution.",
+      "latex": "\\min_{x_{0:H},u_{0:H-1}}\\ell_f(x_H)+\\sum_{t=0}^{H-1}\\ell(x_t,u_t),\\quad x_{t+1}=F(x_t,u_t)",
+      "notation": [
+        {
+          "symbol": "\\ell,\\ell_f",
+          "meaning": "Stage and terminal costs."
+        },
+        {
+          "symbol": "F",
+          "meaning": "Discrete dynamics constraint."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Optimization horizon."
+        }
+      ],
+      "prereqs": [
+        "c_constraints",
+        "ph_manipulator",
+        "r_goal"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: trajectory optimization",
+          "url": "https://underactuated.mit.edu/trajopt.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_collision",
+      "en": "Collision Geometry and Configuration Space",
+      "title": "碰撞几何与构型空间",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "Configuration space represents the robot using generalized coordinates.",
+      "definition": "Configuration space represents the robot using generalized coordinates. Collision checking maps a configuration to occupied link geometry and tests it against obstacles or other links. Workspace clearance for an end-effector alone does not establish whole-robot clearance. Discrete collision checks can miss collisions between sampled configurations, so interpolation, swept-volume reasoning or sufficiently conservative checking is required for reliable planning. Collision margins should be specified explicitly.",
+      "example": "An arm hand can avoid a table while its elbow intersects the table edge. Evaluating only the hand point would incorrectly declare the motion safe. A joint interpolation between two collision-free endpoints can also collide in the middle. Check intermediate states too.",
+      "role_en": "Collision geometry is essential for robot planning and simulation. It explains why a small latent-space distance or plausible generated image is not a collision-avoidance guarantee.",
+      "latex": "\\mathcal C_{\\mathrm{free}}=\\{q:d(\\mathcal G(q),\\mathcal O)>0\\}",
+      "notation": [
+        {
+          "symbol": "\\mathcal G(q)",
+          "meaning": "Robot occupied geometry at configuration q."
+        },
+        {
+          "symbol": "\\mathcal O",
+          "meaning": "Obstacle geometry."
+        },
+        {
+          "symbol": "d",
+          "meaning": "Signed or separation distance under the stated convention."
+        }
+      ],
+      "prereqs": [
+        "rb_fk",
+        "c_constraints"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics: trajectory optimization",
+          "url": "https://underactuated.mit.edu/trajopt.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_sampling_planners",
+      "en": "Sampling-Based Motion Planning",
+      "title": "基于采样的运动规划",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Sampling-based planners such as PRM and RRT construct connectivity using sampled configurations and local collision-checked motions.",
+      "definition": "Sampling-based planners such as PRM and RRT construct connectivity using sampled configurations and local collision-checked motions. Their guarantees depend on algorithm assumptions, sampling and connection procedures; finite-time success is not guaranteed. Geometric planning can ignore dynamics, while kinodynamic variants incorporate them. A learned state generator can be compared by what it samples and how local transitions are validated, without calling it the same algorithm.",
+      "example": "Build a search tree for an arm by sampling joint configurations, extending from nearby nodes and rejecting colliding connections. A narrow passage can require many samples. Increasing samples improves coverage possibilities but does not remove errors in collision geometry or the local steering routine.",
+      "role_en": "These classical methods provide context for reachability, hierarchical subgoals and model-based planning. They connect explicit geometry to the local-future composition used by learned planners. Check every connection using the actual robot model.",
+      "latex": "q_{\\mathrm{new}}=\\operatorname{Steer}(q_{\\mathrm{near}},q_{\\mathrm{sample}})",
+      "notation": [
+        {
+          "symbol": "\\operatorname{Steer}",
+          "meaning": "Local connection or extension routine."
+        },
+        {
+          "symbol": "q_{\\mathrm{near}}",
+          "meaning": "Existing tree or roadmap configuration nearest under a chosen metric."
+        }
+      ],
+      "prereqs": [
+        "ctrl_collision",
+        "p_sampling"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "MIT Underactuated Robotics: trajectory optimization",
+          "url": "https://underactuated.mit.edu/trajopt.html"
+        }
+      ]
+    },
+    {
+      "id": "est_bayesfilter",
+      "en": "Recursive Bayesian State Estimation",
+      "title": "递归贝叶斯状态估计",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "Recursive Bayesian estimation maintains a probability distribution over hidden state.",
+      "definition": "Recursive Bayesian estimation maintains a probability distribution over hidden state. A prediction step propagates the previous belief through dynamics, and a measurement update combines it with the current likelihood. The belief need not be Gaussian; different filters approximate it differently. A point prediction does not by itself represent uncertainty. Correct time alignment and measurement models are as important as the choice of filtering algorithm.",
+      "example": "A ball detector provides a noisy image position while a dynamics model predicts motion. The filter first predicts where the ball may be, then uses the new measurement to update that belief. During missed detections it can continue prediction, with uncertainty generally growing.",
+      "role_en": "State estimation supplies the current state or belief used by controllers and world models. It addresses partial observation rather than replacing planning or task-policy learning.",
+      "latex": "p(x_t\\mid y_{1:t})\\propto p(y_t\\mid x_t)\\int p(x_t\\mid x_{t-1},u_{t-1})p(x_{t-1}\\mid y_{1:t-1})\\,dx_{t-1}",
+      "notation": [
+        {
+          "symbol": "y_t",
+          "meaning": "Current measurement."
+        },
+        {
+          "symbol": "p(x_t\\mid y_{1:t})",
+          "meaning": "Posterior state belief."
+        },
+        {
+          "symbol": "u_{t-1}",
+          "meaning": "Previously applied input."
+        }
+      ],
+      "prereqs": [
+        "p_bayes",
+        "r_markov",
+        "c_integral"
+      ],
+      "sources": [
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "est_kalman",
+      "en": "Kalman Filter",
+      "title": "卡尔曼滤波",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "The Kalman filter gives exact recursive Gaussian state estimation for the specified linear Gaussian model.",
+      "definition": "The Kalman filter gives exact recursive Gaussian state estimation for the specified linear Gaussian model. It propagates mean and covariance, then weights measurement residuals using predicted uncertainty and measurement noise. Correctness is relative to those model assumptions, not all physical systems. Numerical implementations must maintain covariance consistency and handle initialization, outliers and missing measurements. A gain is determined by uncertainty rather than an arbitrary trust percentage.",
+      "example": "If a position sensor is very noisy, increasing its measurement covariance reduces how much the update changes the predicted position. A more precise measurement usually receives greater weight, provided the process and measurement models are correctly calibrated. Measurement confidence must be calibrated.",
+      "role_en": "Kalman filtering is useful for robot and ball-state estimates that feed control or planning. It offers a classical uncertainty-aware baseline for learned state estimation. Report initialization and missing-measurement handling too.",
+      "latex": "K=P^-H^\\top(HP^-H^\\top+R)^{-1},\\qquad\\hat x^+=\\hat x^-+K(y-H\\hat x^-)",
+      "notation": [
+        {
+          "symbol": "P^-,R",
+          "meaning": "Predicted state covariance and measurement-noise covariance."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Measurement matrix."
+        },
+        {
+          "symbol": "K",
+          "meaning": "Kalman gain."
+        }
+      ],
+      "prereqs": [
+        "est_bayesfilter",
+        "p_gaussian",
+        "ctrl_statespace"
+      ],
+      "sources": [
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "est_ekf",
+      "en": "Extended Kalman Filter",
+      "title": "扩展卡尔曼滤波",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "The extended Kalman filter applies local linearization to nonlinear dynamics or measurement functions while retaining a Gaussian belief approximation.",
+      "definition": "The extended Kalman filter applies local linearization to nonlinear dynamics or measurement functions while retaining a Gaussian belief approximation. It is generally approximate and can become inconsistent when nonlinearities, initialization errors or unmodelled effects are severe. Jacobians must match coordinate representations; rotations often require an error-state or manifold-aware formulation. Covariance propagation should not be interpreted as an exact uncertainty bound outside the approximation assumptions.",
+      "example": "A camera observes a 3D point through perspective division. The measurement is nonlinear in position, so an EKF uses a projection Jacobian around the current estimate. A point near the camera plane or a badly initialized depth can make that approximation unreliable.",
+      "role_en": "EKF connects calculus and geometry to sensor fusion, localization and world-model state input. Learned transition Jacobians can be used, but their accuracy and uncertainty must be validated.",
+      "latex": "F_t=\\left.\\frac{\\partial f}{\\partial x}\\right|_{\\hat x_t},\\qquad H_t=\\left.\\frac{\\partial h}{\\partial x}\\right|_{\\hat x_t},\\qquad P^-_{t+1}=F_tP_tF_t^\\top+Q_t",
+      "notation": [
+        {
+          "symbol": "F_t,H_t",
+          "meaning": "Local transition and measurement Jacobians."
+        },
+        {
+          "symbol": "Q_t",
+          "meaning": "Process-noise covariance."
+        }
+      ],
+      "prereqs": [
+        "est_kalman",
+        "ctrl_linearize"
+      ],
+      "sources": [
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "est_sensorfusion",
+      "en": "Sensor Models and Time-Aligned Fusion",
+      "title": "传感器模型与时间同步融合",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "Sensor fusion combines measurements using explicit models of what each sensor measures, where it is mounted and when it was captured.",
+      "definition": "Sensor fusion combines measurements using explicit models of what each sensor measures, where it is mounted and when it was captured. Different sensors can have distinct rates, delays, coordinate frames and noise. Combining values with matching array shapes does not ensure physical consistency. Correlated errors require care because treating them as independent can make estimated uncertainty too small. Calibration and synchronization are part of the model.",
+      "example": "A camera image delayed by fifty milliseconds should not be combined as if it measured the current position of a fast-moving ball. Propagate the relevant state to the image timestamp or use a suitable delayed-update method before fusing it with current joint and inertial data.",
+      "role_en": "Reliable fused observations support robot policies, learned dynamics and evaluation. Input timing errors can imitate model prediction failures even when network computation is correct. Measure delays rather than inferring them from appearance.",
+      "latex": "y_t^{(i)}=h_i(x_{t-\\delta_i})+v_t^{(i)}",
+      "notation": [
+        {
+          "symbol": "\\delta_i",
+          "meaning": "Sensor delay or time offset."
+        },
+        {
+          "symbol": "h_i",
+          "meaning": "Sensor-specific measurement function."
+        },
+        {
+          "symbol": "v_t^{(i)}",
+          "meaning": "Measurement noise."
+        }
+      ],
+      "prereqs": [
+        "est_bayesfilter",
+        "geo_se3",
+        "ph_units"
+      ],
+      "sources": [
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "est_slam",
+      "en": "SLAM and Factor-Graph Estimation",
+      "title": "同步定位与建图及因子图估计",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "SLAM jointly estimates sensor motion and an environment map from observations.",
+      "definition": "SLAM jointly estimates sensor motion and an environment map from observations. A factor graph organizes variables and measurement relations, often optimized as weighted residuals. The map and pose can have gauge freedoms requiring a reference choice. Visual ambiguity, dynamic objects, incorrect data association and drift remain important failure modes. A reconstructed map is an estimate, not automatically an exact collision model or a complete physical world state.",
+      "example": "A mobile robot revisits a corridor and matches landmarks to earlier observations. A correct loop closure can reduce accumulated pose drift, while a false match can distort the entire estimate. Residual weights should reflect measurement uncertainty rather than only visual similarity.",
+      "role_en": "SLAM provides geometry and localization for embodied data and explicit world representations. It is a related robotics branch rather than a mandatory component of every learned video or latent world model.",
+      "latex": "\\hat X=\\arg\\min_X\\sum_i\\|r_i(X)\\|_{\\Sigma_i^{-1}}^2",
+      "notation": [
+        {
+          "symbol": "X",
+          "meaning": "Unknown poses, landmarks or other state variables."
+        },
+        {
+          "symbol": "r_i,\\Sigma_i",
+          "meaning": "Measurement residual and its covariance."
+        }
+      ],
+      "prereqs": [
+        "est_sensorfusion",
+        "geo_se3",
+        "c_constraints"
+      ],
+      "sources": [
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        },
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        }
+      ]
+    },
+    {
+      "id": "est_sysid",
+      "en": "System Identification and Parameter Estimation",
+      "title": "系统辨识与参数估计",
+      "group": "estimation",
+      "kind": "concept",
+      "summary": "System identification estimates a dynamical model from recorded excitation and response.",
+      "definition": "System identification estimates a dynamical model from recorded excitation and response. Parameters may represent mass, friction, actuator dynamics or flexible learned coefficients. Identifiability asks whether the available experiment can distinguish parameter values; low prediction error alone does not ensure physically correct recovered parameters. Data collection must excite relevant modes, and validation should use trajectories beyond those used for fitting. Noise and hidden state can bias results.",
+      "example": "If every recorded joint motion is nearly static, inertial parameters may be poorly identified even though gravity behaviour is fitted well. Faster varied excitation can reveal effects absent from the original data, subject to the physical limits of the robot.",
+      "role_en": "System identification bridges analytical models, simulators and learned world models. It supports calibration and explains why more data of an uninformative type may not resolve a dynamics ambiguity.",
+      "latex": "\\hat\\theta=\\arg\\min_\\theta\\sum_t\\|x_{t+1}-F_\\theta(x_t,u_t)\\|^2",
+      "notation": [
+        {
+          "symbol": "\\theta",
+          "meaning": "Physical parameters or model coefficients."
+        },
+        {
+          "symbol": "F_\\theta",
+          "meaning": "Parameterized transition model."
+        }
+      ],
+      "prereqs": [
+        "ml_supervised",
+        "ph_manipulator",
+        "ml_split"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+          "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf"
+        }
+      ]
+    },
+    {
+      "id": "sim_assets",
+      "en": "Robot Description and Simulator Assets",
+      "title": "机器人描述与仿真资产",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "A robot asset specifies bodies, joints, reference transforms, mass properties, collision shapes and actuator interfaces.",
+      "definition": "A robot asset specifies bodies, joints, reference transforms, mass properties, collision shapes and actuator interfaces. Formats such as URDF or MJCF encode overlapping but different modelling features. Successful import only shows that a description was accepted; it does not validate joint conventions, inertia, contacts or actuator behaviour. Visual meshes may be unsuitable collision geometry, and missing data can be replaced by defaults that alter dynamics.",
+      "example": "A humanoid mesh may look correct while a foot collision box is too large or a joint axis is reversed. Preview the geometry, inspect joint names and limits, and compare forward kinematics before interpreting a policy failure as a learning problem.",
+      "role_en": "Asset validation is required for reproducible simulation-generated data and policy transfer. Keep geometry, kinematic agreement and dynamic execution as separate acceptance checks. Record model files and imported defaults explicitly.",
+      "latex": "\\mathcal M=\\{\\text{links},\\text{joints},\\text{inertias},\\text{collisions},\\text{actuators}\\}",
+      "notation": [
+        {
+          "symbol": "\\mathcal M",
+          "meaning": "Structured simulator model; the expression is a schematic list, not a physics law."
+        }
+      ],
+      "prereqs": [
+        "rb_fk",
+        "ph_inertia",
+        "ctrl_collision"
+      ],
+      "sources": [
+        {
+          "title": "ROS: URDF documentation",
+          "url": "https://docs.ros.org/en/rolling/Tutorials/Intermediate/URDF/URDF-Main.html"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_mujoco",
+      "en": "MuJoCo Physics Engine",
+      "title": "MuJoCo物理引擎",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "MuJoCo is a general-purpose physics engine for articulated structures interacting with their environment.",
+      "definition": "MuJoCo is a general-purpose physics engine for articulated structures interacting with their environment. Its model, state and numerical settings jointly define transitions. Contact uses engine-specific modelling and solver choices rather than a universally exact physical law. Rendering, dynamics computation and control interfaces are different subsystems. Version and configuration must be recorded when using it to produce trajectories, evaluate policies or compare learned dynamics.",
+      "example": "A policy can output joint position targets that MuJoCo actuators convert into forces. Changing actuator gains, contact parameters or integration time step changes transitions even with the same policy weights. A rendered successful pose is not the same as stable closed-loop execution.",
+      "role_en": "MuJoCo provides a conventional simulator baseline and data source for robot world models. A learned differentiable surrogate can be trained from its transitions without differentiating the simulator itself.",
+      "latex": "(q_{t+1},v_{t+1})=\\operatorname{Step}_{\\mathrm{MuJoCo}}(q_t,v_t,u_t;\\mathcal M)",
+      "notation": [
+        {
+          "symbol": "\\mathcal M",
+          "meaning": "Compiled model, parameters and solver settings."
+        },
+        {
+          "symbol": "u_t",
+          "meaning": "Control input under the configured actuator model."
+        }
+      ],
+      "prereqs": [
+        "sim_assets",
+        "ph_constraints",
+        "c_euler"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_mjx",
+      "en": "MuJoCo XLA and JAX-Based Simulation",
+      "title": "MuJoCo XLA与JAX仿真",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "MJX is MuJoCo ecosystem support for accelerator-oriented simulation and JAX-compatible workflows.",
+      "definition": "MJX is MuJoCo ecosystem support for accelerator-oriented simulation and JAX-compatible workflows. Its available implementations, supported features and performance properties depend on version and backend. Batched array computation and compilation can make many environments efficient, but compilation cost, contact workloads and memory use matter. A simulator running on accelerators is not automatically differentiable through every operation, nor numerically identical to another backend.",
+      "example": "Compile a batched step function, then time warmed-up repeated steps separately from compilation. Check that the selected robot features and contact settings are supported. Compare corresponding short trajectories before interpreting a speed difference as an equal-fidelity simulation improvement. Exclude compilation from steady-state timing.",
+      "role_en": "MJX is relevant to large-scale reinforcement learning and trajectory data generation. Distinguish backend-specific performance from algorithmic training improvements. Report compilation, batch count and steady-state timings separately.",
+      "latex": "X_{t+1}=\\operatorname{vmap}(\\operatorname{step})(X_t,U_t)",
+      "notation": [
+        {
+          "symbol": "X_t,U_t",
+          "meaning": "Batches of environment states and actions."
+        },
+        {
+          "symbol": "\\operatorname{vmap}",
+          "meaning": "Conceptual vectorization across environments; API details depend on backend/version."
+        }
+      ],
+      "prereqs": [
+        "sim_mujoco",
+        "d_tensor"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo XLA documentation",
+          "url": "https://mujoco.readthedocs.io/en/stable/mjx.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_warp",
+      "en": "NVIDIA Warp and MuJoCo Warp",
+      "title": "NVIDIA Warp与MuJoCo Warp",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "NVIDIA Warp compiles numerical kernels for parallel execution and provides automatic-differentiation facilities for supported computations.",
+      "definition": "NVIDIA Warp compiles numerical kernels for parallel execution and provides automatic-differentiation facilities for supported computations. MuJoCo Warp is a GPU-oriented MuJoCo implementation built using Warp. These are distinct layers: a kernel framework and a simulator backend. Differentiability depends on actual operations, state updates and contact treatment. Efficient parallel execution, gradient availability and physical-model fidelity should be evaluated separately. Backend-specific numerical settings remain important.",
+      "example": "A batch of independent robot states can be advanced by GPU kernels. A Warp tape can differentiate supported computations of a scalar loss, but this does not establish that arbitrary simulator contact rollouts expose reliable derivatives. Consult the backend feature and differentiation documentation.",
+      "role_en": "Warp connects the numerical-kernel layer to physics workloads and large-batch robot learning. It should not be conflated with a learned differentiable world model or with video rendering.",
+      "latex": "X_{t+1}=F_{\\mathrm{GPU}}(X_t,U_t),\\qquad\\frac{\\partial\\mathcal L}{\\partial X}=\\operatorname{AD}(F_{\\mathrm{supported}})",
+      "notation": [
+        {
+          "symbol": "F_{\\mathrm{GPU}}",
+          "meaning": "GPU physics or numerical kernel implementation."
+        },
+        {
+          "symbol": "\\operatorname{AD}",
+          "meaning": "Automatic differentiation where supported and valid."
+        }
+      ],
+      "prereqs": [
+        "sim_mujoco",
+        "d_tensor"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA Warp: differentiability",
+          "url": "https://nvidia.github.io/warp/latest/user_guide/differentiability.html"
+        },
+        {
+          "title": "MuJoCo Warp documentation",
+          "url": "https://mujoco.readthedocs.io/en/stable/mjwarp/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_isaacsim",
+      "en": "Isaac Sim and Physics-Based Sensors",
+      "title": "Isaac Sim与物理传感器仿真",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "Isaac Sim is a robotics simulation platform combining scene representation, physics and sensor workflows.",
+      "definition": "Isaac Sim is a robotics simulation platform combining scene representation, physics and sensor workflows. Dynamics and rendering have different timing, configuration and resource costs. Photorealistic images can support perception data, but appearance fidelity does not prove physically accurate contact or deployment transfer. Exact features depend on platform and release. Model assets, sensor parameters and the selected physics backend must be documented alongside training configuration.",
+      "example": "A depth camera needs its pose, intrinsics, clipping range and update rate configured. A correct-looking RGB view can still provide the wrong metric depth convention or stale observations if sensor and controller schedules differ. Validate measurements against known geometric distances.",
+      "role_en": "Isaac Sim supports embodied datasets, sensor testing and robot training infrastructure. It is a platform layer rather than a learned world-model algorithm. Validate metric sensors independently from visual appearance.",
+      "latex": "o_t^{\\mathrm{cam}}=\\operatorname{Render}(\\mathcal W_t,T_{\\mathrm{cam}},K)",
+      "notation": [
+        {
+          "symbol": "\\mathcal W_t",
+          "meaning": "Scene state, geometry, materials and lighting."
+        },
+        {
+          "symbol": "T_{\\mathrm{cam}},K",
+          "meaning": "Camera pose and intrinsic calibration."
+        }
+      ],
+      "prereqs": [
+        "sim_assets",
+        "geo_se3",
+        "ph_constraints"
+      ],
+      "sources": [
+        {
+          "title": "Isaac Sim documentation",
+          "url": "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_isaaclab",
+      "en": "Isaac Lab Robot-Learning Framework",
+      "title": "Isaac Lab机器人学习框架",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "Isaac Lab organizes robot-learning environments, tasks, observations, actions, rewards, events and sensors on supported simulation infrastructure.",
+      "definition": "Isaac Lab organizes robot-learning environments, tasks, observations, actions, rewards, events and sensors on supported simulation infrastructure. Framework configuration determines action scaling, reset logic, control decimation and domain randomization. It is distinct from the physics engine and the reinforcement-learning optimizer. Successful environment startup or a completed smoke run does not demonstrate convergence or real-robot acceptance. Backend support and APIs should be checked for the chosen release.",
+      "example": "A locomotion task may run several physics substeps for each policy action and reset individual environments when they fall. Changing termination rules can change training returns and data distributions even when network architecture and optimizer settings are unchanged. Document the reset distribution.",
+      "role_en": "This framework connects simulation to large-batch policy training and data collection. Keep framework, simulator backend and learning algorithm as separate nodes in the systems graph.",
+      "latex": "(o_{t+1},r_t,d_t)=\\operatorname{EnvStep}(a_t)",
+      "notation": [
+        {
+          "symbol": "o,r,d",
+          "meaning": "Observation, reward and termination/reset indicators."
+        },
+        {
+          "symbol": "\\operatorname{EnvStep}",
+          "meaning": "Learning-environment abstraction, not a single physical equation."
+        }
+      ],
+      "prereqs": [
+        "sim_isaacsim",
+        "r_policy",
+        "e_torch"
+      ],
+      "sources": [
+        {
+          "title": "Isaac Lab documentation",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_brax",
+      "en": "Brax and Accelerator-Based Robot Learning",
+      "title": "Brax与加速器机器人学习",
+      "group": "simulation",
+      "kind": "tool",
+      "summary": "Brax is an accelerator-oriented physics and robot-learning project in the JAX ecosystem.",
+      "definition": "Brax is an accelerator-oriented physics and robot-learning project in the JAX ecosystem. Its implementation choices and recommended simulation backends have evolved, so current repository guidance should determine which pipeline is used. Vectorization can improve throughput for large batches, but it does not automatically improve single-environment latency, model accuracy or transfer. Distinguish the learning utilities from the exact physics backend and supported contact behaviour.",
+      "example": "Compare a batched training workload after compilation with the same workload on another backend. Record environment count, device, step settings and task success. A throughput result at thousands of environments does not predict interactive performance for one robot. Use the documented backend.",
+      "role_en": "Brax provides useful context for accelerator-native simulation and differentiable/parallel robot learning. Avoid treating framework names as guarantees of identical dynamics or universal differentiation. Record the selected pipeline in each comparison.",
+      "latex": "\\{s_{t+1}^{(b)}\\}_{b=1}^{B}=\\operatorname{BatchStep}(\\{s_t^{(b)},a_t^{(b)}\\}_{b=1}^{B})",
+      "notation": [
+        {
+          "symbol": "B",
+          "meaning": "Number of independent environment instances."
+        },
+        {
+          "symbol": "b",
+          "meaning": "Environment batch index."
+        }
+      ],
+      "prereqs": [
+        "c_ode",
+        "d_tensor",
+        "r_policy"
+      ],
+      "sources": [
+        {
+          "title": "Brax: official repository",
+          "url": "https://github.com/google/brax"
+        }
+      ]
+    },
+    {
+      "id": "sim_differentiable",
+      "en": "Differentiable Simulation and Contact Gradients",
+      "title": "可微仿真与接触梯度",
+      "group": "simulation",
+      "kind": "concept",
+      "summary": "Differentiable simulation exposes derivatives of simulated outcomes with respect to inputs or parameters.",
+      "definition": "Differentiable simulation exposes derivatives of simulated outcomes with respect to inputs or parameters. It may use automatic, analytical, implicit or approximate differentiation. The resulting derivative belongs to the implemented numerical model, which may regularize physical discontinuities. Gradient existence, numerical stability and usefulness for optimization are different properties. Contact-mode changes and long horizons can make derivatives difficult even when a software framework supports backward execution.",
+      "example": "Optimize an applied force so a simulated point reaches a target. A smooth free-flight trajectory gives straightforward sensitivities. If the point collides or changes friction mode, compare analytic gradients with finite differences away from and near the switching boundary. Compare several perturbation sizes.",
+      "role_en": "This branch explains differentiable physics and learned differentiable surrogates. SuperMimic can differentiate its learned world model without differentiating the rigid-body simulator used to collect transitions.",
+      "latex": "\\frac{d\\mathcal L}{d\\theta}=\\sum_t\\frac{\\partial\\mathcal L}{\\partial x_t}\\frac{\\partial x_t}{\\partial\\theta}",
+      "notation": [
+        {
+          "symbol": "\\theta",
+          "meaning": "Controls, physical parameters or other optimization variables."
+        },
+        {
+          "symbol": "x_t",
+          "meaning": "State produced by the differentiable computation."
+        }
+      ],
+      "prereqs": [
+        "d_backprop",
+        "ph_constraints",
+        "c_euler"
+      ],
+      "sources": [
+        {
+          "title": "NVIDIA Warp: differentiability",
+          "url": "https://nvidia.github.io/warp/latest/user_guide/differentiability.html"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_domainrand",
+      "en": "Domain Randomization",
+      "title": "域随机化",
+      "group": "simulation",
+      "kind": "concept",
+      "summary": "Domain randomization varies selected environment parameters during training to encourage robustness over a distribution of conditions.",
+      "definition": "Domain randomization varies selected environment parameters during training to encourage robustness over a distribution of conditions. Parameters can include mass, friction, actuator response, delay, sensor noise and appearance. Randomization must respect physical consistency and task relevance. Broader variation is not automatically better: it can slow learning or include impossible combinations. Robustness outside the sampled and evaluated distribution remains an empirical question.",
+      "example": "Vary foot friction and actuator strength across simulated environments, then test the resulting policy on held-out combinations. Randomizing only colour does not cover changes in contact dynamics, while randomizing mass without updating compatible inertia may create inconsistent assets. Inspect randomized assets before training.",
+      "role_en": "Domain randomization connects uncertainty modelling to policy transfer and robust world-model data. Report ranges, correlations and deployment tests rather than claiming guaranteed sim-to-real success. Validate the intended deployment conditions directly.",
+      "latex": "\\eta\\sim p_{\\mathrm{train}}(\\eta),\\qquad s_{t+1}=F(s_t,a_t;\\eta)",
+      "notation": [
+        {
+          "symbol": "\\eta",
+          "meaning": "Physical, sensor or appearance parameters."
+        },
+        {
+          "symbol": "p_{\\mathrm{train}}",
+          "meaning": "Chosen randomization distribution."
+        }
+      ],
+      "prereqs": [
+        "p_sampling",
+        "est_sysid",
+        "ml_distribution_shift"
+      ],
+      "sources": [
+        {
+          "title": "Isaac Lab documentation",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/index.html"
+        },
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_sim2real",
+      "en": "Sim-to-Real Transfer and Validation",
+      "title": "仿真到现实迁移与验证",
+      "group": "simulation",
+      "kind": "concept",
+      "summary": "Sim-to-real transfer deploys a model or controller trained using simulation into a physical system.",
+      "definition": "Sim-to-real transfer deploys a model or controller trained using simulation into a physical system. Mismatch can arise in dynamics, contact, actuators, delays, observations and task conditions. Asset checks, simulation validation and hardware trials establish different evidence levels. Adaptation or randomization can address some gaps but does not replace physical evaluation. Safe operating limits and concrete task acceptance criteria should be defined for the actual robot experiment.",
+      "example": "A simulated humanoid policy may transfer basic walking yet fail precise ball placement because foot-ball contact and sensing were not covered. Evaluate balance, execution completion, placement error and post-action settling separately rather than reporting only that the robot remained upright.",
+      "role_en": "This is the deployment boundary for robot world models and policies. Claims should name the measured physical task and conditions instead of inferring complete transfer from one successful video.",
+      "latex": "p_{\\mathrm{sim}}(s^\\prime,o\\mid s,a)\\ne p_{\\mathrm{real}}(s^\\prime,o\\mid s,a)",
+      "notation": [
+        {
+          "symbol": "p_{\\mathrm{sim}},p_{\\mathrm{real}}",
+          "meaning": "Simulation and physical transition/observation distributions."
+        }
+      ],
+      "prereqs": [
+        "sim_domainrand",
+        "est_sensorfusion",
+        "ctrl_pd"
+      ],
+      "sources": [
+        {
+          "title": "Isaac Lab documentation",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/index.html"
+        },
+        {
+          "title": "MIT Underactuated Robotics",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "sim_camera",
+      "en": "Camera Projection and Metric Depth",
+      "title": "相机投影与度量深度",
+      "group": "geometry",
+      "kind": "concept",
+      "summary": "Perspective projection maps a three-dimensional camera-frame point to image coordinates using intrinsics and division by optical-axis depth.",
+      "definition": "Perspective projection maps a three-dimensional camera-frame point to image coordinates using intrinsics and division by optical-axis depth. Optical-axis depth differs from range along a pixel ray except on the optical axis. Simulator APIs can provide different depth conventions, clipping values and units. Lens distortion and rolling shutter require additional models when relevant. Calibration must match the image resolution and any resizing or cropping applied.",
+      "example": "A point away from the optical axis has ray distance larger than its optical-axis depth. Reconstructing it with the wrong convention produces a geometric error even if the image looks correct. Check a known plane or sphere at several image locations to validate the convention.",
+      "role_en": "Camera geometry supports visual observations, depth-based robot policies, world-state reconstruction and sensor simulation. It is a geometry node shared by traditional robotics and visual world models.",
+      "latex": "\\begin{bmatrix}u\\\\v\\\\1\\end{bmatrix}\\sim K\\begin{bmatrix}X_c/Z_c\\\\Y_c/Z_c\\\\1\\end{bmatrix},\\qquad d_{\\mathrm{ray}}=\\sqrt{X_c^2+Y_c^2+Z_c^2}",
+      "notation": [
+        {
+          "symbol": "K",
+          "meaning": "Camera intrinsic matrix."
+        },
+        {
+          "symbol": "Z_c",
+          "meaning": "Optical-axis depth."
+        },
+        {
+          "symbol": "d_{\\mathrm{ray}}",
+          "meaning": "Euclidean distance from the camera centre."
+        }
+      ],
+      "prereqs": [
+        "geo_se3",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: book resources",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/"
+        },
+        {
+          "title": "Isaac Sim documentation",
+          "url": "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html"
+        }
+      ]
+    },
+    {
+      "id": "sim_contactsensors",
+      "en": "Contact Sensing and Physics-Step Timing",
+      "title": "接触传感与物理步时序",
+      "group": "simulation",
+      "kind": "concept",
+      "summary": "A contact report may represent an instantaneous force, accumulated impulse, filtered value or interval aggregate depending on the engine and sensor API.",
+      "definition": "A contact report may represent an instantaneous force, accumulated impulse, filtered value or interval aggregate depending on the engine and sensor API. Physics steps, control steps and rendering steps can have different rates. An absent reported contact is not automatically proof of no physical interaction if sampling misses a short event. Contact thresholds and coordinate frames must be stated when defining rewards or evaluating impacts.",
+      "example": "A policy acts every twenty milliseconds while physics runs at five-millisecond steps. A brief contact can occur between policy observations. Determine whether the sensor reports the last substep, a maximum, an average or an accumulated quantity before using it for ball-hit success.",
+      "role_en": "Contact timing connects simulator interfaces to learning rewards and evaluation. It prevents incorrect conclusions from low-rate visual captures or ambiguously aggregated force data. Document sensor aggregation and controller sampling schedules.",
+      "latex": "f_{\\mathrm{reported}}(t_k)=\\mathcal S(\\{\\lambda(t)\\}_{t\\in\\mathcal I_k})",
+      "notation": [
+        {
+          "symbol": "\\mathcal S",
+          "meaning": "Sensor aggregation or sampling operation."
+        },
+        {
+          "symbol": "\\mathcal I_k",
+          "meaning": "Physics-time interval associated with a report."
+        }
+      ],
+      "prereqs": [
+        "ph_friction",
+        "est_sensorfusion",
+        "sim_mujoco"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo documentation: computation",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        },
+        {
+          "title": "Isaac Lab documentation",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/index.html"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "to": "c_integral",
+      "type": "prereq",
+      "why_en": "Finite sums become Riemann sums whose limit defines accumulated continuous quantities.",
+      "from": "m_sum"
+    },
+    {
+      "to": "c_integral",
+      "type": "prereq",
+      "why_en": "The integrand specifies the value accumulated over the integration interval.",
+      "from": "m_function"
+    },
+    {
+      "to": "c_ftc",
+      "type": "prereq",
+      "why_en": "Integration accumulates the rate whose antiderivative the theorem evaluates.",
+      "from": "c_integral"
+    },
+    {
+      "to": "c_ftc",
+      "type": "prereq",
+      "why_en": "Differentiation identifies an antiderivative and recovers a continuous integrand.",
+      "from": "m_derivative"
+    },
+    {
+      "to": "c_taylor",
+      "type": "prereq",
+      "why_en": "Derivatives determine first-order local coefficients.",
+      "from": "m_derivative"
+    },
+    {
+      "to": "c_taylor",
+      "type": "prereq",
+      "why_en": "Partial derivatives extend the local approximation to multiple input coordinates.",
+      "from": "m_partial"
+    },
+    {
+      "to": "c_hessian",
+      "type": "prereq",
+      "why_en": "Second partial derivatives form the curvature matrix.",
+      "from": "m_partial"
+    },
+    {
+      "to": "c_hessian",
+      "type": "prereq",
+      "why_en": "The second derivatives are arranged into a matrix acting on perturbation vectors.",
+      "from": "m_matrix"
+    },
+    {
+      "to": "c_ode",
+      "type": "prereq",
+      "why_en": "A differential equation constrains a derivative of the evolving state.",
+      "from": "m_derivative"
+    },
+    {
+      "to": "c_ode",
+      "type": "prereq",
+      "why_en": "The state vector identifies which physical quantities evolve together.",
+      "from": "r_state"
+    },
+    {
+      "to": "c_euler",
+      "type": "prereq",
+      "why_en": "The integrator approximates the continuous-time derivative equation.",
+      "from": "c_ode"
+    },
+    {
+      "to": "c_euler",
+      "type": "prereq",
+      "why_en": "A finite-step state increment approximates an integral of the derivative.",
+      "from": "c_integral"
+    },
+    {
+      "to": "c_runge_kutta",
+      "type": "prereq",
+      "why_en": "Multiple derivative evaluations approximate an ODE trajectory over one step.",
+      "from": "c_ode"
+    },
+    {
+      "to": "c_runge_kutta",
+      "type": "prereq",
+      "why_en": "Euler supplies the simplest one-evaluation baseline for numerical integration.",
+      "from": "c_euler"
+    },
+    {
+      "to": "la_svd",
+      "type": "prereq",
+      "why_en": "Orthogonal matrices and a diagonal factor reconstruct the linear transformation.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "la_svd",
+      "type": "prereq",
+      "why_en": "Singular values relate to eigenvalues of the Gram matrix.",
+      "from": "m_eigen"
+    },
+    {
+      "to": "la_pinv",
+      "type": "prereq",
+      "why_en": "Singular values define a stable generalized inverse and reveal weak directions.",
+      "from": "la_svd"
+    },
+    {
+      "to": "la_pinv",
+      "type": "prereq",
+      "why_en": "The solution minimizes a squared residual when exact equality is unavailable.",
+      "from": "ml_mse"
+    },
+    {
+      "to": "la_psd",
+      "type": "prereq",
+      "why_en": "Eigenvalues characterize definiteness of a symmetric matrix.",
+      "from": "m_eigen"
+    },
+    {
+      "to": "la_psd",
+      "type": "prereq",
+      "why_en": "A quadratic form combines a vector with a weighting matrix.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "c_constraints",
+      "type": "prereq",
+      "why_en": "Stationarity uses gradients of the objective and constraints.",
+      "from": "m_gradient"
+    },
+    {
+      "to": "c_constraints",
+      "type": "prereq",
+      "why_en": "Quadratic subproblems use definiteness to assess curvature and convexity.",
+      "from": "la_psd"
+    },
+    {
+      "to": "geo_so3",
+      "type": "prereq",
+      "why_en": "Matrix multiplication composes rotations and changes coordinate frames.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "geo_so3",
+      "type": "prereq",
+      "why_en": "Axis rotations use sine and cosine with explicit angle conventions.",
+      "from": "m_trig"
+    },
+    {
+      "to": "geo_se3",
+      "type": "prereq",
+      "why_en": "The rotational block must remain a valid three-dimensional rotation.",
+      "from": "geo_so3"
+    },
+    {
+      "to": "geo_se3",
+      "type": "prereq",
+      "why_en": "A transform maps coordinates between explicitly identified frames.",
+      "from": "r_frames"
+    },
+    {
+      "to": "geo_quaternion",
+      "type": "prereq",
+      "why_en": "Quaternions encode the same physical three-dimensional rotations with different coordinates.",
+      "from": "geo_so3"
+    },
+    {
+      "to": "geo_quaternion",
+      "type": "prereq",
+      "why_en": "The unit-norm constraint defines valid orientation quaternions.",
+      "from": "m_norm"
+    },
+    {
+      "to": "geo_twist",
+      "type": "prereq",
+      "why_en": "A twist describes instantaneous motion of a rigid transformation.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "geo_twist",
+      "type": "prereq",
+      "why_en": "Jacobians later map joint rates to twist coordinates.",
+      "from": "m_jacobian"
+    },
+    {
+      "to": "geo_expmap",
+      "type": "prereq",
+      "why_en": "A constant twist specifies an infinitesimal rigid motion.",
+      "from": "geo_twist"
+    },
+    {
+      "to": "geo_expmap",
+      "type": "prereq",
+      "why_en": "Exponentiating a constant generator integrates the corresponding motion.",
+      "from": "c_ode"
+    },
+    {
+      "to": "ph_units",
+      "type": "prereq",
+      "why_en": "State vectors can mix physically different coordinates that need explicit units.",
+      "from": "m_vector"
+    },
+    {
+      "to": "ph_newton",
+      "type": "prereq",
+      "why_en": "Acceleration is the time derivative of velocity.",
+      "from": "c_ode"
+    },
+    {
+      "to": "ph_newton",
+      "type": "prereq",
+      "why_en": "Mass, force and acceleration require dimensionally compatible units.",
+      "from": "ph_units"
+    },
+    {
+      "to": "ph_torque",
+      "type": "prereq",
+      "why_en": "Rotational dynamics complements translation and momentum balance.",
+      "from": "ph_newton"
+    },
+    {
+      "to": "ph_torque",
+      "type": "prereq",
+      "why_en": "Cross products and inertia transformations can be represented as matrix operations.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "ph_inertia",
+      "type": "prereq",
+      "why_en": "Rotational acceleration depends on angular momentum and applied torque.",
+      "from": "ph_torque"
+    },
+    {
+      "to": "ph_inertia",
+      "type": "prereq",
+      "why_en": "Physical inertia uses a symmetric nonnegative quadratic form.",
+      "from": "la_psd"
+    },
+    {
+      "to": "ph_energy",
+      "type": "prereq",
+      "why_en": "Work accumulates force along a path and energy rates over time.",
+      "from": "c_integral"
+    },
+    {
+      "to": "ph_energy",
+      "type": "prereq",
+      "why_en": "Force and motion relate work to kinetic-energy change.",
+      "from": "ph_newton"
+    },
+    {
+      "to": "ph_lagrange",
+      "type": "prereq",
+      "why_en": "Kinetic and potential energy define the Lagrangian.",
+      "from": "ph_energy"
+    },
+    {
+      "to": "ph_lagrange",
+      "type": "prereq",
+      "why_en": "The equations differentiate energy with respect to generalized coordinates and velocities.",
+      "from": "m_partial"
+    },
+    {
+      "to": "ph_lagrange",
+      "type": "prereq",
+      "why_en": "The result is a differential equation of motion.",
+      "from": "c_ode"
+    },
+    {
+      "to": "ph_manipulator",
+      "type": "prereq",
+      "why_en": "Energy derivatives generate the articulated equations of motion.",
+      "from": "ph_lagrange"
+    },
+    {
+      "to": "ph_manipulator",
+      "type": "prereq",
+      "why_en": "Link mass distributions combine into the configuration-dependent mass matrix.",
+      "from": "ph_inertia"
+    },
+    {
+      "to": "ph_constraints",
+      "type": "prereq",
+      "why_en": "Constraint forces enter generalized dynamics through a contact Jacobian.",
+      "from": "ph_manipulator"
+    },
+    {
+      "to": "ph_constraints",
+      "type": "prereq",
+      "why_en": "Equality and complementarity restrictions determine admissible states and forces.",
+      "from": "c_constraints"
+    },
+    {
+      "to": "ph_friction",
+      "type": "prereq",
+      "why_en": "Normal contact forces and nonpenetration determine where friction can act.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "ph_friction",
+      "type": "prereq",
+      "why_en": "Contact forces generate moments and generalized joint effects.",
+      "from": "ph_torque"
+    },
+    {
+      "to": "rb_fk",
+      "type": "prereq",
+      "why_en": "Joint screw motions compose into an end-effector pose.",
+      "from": "geo_expmap"
+    },
+    {
+      "to": "rb_fk",
+      "type": "prereq",
+      "why_en": "Each link pose is represented and composed as a rigid transform.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "rb_jacobian",
+      "type": "prereq",
+      "why_en": "Differentiating the pose map relates joint changes to task-space motion.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "rb_jacobian",
+      "type": "prereq",
+      "why_en": "The Jacobian output is an instantaneous rigid-body velocity.",
+      "from": "geo_twist"
+    },
+    {
+      "to": "rb_jacobian",
+      "type": "prereq",
+      "why_en": "A matrix of partial derivatives defines the local mapping.",
+      "from": "m_jacobian"
+    },
+    {
+      "to": "rb_ik",
+      "type": "prereq",
+      "why_en": "The local Jacobian predicts how joint increments reduce pose error.",
+      "from": "rb_jacobian"
+    },
+    {
+      "to": "rb_ik",
+      "type": "prereq",
+      "why_en": "Least-squares or damped inversion produces a local joint update.",
+      "from": "la_pinv"
+    },
+    {
+      "to": "rb_inverse_dynamics",
+      "type": "prereq",
+      "why_en": "The generalized dynamics equation is solved for required actuator forces.",
+      "from": "ph_manipulator"
+    },
+    {
+      "to": "rb_inverse_dynamics",
+      "type": "prereq",
+      "why_en": "Desired joint trajectories must be compatible with the kinematic robot model.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "ctrl_pd",
+      "type": "prereq",
+      "why_en": "The command changes with measured tracking error.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "ctrl_pd",
+      "type": "prereq",
+      "why_en": "The derivative term uses velocity or error-rate information.",
+      "from": "m_derivative"
+    },
+    {
+      "to": "ctrl_pid",
+      "type": "prereq",
+      "why_en": "PID extends proportional and derivative feedback with accumulated error.",
+      "from": "ctrl_pd"
+    },
+    {
+      "to": "ctrl_pid",
+      "type": "prereq",
+      "why_en": "The integral term accumulates past tracking error over time.",
+      "from": "c_integral"
+    },
+    {
+      "to": "ctrl_statespace",
+      "type": "prereq",
+      "why_en": "State and input maps are matrices with explicit dimensions.",
+      "from": "m_matrix"
+    },
+    {
+      "to": "ctrl_statespace",
+      "type": "prereq",
+      "why_en": "The matrices define a continuous-time differential system.",
+      "from": "c_ode"
+    },
+    {
+      "to": "ctrl_linearize",
+      "type": "prereq",
+      "why_en": "A first-order expansion approximates nonlinear transition changes.",
+      "from": "c_taylor"
+    },
+    {
+      "to": "ctrl_linearize",
+      "type": "prereq",
+      "why_en": "The local derivative matrices define a linear state-input model.",
+      "from": "ctrl_statespace"
+    },
+    {
+      "to": "ctrl_controllability",
+      "type": "prereq",
+      "why_en": "The properties concern the reachability and measurement information of a specified linear system.",
+      "from": "ctrl_statespace"
+    },
+    {
+      "to": "ctrl_controllability",
+      "type": "prereq",
+      "why_en": "Repeated dynamics products form the controllability and observability matrices.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "ctrl_lqr",
+      "type": "prereq",
+      "why_en": "LQR assumes linear state-input dynamics or a specified local linearization.",
+      "from": "ctrl_statespace"
+    },
+    {
+      "to": "ctrl_lqr",
+      "type": "prereq",
+      "why_en": "The cost matrices must satisfy the required definiteness conditions.",
+      "from": "la_psd"
+    },
+    {
+      "to": "ctrl_lqr",
+      "type": "prereq",
+      "why_en": "The continuous-time objective accumulates state and control costs.",
+      "from": "c_integral"
+    },
+    {
+      "to": "ctrl_lyapunov",
+      "type": "prereq",
+      "why_en": "The time derivative of a candidate function uses its gradient and the state dynamics.",
+      "from": "m_gradient"
+    },
+    {
+      "to": "ctrl_lyapunov",
+      "type": "prereq",
+      "why_en": "Quadratic positive-definite candidates provide a common local construction.",
+      "from": "la_psd"
+    },
+    {
+      "to": "ctrl_lyapunov",
+      "type": "prereq",
+      "why_en": "Stability concerns trajectories of a specified dynamical system.",
+      "from": "c_ode"
+    },
+    {
+      "to": "ctrl_trajopt",
+      "type": "prereq",
+      "why_en": "Dynamics and physical limits constrain feasible trajectories.",
+      "from": "c_constraints"
+    },
+    {
+      "to": "ctrl_trajopt",
+      "type": "prereq",
+      "why_en": "The optimization must enforce or approximate robot dynamics.",
+      "from": "ph_manipulator"
+    },
+    {
+      "to": "ctrl_trajopt",
+      "type": "prereq",
+      "why_en": "A task objective scores candidate motion and control sequences.",
+      "from": "r_goal"
+    },
+    {
+      "to": "ctrl_collision",
+      "type": "prereq",
+      "why_en": "Link poses determine where robot geometry occupies the workspace.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "ctrl_collision",
+      "type": "prereq",
+      "why_en": "Collision avoidance can be expressed as geometric inequality restrictions.",
+      "from": "c_constraints"
+    },
+    {
+      "to": "ctrl_sampling_planners",
+      "type": "prereq",
+      "why_en": "Each sampled configuration and connecting motion must satisfy collision checks.",
+      "from": "ctrl_collision"
+    },
+    {
+      "to": "ctrl_sampling_planners",
+      "type": "prereq",
+      "why_en": "Randomized samples explore a high-dimensional configuration space.",
+      "from": "p_sampling"
+    },
+    {
+      "to": "est_bayesfilter",
+      "type": "prereq",
+      "why_en": "Measurements update prior state beliefs through likelihood weighting.",
+      "from": "p_bayes"
+    },
+    {
+      "to": "est_bayesfilter",
+      "type": "prereq",
+      "why_en": "The transition model propagates the previous state belief.",
+      "from": "r_markov"
+    },
+    {
+      "to": "est_bayesfilter",
+      "type": "prereq",
+      "why_en": "Continuous-state prediction marginalizes over prior states.",
+      "from": "c_integral"
+    },
+    {
+      "to": "est_kalman",
+      "type": "prereq",
+      "why_en": "The filter specializes prediction and measurement updates to a tractable belief family.",
+      "from": "est_bayesfilter"
+    },
+    {
+      "to": "est_kalman",
+      "type": "prereq",
+      "why_en": "Linear Gaussian assumptions preserve a Gaussian posterior.",
+      "from": "p_gaussian"
+    },
+    {
+      "to": "est_kalman",
+      "type": "prereq",
+      "why_en": "Linear dynamics and measurement matrices define the update.",
+      "from": "ctrl_statespace"
+    },
+    {
+      "to": "est_ekf",
+      "type": "prereq",
+      "why_en": "The EKF retains Gaussian mean-covariance updates from the Kalman framework.",
+      "from": "est_kalman"
+    },
+    {
+      "to": "est_ekf",
+      "type": "prereq",
+      "why_en": "Jacobians locally approximate nonlinear transition and measurement functions.",
+      "from": "ctrl_linearize"
+    },
+    {
+      "to": "est_sensorfusion",
+      "type": "prereq",
+      "why_en": "Each sensor contributes a likelihood or residual with an uncertainty model.",
+      "from": "est_bayesfilter"
+    },
+    {
+      "to": "est_sensorfusion",
+      "type": "prereq",
+      "why_en": "Extrinsic transforms express sensor measurements in a common frame.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "est_sensorfusion",
+      "type": "prereq",
+      "why_en": "Units and timestamps determine whether measurements describe the same physical instant.",
+      "from": "ph_units"
+    },
+    {
+      "to": "est_slam",
+      "type": "prereq",
+      "why_en": "Measurements need calibrated frame and timing models.",
+      "from": "est_sensorfusion"
+    },
+    {
+      "to": "est_slam",
+      "type": "prereq",
+      "why_en": "Pose variables and relative-pose constraints live in rigid-motion geometry.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "est_slam",
+      "type": "prereq",
+      "why_en": "Graph optimization combines residuals while handling gauge and consistency constraints.",
+      "from": "c_constraints"
+    },
+    {
+      "to": "est_sysid",
+      "type": "prereq",
+      "why_en": "Recorded inputs and outputs provide training or fitting targets.",
+      "from": "ml_supervised"
+    },
+    {
+      "to": "est_sysid",
+      "type": "prereq",
+      "why_en": "Physical parameters determine robot state transitions.",
+      "from": "ph_manipulator"
+    },
+    {
+      "to": "est_sysid",
+      "type": "prereq",
+      "why_en": "Held-out trajectories test whether fitted parameters generalize.",
+      "from": "ml_split"
+    },
+    {
+      "to": "sim_assets",
+      "type": "prereq",
+      "why_en": "The kinematic tree and joint transforms define geometric motion.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "sim_assets",
+      "type": "prereq",
+      "why_en": "Mass and inertia properties determine dynamic behaviour.",
+      "from": "ph_inertia"
+    },
+    {
+      "to": "sim_assets",
+      "type": "prereq",
+      "why_en": "Collision geometry can differ from visual geometry.",
+      "from": "ctrl_collision"
+    },
+    {
+      "to": "sim_mujoco",
+      "type": "prereq",
+      "why_en": "The engine compiles a structured body-joint and actuator model.",
+      "from": "sim_assets"
+    },
+    {
+      "to": "sim_mujoco",
+      "type": "prereq",
+      "why_en": "Contact and constraints require numerical force and impulse handling.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "sim_mujoco",
+      "type": "prereq",
+      "why_en": "Finite-step integration turns accelerations into state transitions.",
+      "from": "c_euler"
+    },
+    {
+      "to": "sim_mjx",
+      "type": "prereq",
+      "why_en": "MJX exposes a related articulated dynamics model and state representation.",
+      "from": "sim_mujoco"
+    },
+    {
+      "to": "sim_mjx",
+      "type": "prereq",
+      "why_en": "Batched arrays represent many independent simulation instances.",
+      "from": "d_tensor"
+    },
+    {
+      "to": "sim_warp",
+      "type": "prereq",
+      "why_en": "MuJoCo Warp applies the dynamics task to a GPU-oriented implementation.",
+      "from": "sim_mujoco"
+    },
+    {
+      "to": "sim_warp",
+      "type": "prereq",
+      "why_en": "States and kernel inputs are stored in typed batched arrays.",
+      "from": "d_tensor"
+    },
+    {
+      "to": "sim_isaacsim",
+      "type": "prereq",
+      "why_en": "A scene needs compatible robot assets, collision models and actuator settings.",
+      "from": "sim_assets"
+    },
+    {
+      "to": "sim_isaacsim",
+      "type": "prereq",
+      "why_en": "Camera and sensor poses require calibrated extrinsic transforms.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "sim_isaacsim",
+      "type": "prereq",
+      "why_en": "Physical interactions depend on the selected solver and backend.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "sim_isaaclab",
+      "type": "prereq",
+      "why_en": "The framework supplies learning environments on supported simulation backends.",
+      "from": "sim_isaacsim"
+    },
+    {
+      "to": "sim_isaaclab",
+      "type": "prereq",
+      "why_en": "Training environments expose observations, actions, rewards and termination conditions.",
+      "from": "r_policy"
+    },
+    {
+      "to": "sim_isaaclab",
+      "type": "prereq",
+      "why_en": "Learning code consumes batched tensors and updates policy parameters.",
+      "from": "e_torch"
+    },
+    {
+      "to": "sim_brax",
+      "type": "prereq",
+      "why_en": "Physics stepping approximates state evolution.",
+      "from": "c_ode"
+    },
+    {
+      "to": "sim_brax",
+      "type": "prereq",
+      "why_en": "Vectorization and accelerator compilation operate on batched state arrays.",
+      "from": "d_tensor"
+    },
+    {
+      "to": "sim_brax",
+      "type": "prereq",
+      "why_en": "Learning environments connect transitions to actions and rewards.",
+      "from": "r_policy"
+    },
+    {
+      "to": "sim_differentiable",
+      "type": "prereq",
+      "why_en": "Gradients propagate through the numerical state-update computation.",
+      "from": "d_backprop"
+    },
+    {
+      "to": "sim_differentiable",
+      "type": "prereq",
+      "why_en": "Contact switches and impacts can make trajectories nonsmooth.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "sim_differentiable",
+      "type": "prereq",
+      "why_en": "Numerical discretization defines the function being differentiated.",
+      "from": "c_euler"
+    },
+    {
+      "to": "sim_domainrand",
+      "type": "prereq",
+      "why_en": "Environment parameters are sampled from a specified training distribution.",
+      "from": "p_sampling"
+    },
+    {
+      "to": "sim_domainrand",
+      "type": "prereq",
+      "why_en": "Physical uncertainty identifies which parameters may need calibration or variation.",
+      "from": "est_sysid"
+    },
+    {
+      "to": "sim_domainrand",
+      "type": "prereq",
+      "why_en": "Training and deployment distributions may differ.",
+      "from": "ml_distribution_shift"
+    },
+    {
+      "to": "sim_sim2real",
+      "type": "prereq",
+      "why_en": "Training variation can address selected sources of simulator mismatch.",
+      "from": "sim_domainrand"
+    },
+    {
+      "to": "sim_sim2real",
+      "type": "prereq",
+      "why_en": "Deployment observations require matched sensing, calibration and timing.",
+      "from": "est_sensorfusion"
+    },
+    {
+      "to": "sim_sim2real",
+      "type": "prereq",
+      "why_en": "Low-level actuator and gain settings change policy action consequences.",
+      "from": "ctrl_pd"
+    },
+    {
+      "to": "sim_camera",
+      "type": "prereq",
+      "why_en": "Camera extrinsics transform world points into the camera frame.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "sim_camera",
+      "type": "prereq",
+      "why_en": "Intrinsic projection combines coordinates through a calibrated matrix.",
+      "from": "m_matmul"
+    },
+    {
+      "to": "sim_contactsensors",
+      "type": "prereq",
+      "why_en": "Contact forces depend on normal and tangential interaction states.",
+      "from": "ph_friction"
+    },
+    {
+      "to": "sim_contactsensors",
+      "type": "prereq",
+      "why_en": "Sensor values must be interpreted at their actual update time.",
+      "from": "est_sensorfusion"
+    },
+    {
+      "to": "sim_contactsensors",
+      "type": "prereq",
+      "why_en": "Simulator stepping and solver outputs define when contact quantities are available.",
+      "from": "sim_mujoco"
+    },
+    {
+      "to": "ph_inertia",
+      "type": "prereq",
+      "why_en": "The inertia tensor integrates the contribution of mass elements over the body.",
+      "from": "c_integral"
+    },
+    {
+      "to": "c_taylor",
+      "type": "prereq",
+      "why_en": "A multivariable first-order approximation uses the Jacobian to map input perturbations to output changes.",
+      "from": "m_jacobian"
+    }
+  ],
+  "research": [
+    {
+      "title": "MIT OCW: Single Variable Calculus",
+      "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Mathematics for Machine Learning",
+      "url": "https://mml-book.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Modern Robotics: book resources",
+      "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MIT Underactuated Robotics",
+      "url": "https://underactuated.mit.edu/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MIT Underactuated Robotics: LQR",
+      "url": "https://underactuated.mit.edu/lqr.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MIT Underactuated Robotics: Lyapunov analysis",
+      "url": "https://underactuated.mit.edu/lyapunov.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MIT Underactuated Robotics: trajectory optimization",
+      "url": "https://underactuated.mit.edu/trajopt.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Sarkka and Svensson: Bayesian Filtering and Smoothing",
+      "url": "https://users.aalto.fi/~ssarkka/pub/bfs_book_2023_online.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MuJoCo documentation: computation",
+      "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MuJoCo XLA documentation",
+      "url": "https://mujoco.readthedocs.io/en/stable/mjx.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "MuJoCo Warp documentation",
+      "url": "https://mujoco.readthedocs.io/en/stable/mjwarp/index.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "NVIDIA Warp: differentiability",
+      "url": "https://nvidia.github.io/warp/latest/user_guide/differentiability.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Isaac Lab documentation",
+      "url": "https://isaac-sim.github.io/IsaacLab/main/index.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Isaac Sim documentation",
+      "url": "https://docs.isaacsim.omniverse.nvidia.com/latest/index.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Brax: official repository",
+      "url": "https://github.com/google/brax",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "ROS: URDF documentation",
+      "url": "https://docs.ros.org/en/rolling/Tutorials/Intermediate/URDF/URDF-Main.html",
+      "checked_date": "2026-11-14",
+      "notes": "Primary textbook, official simulator documentation or official project. Linked at relevant nodes; versions and backend behaviour may change."
+    },
+    {
+      "title": "Taxonomy note",
+      "url": "https://mml-book.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Partial derivatives, chain rule, gradients, Hessians, integration, Taylor expansions and ODEs belong under calculus. Vectors, matrix products, SVD and definiteness belong under linear algebra. Jacobians connect calculus and linear algebra; rigid transforms connect geometry and linear algebra. Use one primary category plus typed cross-links rather than duplicate nodes."
+    },
+    {
+      "title": "Foundation expansion verification",
+      "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/",
+      "checked_date": "2026-11-14",
+      "notes": "57 nodes; 134 specific prerequisite relations; all references resolve to existing or new IDs; combined prerequisite DAG is acyclic. All 16 unique primary source URLs returned HTTP 200. All 185 primary-formula and notation expressions passed KaTeX strict rendering."
+    }
+  ]
+}

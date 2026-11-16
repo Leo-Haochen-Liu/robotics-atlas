@@ -1,0 +1,597 @@
+[
+  {
+    "to": "d_tensor",
+    "type": "prereq",
+    "why": "向量先教会我们把多个有含义的数字放在同一条轴上，张量再增加样本和时间等轴来组织数据。",
+    "formula": "X ∈ ℝ^(B×T×d)",
+    "from": "m_vectors"
+  },
+  {
+    "to": "d_tensor",
+    "type": "prereq",
+    "why": "矩阵给出二维索引与行列形状的基础，张量沿用这些概念并推广到三条或更多条数据轴。",
+    "formula": "X ∈ ℝ^(B×T×d)",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_linear",
+    "type": "prereq",
+    "why": "张量形状帮助判断线性层处理哪个特征轴，以及批量和时间轴如何在计算中保持不变。",
+    "formula": "y=Wx+b",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_linear",
+    "type": "prereq",
+    "why": "矩阵乘法把多条加权求和统一写成一次运算，用来定义线性层的权重映射并核对输入输出维度。",
+    "formula": "y=Wx+b",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_activation",
+    "type": "prereq",
+    "why": "仿射层先产生可学习的加权输入，激活函数再对这些结果逐元素变换，使网络表达弯折关系。",
+    "formula": "h=σ(Wx+b)",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_activation",
+    "type": "prereq",
+    "why": "导数说明激活函数在不同输入处如何传递变化，也帮助识别饱和区与梯度接近零的问题。",
+    "formula": "h=σ(Wx+b)",
+    "from": "m_derivative"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why": "全连接层提供逐层混合特征的可学习矩阵，多个这样的映射组成多层感知机的计算骨架。",
+    "formula": "ŷ=W₂σ(W₁x+b₁)+b₂",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why": "非线性激活插在仿射层之间，使多层结构不再只能合并成一条直线或一个仿射变换。",
+    "formula": "ŷ=W₂σ(W₁x+b₁)+b₂",
+    "from": "d_activation"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why": "损失函数把网络预测与真实目标的差异量化，决定感知机训练时应当朝哪个任务方向调整。",
+    "formula": "ŷ=W₂σ(W₁x+b₁)+b₂",
+    "from": "ml_loss"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why": "多层感知机提供输入经过多级运算得到损失的具体计算图，反向传播沿图逐级分配误差。",
+    "formula": "∂L/∂w=(∂L/∂ŷ)(∂ŷ/∂w)",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why": "链式法则把整体损失对参数的导数拆成局部导数的乘积，是反向传播每条路径的数学依据。",
+    "formula": "∂L/∂w=(∂L/∂ŷ)(∂ŷ/∂w)",
+    "from": "m_chain"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why": "损失作为反向计算的标量起点，告诉网络哪些预测偏差需要通过参数更新被减小。",
+    "formula": "∂L/∂w=(∂L/∂ŷ)(∂ŷ/∂w)",
+    "from": "ml_loss"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why": "反向传播先算出当前批次损失对参数的梯度，随机梯度下降再使用该方向实际更新参数。",
+    "formula": "θ←θ−η∇θL_batch",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why": "期望帮助把总体训练目标与小批量平均联系起来，说明抽样梯度为什么可用作总体梯度的估计。",
+    "formula": "θ←θ−η∇θL_batch",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why": "数据划分决定哪些样本允许参与梯度更新，避免训练过程借助验证集或测试集获得虚假的好成绩。",
+    "formula": "θ←θ−η∇θL_batch",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_adam",
+    "type": "prereq",
+    "why": "随机梯度下降建立按梯度更新参数的基础规则，Adam在此基础上增加方向累积与逐参数尺度调整。",
+    "formula": "m←βm+(1−β)g",
+    "from": "d_sgd"
+  },
+  {
+    "to": "d_adam",
+    "type": "prereq",
+    "why": "期望与二阶矩帮助理解Adam维护的梯度移动平均，以及梯度平方统计量与方差之间的区别。",
+    "formula": "m←βm+(1−β)g",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why": "张量轴的含义决定归一化在哪些维度计算统计量，可据此区分特征归一化与批次归一化。",
+    "formula": "(x−μ)/√(σ²+ε)",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why": "均值、方差与期望提供中心化和尺度调整的统计基础，使归一化公式里的每一步都有明确含义。",
+    "formula": "(x−μ)/√(σ²+ε)",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why": "训练测试划分约束输入标准化统计量的来源，防止使用测试分布信息并保持部署时处理规则一致。",
+    "formula": "(x−μ)/√(σ²+ε)",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_residual",
+    "type": "prereq",
+    "why": "多层感知机可作为残差分支中的修正函数，残差连接则把该函数输出加回已有输入表示。",
+    "formula": "y=x+F(x)",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_residual",
+    "type": "prereq",
+    "why": "反向传播帮助分析梯度如何同时经过修正分支和恒等旁路，解释残差结构为什么有利于深层训练。",
+    "formula": "y=x+F(x)",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_cnn",
+    "type": "prereq",
+    "why": "张量的空间轴与通道轴对应图像布局，理解它们才能正确跟踪卷积前后的特征图形状。",
+    "formula": "Y[i,j]=Σ K[u,v]X[i+u,j+v]",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_cnn",
+    "type": "prereq",
+    "why": "全连接网络提供可学习加权求和与非线性的基础，卷积进一步加入局部连接和位置间权重共享。",
+    "formula": "Y[i,j]=Σ K[u,v]X[i+u,j+v]",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_rnn",
+    "type": "prereq",
+    "why": "感知机提供对输入和记忆进行非线性变换的模块，循环网络将同一个模块沿时间反复使用。",
+    "formula": "hₜ=f(hₜ₋₁,xₜ)",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_rnn",
+    "type": "prereq",
+    "why": "张量形状区分批量、时间与隐藏特征，帮助理解循环网络按时刻读取序列而非混合不同轨迹。",
+    "formula": "hₜ=f(hₜ₋₁,xₜ)",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_bptt",
+    "type": "prereq",
+    "why": "循环网络先定义隐藏状态怎样依赖上一时刻，沿时间反向传播再把这串共享更新展开成计算图。",
+    "formula": "∂L/∂hₜ=(∂L/∂hₜ₊₁)(∂hₜ₊₁/∂hₜ)",
+    "from": "d_rnn"
+  },
+  {
+    "to": "d_bptt",
+    "type": "prereq",
+    "why": "普通反向传播的链式求导在展开的时间图上重复应用，并累加同一参数出现在多个时刻的贡献。",
+    "formula": "∂L/∂hₜ=(∂L/∂hₜ₊₁)(∂hₜ₊₁/∂hₜ)",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_lstm",
+    "type": "prereq",
+    "why": "循环网络的隐藏记忆与时间共享更新先说明序列处理目标，LSTM再通过细胞状态和门修改记忆机制。",
+    "formula": "cₜ=fₜ⊙cₜ₋₁+iₜ⊙ĉₜ",
+    "from": "d_rnn"
+  },
+  {
+    "to": "d_lstm",
+    "type": "prereq",
+    "why": "激活函数让各个门产生零到一的连续系数，并对候选内容限幅，从而支持可训练的写入与保留。",
+    "formula": "cₜ=fₜ⊙cₜ₋₁+iₜ⊙ĉₜ",
+    "from": "d_activation"
+  },
+  {
+    "to": "d_softmax",
+    "type": "prereq",
+    "why": "概率加权平均的概念帮助解释Softmax权重如何用于后续汇总，但期望本身不参与指数归一化的定义。",
+    "formula": "pᵢ=exp(zᵢ)/Σⱼexp(zⱼ)",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_softmax",
+    "type": "prereq",
+    "why": "向量把多个候选的分数并列表示，Softmax在这些分量之间归一化，并保留输出与候选的一一对应。",
+    "formula": "pᵢ=exp(zᵢ)/Σⱼexp(zⱼ)",
+    "from": "m_vectors"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why": "线性投影把输入分别转换为查询、键和值，使模型可以学习按什么线索匹配以及取回什么信息。",
+    "formula": "softmax(QKᵀ/√dₖ)V",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why": "Softmax把查询与键的匹配分数转换成非负且总和为一的权重，用于稳定地加权汇总各个值向量。",
+    "formula": "softmax(QKᵀ/√dₖ)V",
+    "from": "d_softmax"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why": "矩阵乘法同时计算所有查询与键的点积，再将权重矩阵乘值矩阵，得到批量化的注意力输出。",
+    "formula": "softmax(QKᵀ/√dₖ)V",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why": "基础注意力已经定义查询、键和值的匹配汇总，自注意力将这三者都从同一段输入序列生成。",
+    "formula": "softmax(QKᵀ/√dₖ+M)V",
+    "from": "d_attention"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why": "张量中的序列轴决定注意力矩阵的行列含义，也让遮罩能按具体位置限制信息读取。",
+    "formula": "softmax(QKᵀ/√dₖ+M)V",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why": "数据隔离的原则推广到时间维度：预测器只能读取当时可获得的信息，不能从未来真实状态泄漏答案。",
+    "formula": "softmax(QKᵀ/√dₖ+M)V",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_multihead",
+    "type": "prereq",
+    "why": "单头注意力先说明一种匹配与汇总计算，多头结构再把它放到多个不同投影空间并行执行。",
+    "formula": "Concat(head₁,…,headₕ)Wᴼ",
+    "from": "d_attention"
+  },
+  {
+    "to": "d_multihead",
+    "type": "prereq",
+    "why": "张量形状说明总特征怎样拆成多个头、各头如何计算以及最后怎样拼接回输出特征轴。",
+    "formula": "Concat(head₁,…,headₕ)Wᴼ",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_position",
+    "type": "prereq",
+    "why": "自注意力主要按内容匹配信息，位置编码补充先后或空间位置线索，使模型能够区分内容相同的位置。",
+    "formula": "x_pos=x+PE(pos)",
+    "from": "d_self_attention"
+  },
+  {
+    "to": "d_position",
+    "type": "prereq",
+    "why": "向量加法与分量组织让位置能编码成与内容同宽的表示，并解释不同频率正余弦成对排列的形式。",
+    "formula": "x_pos=x+PE(pos)",
+    "from": "m_vectors"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why": "多头注意力提供Transformer中位置之间的信息交换模块，使同一时刻能够融合多种关系线索。",
+    "formula": "x′=x+Attention(LN(x))",
+    "from": "d_multihead"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why": "位置编码补充注意力本身不足以确定的顺序信息，使序列模型可以根据时间或空间位置解释输入。",
+    "formula": "x′=x+Attention(LN(x))",
+    "from": "d_position"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why": "残差连接把注意力和前馈子层的修正加回原表示，为多层Transformer提供信息和梯度的旁路。",
+    "formula": "x′=x+Attention(LN(x))",
+    "from": "d_residual"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why": "归一化控制子层输入或输出的特征尺度，与注意力、前馈网络及残差连接共同组成可训练的模块。",
+    "formula": "x′=x+Attention(LN(x))",
+    "from": "d_norm"
+  },
+  {
+    "to": "v_vit",
+    "type": "prereq",
+    "why": "Transformer提供处理token序列的通用模块，视觉Transformer把图像块变成token后复用其信息交换机制。",
+    "formula": "N=(H/P)(W/P)",
+    "from": "d_transformer"
+  },
+  {
+    "to": "v_vit",
+    "type": "prereq",
+    "why": "张量形状把图像的高度、宽度和通道转换为块数量与特征宽度，帮助跟踪切块和投影是否正确。",
+    "formula": "N=(H/P)(W/P)",
+    "from": "d_tensor"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why": "视觉Transformer提供可训练的图像编码器，自监督目标则决定这个编码器从无类别标签的视图中学什么。",
+    "formula": "z₁=f(augment₁(x))",
+    "from": "v_vit"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why": "损失函数把同源视图、遮挡预测等自动构造的任务变成训练信号，替代逐张人工类别标签的监督。",
+    "formula": "z₁=f(augment₁(x))",
+    "from": "ml_loss"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why": "泛化概念帮助选择增强中应保持或忽略的信息，并检验无标签预训练得到的特征能否迁移到控制任务。",
+    "formula": "z₁=f(augment₁(x))",
+    "from": "ml_generalization"
+  },
+  {
+    "to": "v_collapse",
+    "type": "prereq",
+    "why": "自监督中让同源视图接近的目标暴露常量输出的捷径，表征坍缩节点分析这种捷径为何使特征失去信息。",
+    "formula": "∀x,f(x)=c ⇒ Var[f(x)]=0",
+    "from": "v_selfsupervised"
+  },
+  {
+    "to": "v_collapse",
+    "type": "prereq",
+    "why": "跨样本的期望与方差为坍缩提供可测量信号，帮助区分低训练损失与真正保留数据差异的表示。",
+    "formula": "∀x,f(x)=c ⇒ Var[f(x)]=0",
+    "from": "p_expectation"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why": "自监督学习先提出从同一图像的不同视图构造目标，DINO再用教师学生分布匹配实现这条思路。",
+    "formula": "θ_T←λθ_T+(1−λ)θ_S",
+    "from": "v_selfsupervised"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why": "坍缩问题说明单纯跨视图一致性仍不足够，帮助理解DINO中中心化、温度和教师更新等稳定机制。",
+    "formula": "θ_T←λθ_T+(1−λ)θ_S",
+    "from": "v_collapse"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why": "Softmax和温度把教师学生的输出分数转成概率分布，使跨视图匹配能用交叉熵形式表达。",
+    "formula": "θ_T←λθ_T+(1−λ)θ_S",
+    "from": "d_softmax"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why": "Adam节点介绍的指数移动平均提供统计直觉，可帮助理解教师参数的慢更新；教师并不因此使用Adam梯度更新。",
+    "formula": "θ_T←λθ_T+(1−λ)θ_S",
+    "from": "d_adam"
+  },
+  {
+    "to": "v_dinov2",
+    "type": "prereq",
+    "why": "DINO提供教师学生与无标签视觉学习的基本思路，DINOv2在目标、数据组织和训练配方上继续发展。",
+    "formula": "z=E_DINOv2(o)",
+    "from": "v_dino"
+  },
+  {
+    "to": "v_dinov2",
+    "type": "prereq",
+    "why": "ViT的patch网格解释DINOv2为何既可输出整体图像表示，也能保留可供空间任务使用的局部特征。",
+    "formula": "z=E_DINOv2(o)",
+    "from": "v_vit"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why": "DINOv2提供冻结的空间视觉编码，DINO-WM用这些固定特征描述当前、未来与目标图像。",
+    "formula": "ẑₜ₊₁=f(z历史,a历史)",
+    "from": "v_dinov2"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why": "Transformer提供动作条件的历史特征预测器，让DINO-WM能够预测执行候选动作后的视觉表示。",
+    "formula": "ẑₜ₊₁=f(z历史,a历史)",
+    "from": "d_transformer"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why": "预测损失把真实未来图像的编码当作监督目标，规划代价再比较预测终点与目标图像的特征距离。",
+    "formula": "ẑₜ₊₁=f(z历史,a历史)",
+    "from": "ml_loss"
+  },
+  {
+    "to": "g_latent",
+    "type": "prereq",
+    "why": "张量让潜变量成为形状明确的数字表示，帮助区别观测特征、采样噪声与模型隐藏状态的不同来源。",
+    "formula": "z=E(x) 或 z∼N(0,I)",
+    "from": "d_tensor"
+  },
+  {
+    "to": "g_latent",
+    "type": "prereq",
+    "why": "高斯分布提供常见潜变量先验与采样来源，但具体模型中的潜变量未必都高斯或表示低维压缩。",
+    "formula": "z=E(x) 或 z∼N(0,I)",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why": "潜表示概念提供编码器中间变量的含义，自编码器进一步通过编码后重建输入来学习这种表示。",
+    "formula": "x̂=D(E(x))",
+    "from": "g_latent"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why": "多层感知机提供可训练的编码和解码映射，小型向量数据上可先用它实现最基本的自编码器。",
+    "formula": "x̂=D(E(x))",
+    "from": "d_mlp"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why": "重建损失衡量解码结果保留了多少输入信息，并通过反向传播共同训练编码器和解码器。",
+    "formula": "x̂=D(E(x))",
+    "from": "ml_loss"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why": "自编码器建立编码与重建的结构，VAE将确定性编码改为概率分布，并加入对潜空间先验的约束。",
+    "formula": "z=μ+σ⊙ε",
+    "from": "g_autoencoder"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why": "高斯分布提供均值和尺度参数化以及可采样的先验，重参数化据此构造可训练的潜变量样本。",
+    "formula": "z=μ+σ⊙ε",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why": "反向传播沿重参数化后的计算路径更新均值、尺度和解码网络，让随机采样也能参与梯度训练。",
+    "formula": "z=μ+σ⊙ε",
+    "from": "d_backprop"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why": "高斯噪声定义已知的逐级扰动过程，使干净数据与噪声能按指定比例混合并形成可控训练样本。",
+    "formula": "xⱼ=√ᾱⱼx₀+√(1−ᾱⱼ)ε",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why": "潜变量的区分帮助标注扩散中间变量与初始噪声，避免把算法内部噪声等级误读成环境时间。",
+    "formula": "xⱼ=√ᾱⱼx₀+√(1−ᾱⱼ)ε",
+    "from": "g_latent"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why": "去噪损失提供学习反向恢复的目标，让网络从已知加噪过程生成的样本中获得明确监督。",
+    "formula": "xⱼ=√ᾱⱼx₀+√(1−ᾱⱼ)ε",
+    "from": "ml_loss"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why": "扩散基础先定义怎样加噪以及为什么反向恢复，DDPM再把它落实为随机噪声等级上的噪声预测训练。",
+    "formula": "L=E‖ε−εθ(xⱼ,j,c)‖²",
+    "from": "g_diffusion"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why": "反向传播把预测噪声与真实采样噪声的差异传回去噪网络参数，训练过程不必对真实环境求导。",
+    "formula": "L=E‖ε−εθ(xⱼ,j,c)‖²",
+    "from": "d_backprop"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why": "小批量随机训练对干净样本、噪声和等级进行抽样，以有限计算近似DDPM目标中的多重期望。",
+    "formula": "L=E‖ε−εθ(xⱼ,j,c)‖²",
+    "from": "d_sgd"
+  },
+  {
+    "to": "g_conditional",
+    "type": "prereq",
+    "why": "DDPM提供去噪网络与训练目标，条件生成在其中加入当前状态等信息，限制可生成未来的分布。",
+    "formula": "pθ(sₜ₊Δ|sₜ)",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "g_conditional",
+    "type": "prereq",
+    "why": "条件分布和期望帮助理解一个起点可以对应多个未来，也解释直接取均值为何可能落在不可行区域。",
+    "formula": "pθ(sₜ₊Δ|sₜ)",
+    "from": "p_expectation"
+  },
+  {
+    "to": "g_ddim",
+    "type": "prereq",
+    "why": "条件生成先确定从哪个当前状态采样未来，DDIM在固定该条件时构造从初始噪声到样本的确定映射。",
+    "formula": "x̂₀=(xⱼ−√(1−ᾱⱼ)εθ)/√ᾱⱼ",
+    "from": "g_conditional"
+  },
+  {
+    "to": "g_ddim",
+    "type": "prereq",
+    "why": "DDPM训练得到的去噪器可以配合DDIM反向更新，需分清网络学习目标与部署时采样算法是两种选择。",
+    "formula": "x̂₀=(xⱼ−√(1−ᾱⱼ)εθ)/√ᾱⱼ",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "g_noise_action",
+    "type": "prereq",
+    "why": "DDIM确定性把固定噪声对应到可重复的子目标，使ID-WM可以比较候选并搜索噪声作为高层规划变量。",
+    "formula": "ŝₜ₊Δ=Gθ(sₜ,zₜ)",
+    "from": "g_ddim"
+  },
+  {
+    "to": "g_noise_action",
+    "type": "prereq",
+    "why": "潜变量定义帮助明确这里的噪声既不是关节控制也不是图像特征，而是生成器输入中被搜索的坐标。",
+    "formula": "ŝₜ₊Δ=Gθ(sₜ,zₜ)",
+    "from": "g_latent"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why": "优化器规则说明训练时怎样修改网络权重，与部署规划时只修改动作或噪声候选的优化对象形成区分。",
+    "formula": "训练更新θ；规划更新A或Z",
+    "from": "d_adam"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why": "DDIM说明推理也可能反复调用去噪网络，固定权重并不意味着只需一次前向或计算成本很低。",
+    "formula": "训练更新θ；规划更新A或Z",
+    "from": "g_ddim"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why": "Transformer定义单次预测的网络计算，规划还会对大量候选重复执行，因此网络前向耗时不等于完整决策延迟。",
+    "formula": "训练更新θ；规划更新A或Z",
+    "from": "d_transformer"
+  }
+]

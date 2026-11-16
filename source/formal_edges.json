@@ -1,0 +1,1388 @@
+[
+  {
+    "to": "m_vector",
+    "type": "prereq",
+    "why_en": "Extend scalar function inputs to ordered components so position and velocity can enter one model while retaining explicit meanings for each input.",
+    "from": "m_function"
+  },
+  {
+    "to": "m_matrix",
+    "type": "prereq",
+    "why_en": "Represent each sample as a vector, then stack samples into a matrix to distinguish sample axes from feature axes and verify batch shapes.",
+    "from": "m_vector"
+  },
+  {
+    "to": "m_matmul",
+    "type": "prereq",
+    "why_en": "Matrix row and column meanings determine compatible inner dimensions and explain how multiple input features combine into multiple outputs.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "m_matmul",
+    "type": "prereq",
+    "why_en": "Each matrix-product entry sums corresponding products; summation indices identify the contracted dimension and distinguish matrix multiplication from elementwise multiplication.",
+    "from": "m_sum"
+  },
+  {
+    "to": "m_norm",
+    "type": "prereq",
+    "why_en": "Subtract predicted and target vectors componentwise, then use a norm to convert their errors into a scalar distance for comparing states.",
+    "from": "m_vector"
+  },
+  {
+    "to": "m_coordinates",
+    "type": "prereq",
+    "why_en": "Matrix multiplication applies rotation and translation adds an offset, allowing observations and targets expressed in different frames to be compared consistently.",
+    "from": "m_matmul"
+  },
+  {
+    "to": "m_trig",
+    "type": "prereq",
+    "why_en": "Orientation has circular geometry; sine and cosine coordinates preserve nearby directions across the angle wraparound boundary when comparing orientations.",
+    "from": "m_coordinates"
+  },
+  {
+    "to": "m_derivative",
+    "type": "prereq",
+    "why_en": "Identifying a function's input and output makes its derivative interpretable as local sensitivity, slope, velocity, or another explicitly defined rate of change.",
+    "from": "m_function"
+  },
+  {
+    "to": "m_partial",
+    "type": "prereq",
+    "why_en": "Extend a single-variable derivative by holding other arguments fixed, measuring how one input component changes a multivariable function's output.",
+    "from": "m_derivative"
+  },
+  {
+    "to": "m_partial",
+    "type": "prereq",
+    "why_en": "Vector component indices identify the particular input or parameter differentiated while all other components remain fixed in a partial derivative.",
+    "from": "m_vector"
+  },
+  {
+    "to": "m_chain",
+    "type": "prereq",
+    "why_en": "For a composition, multiply local derivatives along each dependency path to relate the final output change to an earlier variable change.",
+    "from": "m_derivative"
+  },
+  {
+    "to": "m_chain",
+    "type": "prereq",
+    "why_en": "Multivariable computation graphs contain branching paths; local partial derivatives and summed path contributions extend the chain rule to practical neural networks.",
+    "from": "m_partial"
+  },
+  {
+    "to": "m_gradient",
+    "type": "prereq",
+    "why_en": "The chain rule computes loss derivatives through multiple model stages; collecting parameter derivatives produces the gradient used for a descent update.",
+    "from": "m_chain"
+  },
+  {
+    "to": "m_gradient",
+    "type": "prereq",
+    "why_en": "A squared norm turns multidimensional prediction error into a scalar loss, giving parameter gradients a precisely specified optimization objective.",
+    "from": "m_norm"
+  },
+  {
+    "to": "m_jacobian",
+    "type": "prereq",
+    "why_en": "Compute each output's partial derivative with respect to every input, then arrange these derivatives by output rows and input columns.",
+    "from": "m_partial"
+  },
+  {
+    "to": "m_jacobian",
+    "type": "prereq",
+    "why_en": "Jacobian multiplication maps a small input perturbation to an approximate output perturbation; checking dimensions clarifies how actions affect state components.",
+    "from": "m_matmul"
+  },
+  {
+    "to": "m_eigen",
+    "type": "prereq",
+    "why_en": "An eigenvector is mapped to a scalar multiple of itself; interpreting matrix multiplication as a linear transformation explains this preserved direction.",
+    "from": "m_matmul"
+  },
+  {
+    "to": "p_probability",
+    "type": "prereq",
+    "why_en": "Explicitly define experimental outcomes and events before assigning probabilities, keeping input conditions, events, and their numerical probabilities distinct.",
+    "from": "m_function"
+  },
+  {
+    "to": "p_random",
+    "type": "prereq",
+    "why_en": "A random variable assigns numerical values to outcomes; probabilities of corresponding events determine its distribution and subsequent uncertainty calculations.",
+    "from": "p_probability"
+  },
+  {
+    "to": "p_conditional",
+    "type": "prereq",
+    "why_en": "Treat future state as a random variable, then condition on current state and action to express how different actions change future distributions.",
+    "from": "p_random"
+  },
+  {
+    "to": "p_bayes",
+    "type": "prereq",
+    "why_en": "Conditional and joint probability identities exchange the roles of evidence and hypothesis, converting observation likelihoods into posterior probabilities of hypotheses.",
+    "from": "p_conditional"
+  },
+  {
+    "to": "p_expectation",
+    "type": "prereq",
+    "why_en": "A random variable specifies possible values and their distribution; expectation weights those values to define average training loss or return.",
+    "from": "p_random"
+  },
+  {
+    "to": "p_expectation",
+    "type": "prereq",
+    "why_en": "Discrete expectation multiplies each possible value by its probability and sums over outcomes; the index specifies the complete averaging domain.",
+    "from": "m_sum"
+  },
+  {
+    "to": "p_variance",
+    "type": "prereq",
+    "why_en": "Variance averages squared deviations from the mean; covariance averages paired deviations, quantifying dispersion and joint variation between components.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "p_variance",
+    "type": "prereq",
+    "why_en": "A covariance matrix arranges every pairwise covariance, representing component scales and linear dependence across an entire multivariate distribution.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "p_gaussian",
+    "type": "prereq",
+    "why_en": "Gaussian distributions use means for location and variances or covariances for spread; these statistics determine widths and principal elliptical directions.",
+    "from": "p_variance"
+  },
+  {
+    "to": "p_gaussian",
+    "type": "prereq",
+    "why_en": "The exponential term controls how Gaussian density decreases with displacement; taking logarithms exposes the quadratic expression used in optimization.",
+    "from": "m_explog"
+  },
+  {
+    "to": "p_sampling",
+    "type": "prereq",
+    "why_en": "Sampling standard Gaussian noise and transforming its location and scale generates numerical inputs for diffusion training and candidate-search procedures.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "p_sampling",
+    "type": "prereq",
+    "why_en": "Monte Carlo estimates expectations using finite sample averages; understanding the population quantity clarifies sampling error and the benefit of additional samples.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why_en": "Write observed data probabilities conditional on inputs or parameters, then hold the observations fixed while comparing alternative parameter explanations.",
+    "from": "p_conditional"
+  },
+  {
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why_en": "Differentiate a negative log-likelihood objective with respect to model parameters, updating them to increase the modeled probability of observed data.",
+    "from": "m_gradient"
+  },
+  {
+    "to": "p_likelihood",
+    "type": "prereq",
+    "why_en": "Logarithms convert products of small probabilities into sums without changing the maximizing parameters, improving numerical stability and defining an additive loss.",
+    "from": "m_explog"
+  },
+  {
+    "to": "p_entropy",
+    "type": "prereq",
+    "why_en": "Entropy averages negative log probabilities under the outcome distribution; cross-entropy similarly averages log probabilities assigned by a different model distribution.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "p_entropy",
+    "type": "prereq",
+    "why_en": "Averaging sample negative log likelihoods connects empirical training objectives to cross-entropy, giving probabilistic classification losses an observed-data interpretation.",
+    "from": "p_likelihood"
+  },
+  {
+    "to": "p_entropy",
+    "type": "prereq",
+    "why_en": "Negative logarithms penalize low assigned probabilities strongly and make independent information contributions additive, explaining penalties for confidently incorrect predictions.",
+    "from": "m_explog"
+  },
+  {
+    "to": "p_kl",
+    "type": "prereq",
+    "why_en": "Subtracting a distribution's entropy from its cross-entropy yields KL divergence, measuring distribution mismatch beyond differences between means alone.",
+    "from": "p_entropy"
+  },
+  {
+    "to": "ml_supervised",
+    "type": "prereq",
+    "why_en": "Define a parameterized mapping from inputs to predictions before using labeled examples to adjust its parameters and distinguish training inputs from targets.",
+    "from": "m_function"
+  },
+  {
+    "to": "ml_supervised",
+    "type": "prereq",
+    "why_en": "Training examples are sampled from a distribution; this motivates adequate task coverage and reserving unseen samples for evaluating learned rules.",
+    "from": "p_random"
+  },
+  {
+    "to": "ml_mse",
+    "type": "prereq",
+    "why_en": "Supervised examples supply targets paired with inputs; squared error compares predictions against these targets to construct an explicit scalar training objective.",
+    "from": "ml_supervised"
+  },
+  {
+    "to": "ml_mse",
+    "type": "prereq",
+    "why_en": "The squared Euclidean norm sums componentwise prediction errors without sign cancellation and places greater weight on larger numerical deviations.",
+    "from": "m_norm"
+  },
+  {
+    "to": "ml_mse",
+    "type": "prereq",
+    "why_en": "Average training squared error estimates population expected risk; this distinction separates performance on observed samples from average error on future data.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "ml_mse",
+    "type": "prereq",
+    "why_en": "Summation specifies which samples and state components are accumulated before averaging, allowing implementation reductions and scaling factors to be checked.",
+    "from": "m_sum"
+  },
+  {
+    "to": "ml_linear",
+    "type": "prereq",
+    "why_en": "Squared error compares linear predictions with target values, converting slope and intercept selection into a measurable and optimizable fitting problem.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "ml_linear",
+    "type": "prereq",
+    "why_en": "Weighted input sums define linear predictions; matrix multiplication applies the same parameters to every sample in a batch efficiently.",
+    "from": "m_matmul"
+  },
+  {
+    "to": "ml_linear",
+    "type": "prereq",
+    "why_en": "Differentiating linear-regression loss with respect to weights and intercept yields an explicit parameter-update loop that introduces neural-network optimization.",
+    "from": "m_gradient"
+  },
+  {
+    "to": "ml_logistic",
+    "type": "prereq",
+    "why_en": "Logistic regression retains the weighted linear score, then applies a sigmoid to obtain a binary-class probability between zero and one.",
+    "from": "ml_linear"
+  },
+  {
+    "to": "ml_logistic",
+    "type": "prereq",
+    "why_en": "Binary cross-entropy rewards high probability for the observed class and strongly penalizes confident assignments to the incorrect class.",
+    "from": "p_entropy"
+  },
+  {
+    "to": "ml_split",
+    "type": "prereq",
+    "why_en": "After identifying training examples used for updates, reserve independent validation and test data for hyperparameter selection and final generalization assessment.",
+    "from": "ml_supervised"
+  },
+  {
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why_en": "Compare fitting error with independent validation error to distinguish insufficient modeling from memorization and diagnose the observed generalization gap.",
+    "from": "ml_split"
+  },
+  {
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why_en": "Squared error provides comparable training and validation metrics and, under suitable regression assumptions, supports bias, variance, and noise decomposition.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "ml_bias_variance",
+    "type": "prereq",
+    "why_en": "Predictions vary across sampled training sets; variance describes this instability separately from systematic error represented by prediction bias.",
+    "from": "p_variance"
+  },
+  {
+    "to": "ml_regularization",
+    "type": "prereq",
+    "why_en": "When predictions are overly sensitive to training data, regularization restricts model complexity; validation monitoring detects excessive constraints that cause underfitting.",
+    "from": "ml_bias_variance"
+  },
+  {
+    "to": "ml_regularization",
+    "type": "prereq",
+    "why_en": "Adding a parameter penalty changes loss derivatives and parameter updates, making the effect of regularization strength on weights explicit.",
+    "from": "m_gradient"
+  },
+  {
+    "to": "ml_normalize",
+    "type": "prereq",
+    "why_en": "Normalization means and scales are fitted preprocessing parameters; estimate them only from training data and reuse them unchanged for validation and testing.",
+    "from": "ml_split"
+  },
+  {
+    "to": "ml_normalize",
+    "type": "prereq",
+    "why_en": "Standard deviation measures each feature's typical variation; rescaling reduces unit-dependent numerical differences when optimizing or comparing several state components.",
+    "from": "p_variance"
+  },
+  {
+    "to": "ml_pca",
+    "type": "prereq",
+    "why_en": "Covariance eigenvectors define projection directions and eigenvalues give their variances; retaining largest-eigenvalue directions implements linear principal-component reduction.",
+    "from": "m_eigen"
+  },
+  {
+    "to": "ml_pca",
+    "type": "prereq",
+    "why_en": "PCA selects directions of greatest variance; covariance explains why an oblique projection can preserve more variation than retaining an original coordinate.",
+    "from": "p_variance"
+  },
+  {
+    "to": "ml_pca",
+    "type": "prereq",
+    "why_en": "PCA depends on feature units and scales; centering and task-appropriate standardization determine how its principal directions should be interpreted.",
+    "from": "ml_normalize"
+  },
+  {
+    "to": "ml_clustering",
+    "type": "prereq",
+    "why_en": "A weighted mixture of Gaussian components represents multimodal data and extends hard cluster assignments to probabilistic membership in several components.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why_en": "Independent test data provide evidence about unseen examples; the split unit determines whether evaluation concerns new trajectories, scenes, or other conditions.",
+    "from": "ml_split"
+  },
+  {
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why_en": "Success rates and average errors are finite-sample estimates; sampling variability motivates repeated seeds, additional trials, and uncertainty intervals.",
+    "from": "p_sampling"
+  },
+  {
+    "to": "ml_evaluation",
+    "type": "prereq",
+    "why_en": "Prediction squared error measures numerical agreement, whereas task success depends on relevant states and closed-loop execution; evaluate both kinds of metrics.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "ml_distribution_shift",
+    "type": "prereq",
+    "why_en": "Comparing one-step, multistep, and closed-loop metrics helps identify when predictions leave reliable training coverage under different horizons and task conditions.",
+    "from": "ml_evaluation"
+  },
+  {
+    "to": "ml_distribution_shift",
+    "type": "prereq",
+    "why_en": "Training-validation gaps motivate checking distributional coverage; comparing deployment inputs further distinguishes memorization from encountering previously unobserved state regions.",
+    "from": "ml_bias_variance"
+  },
+  {
+    "to": "m_explog",
+    "type": "prereq",
+    "why_en": "Exponential and logarithmic functions provide domains, monotonicity, and inverse relationships needed to understand transformations of probabilistic training objectives.",
+    "from": "m_function"
+  },
+  {
+    "to": "m_sum",
+    "type": "prereq",
+    "why_en": "Define the meaning of each repeated term, then use an index to expand compact summation notation into an explicitly checkable calculation.",
+    "from": "m_function"
+  },
+  {
+    "to": "d_tensor",
+    "type": "prereq",
+    "why_en": "Vectors introduce an axis containing ordered numerical components; tensors add axes for samples, time, spatial coordinates, and other structured data.",
+    "from": "m_vector"
+  },
+  {
+    "to": "d_tensor",
+    "type": "prereq",
+    "why_en": "Matrix indexing introduces two-dimensional shapes; tensor notation generalizes these axis and index conventions to higher-order numerical arrays.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_linear",
+    "type": "prereq",
+    "why_en": "Tensor shapes identify the feature axis transformed by a linear layer and which batch or time axes remain unchanged.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_linear",
+    "type": "prereq",
+    "why_en": "Matrix operations combine weighted feature sums into one expression, defining a linear layer's parameter mapping and checking input-output dimensional compatibility.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_linear",
+    "type": "prereq",
+    "why_en": "Each fully connected output is an input-weight dot product; collecting those outputs gives the matrix multiplication used by a linear layer.",
+    "from": "m_matmul"
+  },
+  {
+    "to": "d_activation",
+    "type": "prereq",
+    "why_en": "An affine layer produces trainable weighted inputs; elementwise nonlinear activation then expands the relationships that a network can represent.",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_activation",
+    "type": "prereq",
+    "why_en": "Activation derivatives determine how local input changes propagate and identify saturated regions where gradients become small during training.",
+    "from": "m_derivative"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why_en": "Trainable fully connected mappings mix features at successive stages and provide the parameterized transformations composing a multilayer perceptron.",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why_en": "Nonlinear activations between affine layers prevent the entire multilayer network from collapsing algebraically into a single affine transformation.",
+    "from": "d_activation"
+  },
+  {
+    "to": "d_mlp",
+    "type": "prereq",
+    "why_en": "A loss quantifies the discrepancy between network predictions and targets, specifying the task objective that guides multilayer-perceptron parameter updates.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why_en": "An MLP supplies a concrete multistage computation graph from input to loss; backpropagation differentiates that graph in reverse dependency order.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why_en": "The chain rule decomposes loss derivatives into products of local derivatives, providing the mathematical computation performed by each backpropagation path.",
+    "from": "m_chain"
+  },
+  {
+    "to": "d_backprop",
+    "type": "prereq",
+    "why_en": "The scalar loss initializes reverse differentiation and identifies which prediction discrepancies parameter updates are intended to reduce during training.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why_en": "Backpropagation computes a minibatch loss gradient; stochastic gradient descent subsequently uses that gradient to update the model parameters.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why_en": "Expectation relates population training objectives to minibatch averages and explains when sampled gradients estimate the full expected-loss gradient.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_sgd",
+    "type": "prereq",
+    "why_en": "Data splits determine which examples may contribute parameter gradients, preventing validation or test information from entering training updates.",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_adam",
+    "type": "prereq",
+    "why_en": "SGD introduces gradient-based parameter updates; Adam extends this procedure with accumulated directional statistics and coordinate-dependent update scaling.",
+    "from": "d_sgd"
+  },
+  {
+    "to": "d_adam",
+    "type": "prereq",
+    "why_en": "First and second moments explain Adam's moving gradient statistics and distinguish the mean squared gradient from gradient variance itself.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why_en": "Tensor-axis meanings determine which dimensions contribute normalization statistics, distinguishing featurewise operations from statistics taken across a batch.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why_en": "Means and variances define centering and rescaling, making each statistical operation in a feature-normalization formula explicit and interpretable.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "d_norm",
+    "type": "prereq",
+    "why_en": "Training-test separation constrains input-standardization statistics, preventing test-data leakage while retaining consistent preprocessing rules during model deployment.",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_residual",
+    "type": "prereq",
+    "why_en": "A trainable subnetwork can compute a residual correction; the residual connection adds that correction to the existing input representation.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_residual",
+    "type": "prereq",
+    "why_en": "Backpropagation traces gradients through both the transformed branch and identity path, explaining gradient propagation through deep residual networks.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_cnn",
+    "type": "prereq",
+    "why_en": "Spatial and channel axes specify image-tensor organization, allowing convolutional feature-map shapes to be followed through each processing layer.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_cnn",
+    "type": "prereq",
+    "why_en": "Fully connected networks introduce trainable weighted sums and nonlinearities; convolution adds local connectivity and parameter sharing across spatial positions.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_rnn",
+    "type": "prereq",
+    "why_en": "An MLP supplies a nonlinear state-update function; a recurrent network reuses a shared update function across successive sequence positions.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "d_rnn",
+    "type": "prereq",
+    "why_en": "Tensor shapes separate batch, time, and hidden-feature dimensions, preventing recurrent sequence updates from mixing samples belonging to different trajectories.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_bptt",
+    "type": "prereq",
+    "why_en": "An RNN defines dependence on previous hidden states; backpropagation through time expands these recurrent updates into a temporal computation graph.",
+    "from": "d_rnn"
+  },
+  {
+    "to": "d_bptt",
+    "type": "prereq",
+    "why_en": "Ordinary reverse-mode differentiation applies to the unrolled temporal graph, accumulating contributions from parameters reused at multiple time steps.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "d_lstm",
+    "type": "prereq",
+    "why_en": "RNN hidden-state updates establish recurrent sequence modeling; LSTM modifies the update with a cell state and trainable gating mechanisms.",
+    "from": "d_rnn"
+  },
+  {
+    "to": "d_lstm",
+    "type": "prereq",
+    "why_en": "Sigmoid and hyperbolic-tangent activations produce gate coefficients and bounded candidate values, supporting differentiable retention, removal, and addition of memory content.",
+    "from": "d_activation"
+  },
+  {
+    "to": "d_softmax",
+    "type": "prereq",
+    "why_en": "Exponentiating each score makes it positive; dividing by the sum of exponentials produces normalized nonnegative weights whose total is one.",
+    "from": "m_explog"
+  },
+  {
+    "to": "d_softmax",
+    "type": "prereq",
+    "why_en": "A score vector represents aligned alternatives; softmax normalizes across those components while preserving each output's correspondence to its input candidate.",
+    "from": "m_vector"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why_en": "Linear projections transform inputs into queries, keys, and values, learning which features determine matching and which information is aggregated.",
+    "from": "d_linear"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why_en": "Softmax converts query-key scores into nonnegative weights summing to one, enabling normalized weighted aggregation of the value vectors.",
+    "from": "d_softmax"
+  },
+  {
+    "to": "d_attention",
+    "type": "prereq",
+    "why_en": "Matrix multiplication evaluates all query-key dot products together and multiplies the resulting attention-weight matrix by the value matrix.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why_en": "Attention defines query-key matching and value aggregation; self-attention obtains queries, keys, and values from the same input sequence.",
+    "from": "d_attention"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why_en": "The sequence axis determines attention-matrix row and column meanings, allowing a position-dependent mask to restrict which tokens can be read.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_self_attention",
+    "type": "prereq",
+    "why_en": "Information-separation principles extend to sequence time: prediction may use only available context, excluding future observations that would reveal the target.",
+    "from": "ml_split"
+  },
+  {
+    "to": "d_multihead",
+    "type": "prereq",
+    "why_en": "Single-head attention defines one matching-and-aggregation operation; multi-head attention performs several such operations in independently learned projection spaces.",
+    "from": "d_attention"
+  },
+  {
+    "to": "d_multihead",
+    "type": "prereq",
+    "why_en": "Tensor dimensions specify splitting projected features into attention heads, computing each head, and concatenating outputs along the feature axis.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "d_position",
+    "type": "prereq",
+    "why_en": "Self-attention matches content but requires positional information to distinguish sequence order or spatial location when identical content appears at different positions.",
+    "from": "d_self_attention"
+  },
+  {
+    "to": "d_position",
+    "type": "prereq",
+    "why_en": "Vector addition combines position and content representations of equal width; component organization also explains paired sinusoidal frequencies in positional encodings.",
+    "from": "m_vector"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why_en": "Multi-head attention exchanges information across sequence positions, allowing a Transformer block to combine relations represented in several learned subspaces.",
+    "from": "d_multihead"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why_en": "Position encodings provide order or location information that content-only attention cannot independently determine, supporting temporal and spatial interpretation of tokens.",
+    "from": "d_position"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why_en": "Residual connections add attention and feed-forward updates to existing features, providing direct information and gradient paths through stacked Transformer blocks.",
+    "from": "d_residual"
+  },
+  {
+    "to": "d_transformer",
+    "type": "prereq",
+    "why_en": "Normalization controls feature scales around sublayers and combines with attention, feed-forward transformations, and residual paths to form a trainable Transformer block.",
+    "from": "d_norm"
+  },
+  {
+    "to": "v_vit",
+    "type": "prereq",
+    "why_en": "A Transformer processes token sequences; a Vision Transformer reuses this computation after projecting image patches into token representations.",
+    "from": "d_transformer"
+  },
+  {
+    "to": "v_vit",
+    "type": "prereq",
+    "why_en": "Image-tensor axes determine conversion from height, width, and channels to patch count and embedding width, enabling shape checks throughout patch projection.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why_en": "Self-supervision still requires a trainable representation mapping; it changes target construction without requiring a particular visual backbone as a conceptual prerequisite.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why_en": "A loss converts automatically constructed prediction or cross-view tasks into training signals, replacing the need for manually assigned class labels.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "v_selfsupervised",
+    "type": "prereq",
+    "why_en": "Generalization concepts guide augmentation choices and test whether representations learned without labels transfer to downstream perception or control tasks.",
+    "from": "ml_bias_variance"
+  },
+  {
+    "to": "v_collapse",
+    "type": "prereq",
+    "why_en": "Cross-view consistency alone can permit constant outputs; collapse analysis explains why such low-loss solutions discard distinctions needed for useful representations.",
+    "from": "v_selfsupervised"
+  },
+  {
+    "to": "v_collapse",
+    "type": "prereq",
+    "why_en": "Across-sample expectations and variances measure representation diversity, distinguishing low training loss from retaining meaningful differences among input observations.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why_en": "Self-supervision constructs targets from related image views; DINO implements this approach using matching between teacher and student output distributions.",
+    "from": "v_selfsupervised"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why_en": "Collapse analysis motivates mechanisms beyond view consistency, clarifying the role of centering, temperature, and teacher updates in DINO training.",
+    "from": "v_collapse"
+  },
+  {
+    "to": "v_dino",
+    "type": "prereq",
+    "why_en": "Softmax with temperature converts teacher and student scores into distributions, enabling cross-view matching through a cross-entropy training objective.",
+    "from": "d_softmax"
+  },
+  {
+    "to": "v_dinov2",
+    "type": "prereq",
+    "why_en": "DINO introduces teacher-student self-supervised visual learning; DINOv2 develops its objectives, data organization, and training recipe for stronger general-purpose features.",
+    "from": "v_dino"
+  },
+  {
+    "to": "v_dinov2",
+    "type": "prereq",
+    "why_en": "ViT patch structure explains why DINOv2 can provide global image representations while retaining spatially organized local features for downstream tasks.",
+    "from": "v_vit"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why_en": "Frozen DINOv2 features encode current, future, and goal observations, supplying a common spatial visual representation for DINO-WM prediction and planning.",
+    "from": "v_dinov2"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why_en": "A Transformer processes action-conditioned feature histories, enabling DINO-WM to predict visual representations after executing candidate action sequences.",
+    "from": "d_transformer"
+  },
+  {
+    "to": "v_dinowm",
+    "type": "prereq",
+    "why_en": "Feature-prediction loss supervises the dynamics model using encoded future observations; planning compares predicted terminal features with the encoded goal observation.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "g_latent",
+    "type": "prereq",
+    "why_en": "Tensor notation makes latent variables dimensionally explicit, distinguishing observation features, initial sampling noise, and internal model states by their origins.",
+    "from": "d_tensor"
+  },
+  {
+    "to": "g_latent",
+    "type": "prereq",
+    "why_en": "Gaussian distributions provide a common latent prior and sampling source, although latent variables need not be Gaussian or lower-dimensional compressed representations.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why_en": "A latent representation defines the intermediate encoder output; an autoencoder learns that representation by reconstructing observations from their encoded values.",
+    "from": "g_latent"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why_en": "Trainable MLPs can implement encoder and decoder mappings, providing a basic autoencoder for small fixed-dimensional vector datasets.",
+    "from": "d_mlp"
+  },
+  {
+    "to": "g_autoencoder",
+    "type": "prereq",
+    "why_en": "Reconstruction loss measures discrepancies between decoded and original inputs and supplies gradients for jointly training the encoder and decoder networks.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why_en": "A VAE retains encoding and reconstruction while making the encoder probabilistic and regularizing its latent distribution relative to a prior.",
+    "from": "g_autoencoder"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why_en": "Gaussian parameterization supplies means, scales, and a samplable prior; reparameterization constructs differentiable latent samples from these parameters and independent noise.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_vae",
+    "type": "prereq",
+    "why_en": "Backpropagation through reparameterized samples updates encoder distribution parameters and decoder weights, allowing stochastic latent sampling within gradient-based training.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why_en": "Gaussian noise defines a known corruption process, mixing clean samples and noise at specified levels to construct controlled denoising-training inputs.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why_en": "Distinguishing latent-variable roles separates noisy intermediate samples from initial noise and prevents diffusion-step indices from being confused with environment time.",
+    "from": "g_latent"
+  },
+  {
+    "to": "g_diffusion",
+    "type": "prereq",
+    "why_en": "A denoising loss specifies the reverse-recovery learning objective, giving the network supervised targets generated by the known forward corruption process.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why_en": "Diffusion introduces corruption and reverse recovery; DDPM specifies a noise-prediction objective sampled across noise levels and clean training examples.",
+    "from": "g_diffusion"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why_en": "Backpropagation differentiates discrepancies between predicted and sampled noise through the denoising network, without requiring differentiation through the physical environment.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "g_ddpm",
+    "type": "prereq",
+    "why_en": "Minibatch training samples clean examples, Gaussian noise, and noise levels, approximating the multiple expectations in the DDPM training objective.",
+    "from": "d_sgd"
+  },
+  {
+    "to": "g_conditional",
+    "type": "prereq",
+    "why_en": "Conditional generation augments the DDPM denoiser with information such as current state, restricting generated samples to the corresponding conditional future distribution.",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "g_conditional",
+    "type": "prereq",
+    "why_en": "Conditional distributions permit several futures from one state; expected-value reasoning explains why averaging those futures can produce an infeasible intermediate state.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "g_ddim",
+    "type": "prereq",
+    "why_en": "Conditional generation fixes the current-state context; deterministic DDIM then maps initial noise to a sample under that specified condition.",
+    "from": "g_conditional"
+  },
+  {
+    "to": "g_ddim",
+    "type": "prereq",
+    "why_en": "A DDPM-trained denoiser can support DDIM sampling; distinguish the network's training objective from the reverse sampling procedure selected at inference.",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "g_noise_action",
+    "type": "prereq",
+    "why_en": "Deterministic DDIM maps fixed initial noise to repeatable subgoals, allowing ID-WM to compare candidates and optimize noise as a high-level decision.",
+    "from": "g_ddim"
+  },
+  {
+    "to": "g_noise_action",
+    "type": "prereq",
+    "why_en": "The latent-variable distinction identifies searched noise as a generator input, rather than an actuator command or an observed visual feature.",
+    "from": "g_latent"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why_en": "Optimizer updates specify how training modifies network weights, contrasting with deployment-time planning that optimizes action or noise decisions under fixed weights.",
+    "from": "d_adam"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why_en": "DDIM inference can repeatedly call the denoiser; frozen weights do not imply a single forward pass or low inference computation.",
+    "from": "g_ddim"
+  },
+  {
+    "to": "d_train_infer",
+    "type": "prereq",
+    "why_en": "Transformer forward computation describes one prediction, while planning evaluates many candidates repeatedly; model-call latency therefore differs from complete decision latency.",
+    "from": "d_transformer"
+  },
+  {
+    "to": "r_state",
+    "type": "prereq",
+    "why_en": "Ordered vectors combine position, orientation, velocity, and other quantities into defined inputs, executable actions, and supervised state-prediction targets.",
+    "from": "m_vector"
+  },
+  {
+    "to": "r_frames",
+    "type": "prereq",
+    "why_en": "Rotation uses matrix multiplication and translation uses vector addition; matrix shapes and composition order determine the direction of coordinate conversion.",
+    "from": "m_matrix"
+  },
+  {
+    "to": "r_frames",
+    "type": "prereq",
+    "why_en": "Positions and directions first require vector representations tied to explicit reference frames before coordinate transformations have unambiguous inputs and outputs.",
+    "from": "m_vector"
+  },
+  {
+    "to": "r_dynamics",
+    "type": "prereq",
+    "why_en": "Define predicted state variables and available controls before specifying dynamics, ensuring relevant velocity, contact, and other required information is included.",
+    "from": "r_state"
+  },
+  {
+    "to": "r_dynamics",
+    "type": "prereq",
+    "why_en": "Velocity differentiates position with respect to time, and acceleration differentiates velocity, connecting static configurations to time-dependent state transitions.",
+    "from": "m_derivative"
+  },
+  {
+    "to": "r_markov",
+    "type": "prereq",
+    "why_en": "A single observation may omit velocity or contact information; earlier observations and actions can supplement prediction through a history window.",
+    "from": "r_state"
+  },
+  {
+    "to": "r_markov",
+    "type": "prereq",
+    "why_en": "Conditional probability specifies which history is available when predicting the next state and clarifies whether current observation alone is sufficient.",
+    "from": "p_conditional"
+  },
+  {
+    "to": "r_feedback",
+    "type": "prereq",
+    "why_en": "Dynamics predict action consequences; feedback compares predictions with new measurements and revises subsequent control to address execution discrepancies.",
+    "from": "r_dynamics"
+  },
+  {
+    "to": "r_goal",
+    "type": "prereq",
+    "why_en": "A norm converts the vector difference between predicted terminal state and goal into a scalar score for ranking candidate action sequences.",
+    "from": "m_norm"
+  },
+  {
+    "to": "r_goal",
+    "type": "prereq",
+    "why_en": "Specify whether the goal includes block position, orientation, or pusher position before defining the appropriate errors and task-success criteria.",
+    "from": "r_state"
+  },
+  {
+    "to": "r_rollout",
+    "type": "prereq",
+    "why_en": "Repeated application of a one-step transition model produces a rollout, making earlier prediction errors part of later model inputs.",
+    "from": "r_dynamics"
+  },
+  {
+    "to": "r_rollout",
+    "type": "prereq",
+    "why_en": "One-step supervised error evaluates a single transition; multistep evaluation measures error growth with horizon, so these metrics cannot be substituted indiscriminately.",
+    "from": "ml_mse"
+  },
+  {
+    "to": "r_search",
+    "type": "prereq",
+    "why_en": "Search ranks candidate sequences using goal costs and restricts acceptable solutions using action, collision, and time constraints relevant to the task.",
+    "from": "r_goal"
+  },
+  {
+    "to": "r_search",
+    "type": "prereq",
+    "why_en": "Continuous action spaces cannot be exhaustively enumerated; random sampling provides a finite-budget procedure for exploring possible decision sequences.",
+    "from": "p_sampling"
+  },
+  {
+    "to": "r_shooting",
+    "type": "prereq",
+    "why_en": "Random shooting approximates a high-dimensional decision search by sampling a finite set of action sequences and evaluating each candidate's cost.",
+    "from": "r_search"
+  },
+  {
+    "to": "r_shooting",
+    "type": "prereq",
+    "why_en": "Each sampled action sequence requires repeated forward prediction before its terminal state can be scored and compared against other candidates.",
+    "from": "r_rollout"
+  },
+  {
+    "to": "r_cem",
+    "type": "prereq",
+    "why_en": "CEM retains sampling, rollout, and scoring, adding elite selection and proposal refitting so later candidate samples exploit information from previous iterations.",
+    "from": "r_shooting"
+  },
+  {
+    "to": "r_cem",
+    "type": "prereq",
+    "why_en": "A Gaussian proposal with adjustable means and variances generates candidates; elite sample statistics update the proposal parameters for subsequent iterations.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "r_cem",
+    "type": "prereq",
+    "why_en": "Averaging elite candidates estimates a new mean, and averaging their centered squared deviations estimates variance for Gaussian proposal refitting.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "r_mpc",
+    "type": "prereq",
+    "why_en": "CEM solves one finite-horizon optimization problem; MPC invokes such optimization repeatedly after executing actions and observing the resulting state.",
+    "from": "r_cem"
+  },
+  {
+    "to": "r_mpc",
+    "type": "prereq",
+    "why_en": "Feedback supplies newly observed execution states as planning initial conditions; MPC specifies the repeated planning, partial execution, and observation schedule.",
+    "from": "r_feedback"
+  },
+  {
+    "to": "r_reach",
+    "type": "prereq",
+    "why_en": "Identical geometric positions can have different short-horizon reachable sets under different velocities or input limits, so reachability must include dynamics and time.",
+    "from": "r_dynamics"
+  },
+  {
+    "to": "r_reach",
+    "type": "prereq",
+    "why_en": "A goal specifies a desired endpoint; reachability additionally requires an admissible path satisfying dynamics, obstacle restrictions, and action constraints.",
+    "from": "r_goal"
+  },
+  {
+    "to": "r_policy",
+    "type": "prereq",
+    "why_en": "Policies map states or observations to actions; value functions must likewise specify the state or state-action condition whose outcomes they evaluate.",
+    "from": "r_state"
+  },
+  {
+    "to": "r_policy",
+    "type": "prereq",
+    "why_en": "Transition and policy randomness produce different future reward sequences; value functions average discounted returns across these possible trajectories.",
+    "from": "p_expectation"
+  },
+  {
+    "to": "r_offline",
+    "type": "prereq",
+    "why_en": "Episode-level offline splits reveal differences between training coverage and planned states while preventing adjacent-frame leakage from obscuring generalization failures.",
+    "from": "ml_split"
+  },
+  {
+    "to": "r_offline",
+    "type": "prereq",
+    "why_en": "Distinguishing training error from generalization error explains why accurate fitting on offline transitions can still fail in states selected by planning.",
+    "from": "ml_bias_variance"
+  },
+  {
+    "to": "r_offline",
+    "type": "prereq",
+    "why_en": "Rollouts propagate prediction error, while planning selects apparently favorable trajectories; together these mechanisms can magnify failures outside training coverage.",
+    "from": "r_rollout"
+  },
+  {
+    "to": "i_overview",
+    "type": "prereq",
+    "why_en": "The high-level generator supplies local future-state alternatives; integrating it into ID-WM requires tracking its conditioning inputs, generated subgoals, and interface to local control.",
+    "from": "i_high"
+  },
+  {
+    "to": "i_overview",
+    "type": "prereq",
+    "why_en": "The low-level model predicts action consequences while search selects actions; the overview integrates these distinct computations with high-level subgoal generation.",
+    "from": "i_low"
+  },
+  {
+    "to": "i_overview",
+    "type": "prereq",
+    "why_en": "Temporal hierarchy composes local transitions into longer plans; the overview connects subgoal-chain organization with the models that generate and realize each transition.",
+    "from": "i_hierarchy"
+  },
+  {
+    "to": "i_overview",
+    "type": "prereq",
+    "why_en": "The high-level objective balances goal progress and noise regularization; integrating it specifies how candidate subgoal chains are scored within the complete method.",
+    "from": "i_objective"
+  },
+  {
+    "to": "i_overview",
+    "type": "prereq",
+    "why_en": "The training-inference dataflow distinguishes learned model weights from searched decisions and connects both levels to actual execution and subsequent observation.",
+    "from": "i_loop"
+  },
+  {
+    "to": "i_high",
+    "type": "prereq",
+    "why_en": "Condition on current state and train against a later state to model the multimodal distribution of local futures at the selected temporal offset.",
+    "from": "g_conditional"
+  },
+  {
+    "to": "i_high",
+    "type": "prereq",
+    "why_en": "After training, deterministic DDIM converts initial noise into candidate future states, allowing the high-level planner to call the generator repeatedly.",
+    "from": "g_ddim"
+  },
+  {
+    "to": "i_high",
+    "type": "prereq",
+    "why_en": "Local temporal targets approximate reachable future structure from data; low-level realization and evaluation remain necessary checks on generated subgoal feasibility.",
+    "from": "r_reach"
+  },
+  {
+    "to": "i_noise",
+    "type": "prereq",
+    "why_en": "With fixed model and current-state condition, deterministic DDIM maps each initial noise vector to a future state, enabling subgoal selection through noise search.",
+    "from": "g_ddim"
+  },
+  {
+    "to": "i_noise",
+    "type": "prereq",
+    "why_en": "A standard Gaussian defines the noise prior without assigning physical meanings to individual coordinates; extreme searched values may cause out-of-distribution generation.",
+    "from": "p_gaussian"
+  },
+  {
+    "to": "i_noise",
+    "type": "prereq",
+    "why_en": "Search over continuous generator inputs replaces high-level direct optimization of a long primitive-action sequence, delegating candidate-state construction to the learned mapping.",
+    "from": "r_search"
+  },
+  {
+    "to": "i_low",
+    "type": "prereq",
+    "why_en": "The low-level Transformer combines state-action history with action embeddings to predict the next state, supplying context-dependent local dynamics evaluations.",
+    "from": "d_transformer"
+  },
+  {
+    "to": "i_low",
+    "type": "prereq",
+    "why_en": "Repeated low-level forward prediction evaluates each candidate action sequence and estimates its terminal distance from the requested subgoal.",
+    "from": "r_rollout"
+  },
+  {
+    "to": "i_low",
+    "type": "prereq",
+    "why_en": "CEM proposes and refines action sequences; forward-model outcome evaluation turns this search into an inverse solution from desired subgoal to executable actions.",
+    "from": "r_cem"
+  },
+  {
+    "to": "i_objective",
+    "type": "prereq",
+    "why_en": "Allowing planning to optimize noise can move generator inputs beyond common prior regions, motivating a penalty on extreme noise-coordinate magnitudes.",
+    "from": "i_noise"
+  },
+  {
+    "to": "i_objective",
+    "type": "prereq",
+    "why_en": "Terminal distance defines high-level goal error as a scalar objective; an additional noise penalty controls undesirable generator inputs during optimization.",
+    "from": "r_goal"
+  },
+  {
+    "to": "i_objective",
+    "type": "prereq",
+    "why_en": "A weighted regularizer combines goal progress with avoidance of extreme noise in one candidate score, explicitly trading off these planning preferences.",
+    "from": "ml_regularization"
+  },
+  {
+    "to": "i_hierarchy",
+    "type": "prereq",
+    "why_en": "Each high-level transition must match the low-level time budget; geometric proximity alone does not establish that local control can realize the subgoal.",
+    "from": "r_reach"
+  },
+  {
+    "to": "i_hierarchy",
+    "type": "prereq",
+    "why_en": "Long action sequences increase search dimension; hierarchical subgoal chains separate long-horizon route organization from local executable-action optimization.",
+    "from": "r_search"
+  },
+  {
+    "to": "i_hierarchy",
+    "type": "prereq",
+    "why_en": "Generate a local future from one state, then condition the next generation on that result to compose a sequence of subgoals.",
+    "from": "i_high"
+  },
+  {
+    "to": "i_loop",
+    "type": "prereq",
+    "why_en": "High-level training uses temporally separated state pairs, whereas inference generates candidate subgoals; tracking both flows separates supervised targets from online inputs.",
+    "from": "i_high"
+  },
+  {
+    "to": "i_loop",
+    "type": "prereq",
+    "why_en": "Low-level training uses action-conditioned next-state targets, while inference rolls out candidates to choose actions; these different uses must be recorded explicitly.",
+    "from": "i_low"
+  },
+  {
+    "to": "i_loop",
+    "type": "prereq",
+    "why_en": "High-level candidate scoring combines terminal goal distance and noise regularization so CEM elite selection ranks candidates according to the complete objective.",
+    "from": "i_objective"
+  },
+  {
+    "to": "i_loop",
+    "type": "prereq",
+    "why_en": "Place high- and low-level searches inside an observe-execute-observe cycle to define online planning, state updates, and task termination conditions.",
+    "from": "r_mpc"
+  },
+  {
+    "to": "i_compare",
+    "type": "prereq",
+    "why_en": "ID-WM retains action-conditioned feature prediction and low-level planning from DINO-WM, adding a local future-state generator for organizing longer tasks.",
+    "from": "v_dinowm"
+  },
+  {
+    "to": "i_compare",
+    "type": "prereq",
+    "why_en": "Understanding denoising objectives enables comparison between diffusion that generates complete trajectories and diffusion that generates local future states for subsequent search.",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "i_compare",
+    "type": "prereq",
+    "why_en": "Policy and value concepts clarify how hierarchical reinforcement-learning baselines differ from model-based goal search and identify their additional training dependencies.",
+    "from": "r_policy"
+  },
+  {
+    "to": "i_evaluate",
+    "type": "prereq",
+    "why_en": "Fixed training, validation, and test boundaries determine whether new-goal performance reflects generalization rather than leaked evaluation information.",
+    "from": "ml_split"
+  },
+  {
+    "to": "i_evaluate",
+    "type": "prereq",
+    "why_en": "Offline coverage and planning-induced distribution differences affect success, motivating evaluation of distribution shifts, failures, and data-augmentation settings.",
+    "from": "r_offline"
+  },
+  {
+    "to": "i_evaluate",
+    "type": "prereq",
+    "why_en": "Execution, replanning, and search budgets determine fair measurements of success rate, completion steps, and end-to-end decision latency.",
+    "from": "i_loop"
+  },
+  {
+    "to": "e_python",
+    "type": "prereq",
+    "why_en": "Implement mathematical vectors as arrays while preserving feature meanings and order, then apply indexing, broadcasting, and batched numerical operations.",
+    "from": "m_vector"
+  },
+  {
+    "to": "e_torch",
+    "type": "prereq",
+    "why_en": "Array and function operations become tensors and modules, requiring explicit management of shapes, numerical types, and device placement.",
+    "from": "e_python"
+  },
+  {
+    "to": "e_torch",
+    "type": "prereq",
+    "why_en": "Automatic differentiation implements the chain rule; backward computes gradients, and the optimizer subsequently uses those gradients to update model parameters.",
+    "from": "d_backprop"
+  },
+  {
+    "to": "e_dataset",
+    "type": "prereq",
+    "why_en": "Array slicing constructs aligned histories, actions, and future labels, then organizes them into batches with explicitly checkable numerical shapes.",
+    "from": "e_python"
+  },
+  {
+    "to": "e_dataset",
+    "type": "prereq",
+    "why_en": "Split episodes before constructing windows, preventing neighboring frames or future portions of the same trajectory from crossing evaluation boundaries.",
+    "from": "ml_split"
+  },
+  {
+    "to": "e_dataset",
+    "type": "prereq",
+    "why_en": "History windows must retain predictive information while avoiding reset boundaries and excluding future target observations from the model input.",
+    "from": "r_markov"
+  },
+  {
+    "to": "e_reproduce",
+    "type": "prereq",
+    "why_en": "A runnable training loop is an initial check; reproduction additionally requires saved configurations, prediction-error measurements, closed-loop evaluation, and timing.",
+    "from": "e_torch"
+  },
+  {
+    "to": "e_reproduce",
+    "type": "prereq",
+    "why_en": "Fix dataset versions and window-index manifests so different experimental runs use the same training inputs and evaluation examples.",
+    "from": "e_dataset"
+  },
+  {
+    "to": "e_reproduce",
+    "type": "prereq",
+    "why_en": "Derive reproduction acceptance checks from the paper's metrics and ablations, rather than relying solely on one successful demonstration video.",
+    "from": "i_evaluate"
+  },
+  {
+    "to": "e_project",
+    "type": "prereq",
+    "why_en": "Record configurations, prediction errors, task outcomes, and failure trajectories at each implementation stage so claimed progress remains independently inspectable.",
+    "from": "e_reproduce"
+  },
+  {
+    "to": "e_project",
+    "type": "prereq",
+    "why_en": "Decompose ID-WM into separately verifiable stages covering data preparation, dynamics, sampling-based planning, hierarchical integration, and visual-representation extensions.",
+    "from": "i_overview"
+  },
+  {
+    "to": "d_lstm",
+    "type": "evolution",
+    "why_en": "LSTM modifies recurrent state updates using gates and a memory cell, addressing long-term gradient propagation within the broader recurrent-network family.",
+    "from": "d_rnn"
+  },
+  {
+    "to": "d_rnn",
+    "type": "parallel",
+    "why_en": "CNNs exploit local spatial structure, whereas RNNs exploit recurrent temporal structure; these branches can be learned independently according to task requirements.",
+    "from": "d_cnn"
+  },
+  {
+    "to": "d_transformer",
+    "type": "parallel",
+    "why_en": "Both support sequence modeling, but Transformers use attention rather than recurrent updates; LSTM is not a mandatory mathematical prerequisite for Transformer formulas.",
+    "from": "d_lstm"
+  },
+  {
+    "to": "v_dinov2",
+    "type": "evolution",
+    "why_en": "DINOv2 develops scalable self-supervised visual-feature training from the DINO approach; representation quality still requires evaluation on relevant downstream tasks.",
+    "from": "v_dino"
+  },
+  {
+    "to": "i_low",
+    "type": "evolution",
+    "why_en": "ID-WM retains low-level prediction and planning from state or visual-feature histories and actions, then adds high-level organization of future subgoals.",
+    "from": "v_dinowm"
+  },
+  {
+    "to": "g_ddim",
+    "type": "evolution",
+    "why_en": "DDIM provides sampling updates compatible with denoising training; deterministic settings make initial noise a repeatable, searchable high-level decision variable.",
+    "from": "g_ddpm"
+  },
+  {
+    "to": "i_hierarchy",
+    "type": "evolution",
+    "why_en": "Retain finite-horizon optimization and feedback execution, then add subgoals to separate long-horizon route organization from detailed local action selection.",
+    "from": "r_mpc"
+  },
+  {
+    "to": "i_overview",
+    "type": "application",
+    "why_en": "Robot dynamics provide application context; the paper evaluates Wall, PushT, and Maze, so G1 transfer requires additional state, contact, and control validation.",
+    "from": "r_dynamics"
+  },
+  {
+    "to": "g_latent",
+    "type": "parallel",
+    "why_en": "Both concern representations, but PCA uses linear maximum-variance projection and learned latent spaces may be nonlinear; PCA is not required for DINO training.",
+    "from": "ml_pca"
+  },
+  {
+    "to": "ml_clustering",
+    "type": "parallel",
+    "why_en": "PCA can preprocess representations before clustering, but neither K-means nor Gaussian-mixture modeling inherently requires applying PCA before fitting clusters.",
+    "from": "ml_pca"
+  },
+  {
+    "to": "i_noise",
+    "type": "parallel",
+    "why_en": "These nodes explain the same noise-to-decision connection from generative modeling and planning perspectives, allowing the role of initial noise to be compared.",
+    "from": "g_noise_action"
+  }
+]

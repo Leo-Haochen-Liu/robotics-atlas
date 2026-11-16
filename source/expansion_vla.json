@@ -1,0 +1,2588 @@
+{
+  "nodes": [
+    {
+      "id": "vla_behavior_cloning",
+      "en": "Behavior Cloning",
+      "title": "行为克隆",
+      "group": "robot",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Behavior cloning learns a policy by fitting demonstrated actions conditioned on observations and task context.",
+      "definition": "Behavior cloning learns a policy by fitting demonstrated actions conditioned on observations and task context. A probabilistic policy minimizes negative log likelihood; squared regression is a special modeling choice rather than the only possible behavior-cloning loss. The demonstrations determine which states and strategies are covered. Closed-loop execution can visit states absent from demonstrations, making recovery behavior and distribution shift important. Behavior cloning does not require a learned transition model or a scalar task reward, although it can be combined with either in a larger training pipeline.",
+      "example": "Record images and gripper commands while a person teleoperates object pickup. Fit the action distribution for each recorded observation. If the deployed gripper misses, it may see a configuration not present in successful demonstrations; high demonstration likelihood alone does not establish recovery ability.",
+      "role_en": "This is the supervised-policy foundation shared by ACT, diffusion policies and many VLAs. It is distinct from using a world model to search actions at inference, and from improving a policy using autonomous reward-labeled experience.",
+      "latex": "\\mathcal L_{\\mathrm{BC}}(\\theta)=-\\mathbb E_{(o,a)\\sim\\mathcal D}\\log\\pi_\\theta(a\\mid o)",
+      "notation": [
+        {
+          "symbol": "\\mathcal D",
+          "meaning": "Demonstration observation-action pairs."
+        },
+        {
+          "symbol": "\\pi_\\theta",
+          "meaning": "Conditional policy learned by supervised fitting."
+        }
+      ],
+      "prereqs": [
+        "ml_supervised",
+        "r_policy",
+        "r_offline"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: Imitation Learning",
+          "url": "https://underactuated.mit.edu/imitation.html"
+        }
+      ]
+    },
+    {
+      "id": "vla_vlm",
+      "en": "Vision-Language Models and VLA Grounding",
+      "title": "视觉语言模型与动作接地",
+      "group": "deep",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "A vision-language model combines image information with language context to support tasks such as captioning and visual question answering.",
+      "definition": "A vision-language model combines image information with language context to support tasks such as captioning and visual question answering. A vision-language-action model adds an interface that predicts executable robot actions. That interface can use discrete action tokens, continuous regression, diffusion or flow matching. Visual-language understanding and physical action grounding are separate requirements: knowing what a mug is does not automatically specify safe joint commands. Robot demonstrations, action conventions and embodiment information connect pretrained representations to a particular control interface.",
+      "example": "The instruction pick up the red cup conditions a model on an image containing several cups. A VLM can identify the intended object; a VLA must additionally predict actions in the robot coordinate and control convention. A correct object description can coexist with an unsuccessful grasp.",
+      "role_en": "This reusable node connects multimodal pretraining to RT-2, OpenVLA, the pi family, GR00T and Gemini Robotics. It should not be interpreted as evidence that every VLA explicitly predicts future world states.",
+      "latex": "h=F_\\theta(E_{\\mathrm{vision}}(I),E_{\\mathrm{text}}(l)),\\qquad a\\sim\\pi_\\phi(\\cdot\\mid h,q)",
+      "notation": [
+        {
+          "symbol": "I,l,q",
+          "meaning": "Images, language instruction and robot state."
+        },
+        {
+          "symbol": "h",
+          "meaning": "Joint visual-language representation."
+        },
+        {
+          "symbol": "\\pi_\\phi",
+          "meaning": "Action-producing head or expert."
+        }
+      ],
+      "prereqs": [
+        "v_vit",
+        "d_transformer",
+        "p_entropy"
+      ],
+      "sources": [
+        {
+          "title": "RT-2 original paper",
+          "url": "https://arxiv.org/abs/2307.15818"
+        },
+        {
+          "title": "OpenVLA paper",
+          "url": "https://arxiv.org/abs/2406.09246"
+        }
+      ]
+    },
+    {
+      "id": "vla_action_chunk",
+      "en": "Action Chunking",
+      "title": "动作分块",
+      "group": "robot",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Action chunking predicts several consecutive control actions from one policy inference.",
+      "definition": "Action chunking predicts several consecutive control actions from one policy inference. It changes the temporal interface between a model and its controller, reducing the number of policy calls required to execute a trajectory. Chunk length, executed prefix length, observation latency and replanning frequency are different settings. A long chunk can reduce inference overhead but makes execution less reactive when used without new feedback. Chunk prediction is compatible with Transformer, variational, diffusion and flow-based policies and does not itself identify which action distribution is learned.",
+      "example": "At a fifty-hertz controller rate, fifty predicted actions describe one second of desired control. Executing all fifty before looking again produces a different closed-loop system from executing ten actions and recomputing. The same network can therefore behave differently under different chunk scheduling choices.",
+      "role_en": "ACT makes action chunking explicit; many later generalist policies also use it. The concept connects temporal modeling to deployment latency, RTC and asynchronous inference, rather than representing a full world model by itself.",
+      "latex": "A_t=(a_t,\\ldots,a_{t+H-1})\\sim\\pi_\\theta(\\cdot\\mid o_{\\le t},l)",
+      "notation": [
+        {
+          "symbol": "H",
+          "meaning": "Number of future control actions predicted together."
+        },
+        {
+          "symbol": "A_t",
+          "meaning": "Action chunk; execution may use only a prefix."
+        }
+      ],
+      "prereqs": [
+        "vla_behavior_cloning",
+        "r_feedback",
+        "r_rollout"
+      ],
+      "sources": [
+        {
+          "title": "ACT paper",
+          "url": "https://arxiv.org/abs/2304.13705"
+        },
+        {
+          "title": "Real-Time Execution of Action Chunking Flow Policies",
+          "url": "https://arxiv.org/abs/2506.07339"
+        }
+      ]
+    },
+    {
+      "id": "g_flow_matching",
+      "en": "Conditional Flow Matching",
+      "title": "条件流匹配",
+      "group": "generative",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Flow matching trains a vector field that transports samples along a specified probability path.",
+      "definition": "Flow matching trains a vector field that transports samples along a specified probability path. Conditional flow matching supplies observations or task context to that field. The displayed linear interpolation between independent noise and demonstrated actions is an illustrative conditional path: the regression target is the displacement along that path. At inference, a numerical differential-equation solver integrates the learned field from a noise distribution toward the data distribution. The number of integration evaluations controls a computational budget and is distinct from robot control frequency.",
+      "example": "For a scalar demonstrated action of two and sampled noise of minus one, the linear path at generative time one half equals one half, and its target velocity is three. A conditioned neural network learns this velocity from many such examples before generating new action chunks.",
+      "role_en": "Flow matching is the continuous-action generation component used in pi0 and related VLAs. Its differential-equation interpretation adds a direct connection to calculus, numerical integration and runtime model evaluations.",
+      "latex": "x_\\tau=(1-\\tau)\\epsilon+\\tau A,\\quad \\mathcal L=\\mathbb E\\|v_\\theta(x_\\tau,\\tau,c)-(A-\\epsilon)\\|_2^2",
+      "notation": [
+        {
+          "symbol": "\\epsilon\\sim\\mathcal N(0,I)",
+          "meaning": "Noise sample."
+        },
+        {
+          "symbol": "A,c",
+          "meaning": "Demonstrated action chunk and conditioning context."
+        },
+        {
+          "symbol": "\\tau\\in[0,1]",
+          "meaning": "Generative interpolation time, not environment time."
+        },
+        {
+          "symbol": "v_\\theta",
+          "meaning": "Learned velocity field for this illustrative linear path."
+        }
+      ],
+      "prereqs": [
+        "p_gaussian",
+        "m_derivative",
+        "d_backprop",
+        "p_conditional"
+      ],
+      "sources": [
+        {
+          "title": "Flow Matching for Generative Modeling",
+          "url": "https://arxiv.org/abs/2210.02747"
+        },
+        {
+          "title": "pi0 paper",
+          "url": "https://arxiv.org/abs/2410.24164"
+        }
+      ]
+    },
+    {
+      "id": "vla_action_tokens",
+      "en": "Discrete Action Tokens",
+      "title": "离散动作词元",
+      "group": "deep",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Action tokenization maps continuous control values or trajectories into discrete symbols that a sequence model can predict.",
+      "definition": "Action tokenization maps continuous control values or trajectories into discrete symbols that a sequence model can predict. Simple binning discretizes each action coordinate independently; compression-based tokenizers instead encode structure across an action sequence. The decoder maps tokens back to the required continuous control convention. Token count, precision and temporal resolution affect both learning and inference. Autoregressive token prediction normally incurs sequential decoding work, so a shorter representation can change latency without changing the physical duration covered by the generated actions.",
+      "example": "A seven-dimensional action discretized independently into one token per coordinate requires seven tokens for one step. A chunk of many steps becomes much longer. A sequence-level tokenizer can exploit smoothness, but quantization error must still be assessed on precise contact tasks.",
+      "role_en": "RT-2 and OpenVLA expose actions to language-style sequence training; FAST changes the tokenizer. These are alternative action-generation mechanisms to continuous diffusion or flow heads, not a claim that language tokens simulate physics.",
+      "latex": "p_\\theta(z_{1:L}\\mid o,l)=\\prod_{i=1}^{L}p_\\theta(z_i\\mid z_{<i},o,l),\\qquad A=\\operatorname{Decode}(z_{1:L})",
+      "notation": [
+        {
+          "symbol": "z_i",
+          "meaning": "Discrete action token."
+        },
+        {
+          "symbol": "L",
+          "meaning": "Token sequence length."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Decoded continuous robot action or chunk."
+        }
+      ],
+      "prereqs": [
+        "r_state",
+        "m_vector",
+        "p_entropy"
+      ],
+      "sources": [
+        {
+          "title": "RT-2 paper",
+          "url": "https://arxiv.org/abs/2307.15818"
+        },
+        {
+          "title": "FAST paper",
+          "url": "https://arxiv.org/abs/2501.09747"
+        }
+      ]
+    },
+    {
+      "id": "concept_differentiable_dynamics",
+      "en": "Differentiable Learned Dynamics",
+      "title": "可微学习动力学",
+      "group": "robot",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "A differentiable learned dynamics model predicts state transitions with operations through which derivatives can be propagated.",
+      "definition": "A differentiable learned dynamics model predicts state transitions with operations through which derivatives can be propagated. A policy can be optimized by differentiating an objective along model-generated trajectories. The model is a fitted surrogate; the physical simulator or real robot supplying training transitions need not be differentiable. Gradients can become misleading when model errors accumulate or the optimizer exploits unsupported transitions. Short rollout horizons, model updates and feedback are practical controls but do not make a learned model an exact replacement for contact physics.",
+      "example": "Collect state-action-next-state transitions from a standard rigid-body simulator. Fit a smooth neural predictor. During one policy update hold predictor weights fixed and differentiate the imagined reward with respect to policy parameters. New simulator samples can subsequently update the predictor without differentiating simulator internals.",
+      "role_en": "SuperMimic uses this route for humanoid tracking-policy training. It connects Jacobians, chain rules and BPTT to control, and separates a small state predictor from a large visual scene-generation model.",
+      "latex": "\\hat s_{t+1}=f_\\omega(\\hat s_t,\\pi_\\theta(\\hat s_t)),\\qquad \\nabla_\\theta J=\\nabla_\\theta\\sum_{t=0}^{H-1}r(\\hat s_t,a_t)",
+      "notation": [
+        {
+          "symbol": "f_\\omega",
+          "meaning": "Differentiable learned state-transition model."
+        },
+        {
+          "symbol": "\\pi_\\theta",
+          "meaning": "Policy optimized through imagined trajectories."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Finite differentiable rollout horizon."
+        }
+      ],
+      "prereqs": [
+        "r_dynamics",
+        "m_jacobian",
+        "d_bptt"
+      ],
+      "sources": [
+        {
+          "title": "SuperMimic paper",
+          "url": "https://arxiv.org/abs/2610.28480"
+        },
+        {
+          "title": "SuperMimic project",
+          "url": "https://supermimic.github.io/"
+        }
+      ]
+    },
+    {
+      "id": "r_async_inference",
+      "en": "Asynchronous Policy Execution",
+      "title": "异步策略执行",
+      "group": "robot",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Asynchronous execution overlaps inference for a future chunk with execution of currently available actions.",
+      "definition": "Asynchronous execution overlaps inference for a future chunk with execution of currently available actions. This can remove pauses caused by waiting for each inference call. It also creates a consistency problem: by the time a new chunk arrives, the robot has moved and its initial actions may already be obsolete. Scheduling, observation timestamps and chunk alignment therefore affect behavior. The idealized timing expression concerns overlap only; it does not guarantee stable motion or successful feedback control.",
+      "example": "A controller executes the remaining two hundred milliseconds of an old chunk while a server generates the next chunk. If inference takes one hundred milliseconds, computation can overlap. The new chunk still must be aligned to the future switch time rather than replayed from the observation timestamp.",
+      "role_en": "RTC explicitly handles chunk consistency for flow policies, while SmolVLA supplies an asynchronous deployment stack. This links action models to systems latency and control semantics.",
+      "latex": "T_{\\mathrm{cycle,sync}}=T_{\\mathrm{infer}}+T_{\\mathrm{execute}},\\qquad T_{\\mathrm{cycle,overlap}}\\gtrsim\\max(T_{\\mathrm{infer}},T_{\\mathrm{execute}})",
+      "notation": [
+        {
+          "symbol": "T_{\\mathrm{infer}}",
+          "meaning": "Time required to produce an action chunk."
+        },
+        {
+          "symbol": "T_{\\mathrm{execute}}",
+          "meaning": "Physical time covered by the executed chunk."
+        },
+        {
+          "symbol": "\\gtrsim",
+          "meaning": "Idealized overlap bound; communication and synchronization add overhead."
+        }
+      ],
+      "prereqs": [
+        "vla_action_chunk",
+        "r_feedback",
+        "e_python"
+      ],
+      "sources": [
+        {
+          "title": "RTC paper",
+          "url": "https://arxiv.org/abs/2506.07339"
+        },
+        {
+          "title": "SmolVLA official blog",
+          "url": "https://huggingface.co/blog/smolvla"
+        }
+      ]
+    },
+    {
+      "id": "vla_embodiment",
+      "en": "Cross-Embodiment Data and Action Interfaces",
+      "title": "跨本体数据与动作接口",
+      "group": "robot",
+      "kind": "concept",
+      "branch": "Reusable robot-learning components",
+      "summary": "Cross-embodiment learning uses data from robots with different bodies, sensors or control interfaces.",
+      "definition": "Cross-embodiment learning uses data from robots with different bodies, sensors or control interfaces. Shared training requires identifying which features and action meanings can be aligned and which need embodiment-specific adapters. Equal numerical action dimensions do not imply equal physical meaning: joint targets, Cartesian deltas and force commands have different semantics. Dataset standardization, units, coordinate conventions and normalization are prerequisites for meaningful transfer. A common policy can share representations while retaining per-robot output heads or fine-tuning steps.",
+      "example": "A delta pose for one arm cannot be copied directly into another robot joint-target interface. The policy or its adapter must translate between those conventions, respecting limits and frames. A successful transfer experiment must specify which target-robot demonstrations and calibration data were used.",
+      "role_en": "Open X-Embodiment, Octo, OpenVLA and later robot foundation models all depend on explicit cross-robot interfaces. This is an engineering and learning issue, not merely concatenating more episodes.",
+      "latex": "a_t^{(e)}=\\operatorname{Decode}_e(z_t),\\qquad z_t=\\pi_\\theta(o_t,l,e)",
+      "notation": [
+        {
+          "symbol": "e",
+          "meaning": "Robot embodiment or action-interface identifier."
+        },
+        {
+          "symbol": "\\operatorname{Decode}_e",
+          "meaning": "Embodiment-specific mapping into executable controls."
+        }
+      ],
+      "prereqs": [
+        "r_frames",
+        "r_state",
+        "ml_normalize"
+      ],
+      "sources": [
+        {
+          "title": "Open X-Embodiment paper",
+          "url": "https://arxiv.org/abs/2310.08864"
+        },
+        {
+          "title": "Octo paper",
+          "url": "https://arxiv.org/abs/2405.12213"
+        }
+      ]
+    },
+    {
+      "id": "paper_act",
+      "en": "ACT: Action Chunking with Transformers",
+      "title": "ACT 动作分块 Transformer",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Imitation and generative policies",
+      "summary": "Predict temporally coherent action chunks to learn precise bimanual skills from limited demonstrations.",
+      "definition": "ACT learns fine-grained bimanual manipulation from teleoperated demonstrations by predicting chunks of joint commands with a Transformer conditional variational model. Images and current joint state condition the decoder; a training encoder summarizes demonstrated future actions into a latent. At deployment the learned decoder produces actions without access to future demonstrations. Temporal aggregation combines overlapping chunk predictions. The method is a policy rather than a transition predictor, although its temporal abstraction addresses the same compounding-error problem that motivates several planning and world-model approaches.",
+      "example": "For battery insertion, cameras observe the battery and socket while joint readings specify the current arm configuration. ACT predicts a short sequence of joint targets rather than only the next target. Repeated observation and chunk prediction maintain feedback; the paper tests whether this enables precise behavior with a small demonstration set.",
+      "role_en": "ACT is a precursor for action-chunk interfaces and a strong task-specific imitation baseline. Its future actions must not be confused with future-state predictions from a world model.",
+      "latex": "\\mathcal L_{\\mathrm{ACT}}=\\mathbb E\\|A-\\hat A_\\theta(o,q,z)\\|_1+\\beta D_{\\mathrm{KL}}(q_\\phi(z\\mid A,q)\\|p(z))",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Demonstrated joint-target chunk."
+        },
+        {
+          "symbol": "z",
+          "meaning": "Conditional-VAE latent used during training."
+        },
+        {
+          "symbol": "o,q",
+          "meaning": "Images and robot joint state."
+        }
+      ],
+      "prereqs": [
+        "vla_behavior_cloning",
+        "vla_action_chunk",
+        "d_transformer",
+        "g_vae"
+      ],
+      "sources": [
+        {
+          "title": "ACT paper",
+          "url": "https://arxiv.org/abs/2304.13705"
+        },
+        {
+          "title": "ALOHA / ACT official project",
+          "url": "https://tonyzhaozh.github.io/aloha/"
+        }
+      ],
+      "paper": {
+        "date": "2023-04-23",
+        "architecture": [
+          {
+            "label": "Visual and joint-state encoding",
+            "node_id": "v_vit",
+            "role": "Encode current observations."
+          },
+          {
+            "label": "Training action posterior",
+            "node_id": "g_vae",
+            "role": "Represent variation in demonstrated action chunks."
+          },
+          {
+            "label": "Transformer chunk decoder",
+            "node_id": "d_transformer",
+            "role": "Predict consecutive controls."
+          },
+          {
+            "label": "Temporal aggregation",
+            "node_id": "vla_action_chunk",
+            "role": "Combine overlapping predictions."
+          }
+        ],
+        "contribution": "Predict temporally coherent action chunks to learn precise bimanual skills from limited demonstrations.",
+        "training": "Conditional-VAE imitation learning from real teleoperation and simulated demonstrations.",
+        "inference": "Decode a chunk from current observation and joint state; aggregate overlapping predictions during feedback execution.",
+        "evaluation": "Real bimanual fine manipulation and simulated transfer/insertion; task-specific success rates.",
+        "scale": "Low-cost ALOHA demonstrations; reported examples use about ten minutes of data. Total parameter count not independently summarized here.",
+        "limitations": "Task-specific demonstrations and camera/control conventions matter; this is not an open-world task planner or physics model.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_diffusion_policy",
+      "en": "Diffusion Policy",
+      "title": "扩散策略",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Imitation and generative policies",
+      "summary": "Model multimodal action sequences using conditional diffusion and receding-horizon execution.",
+      "definition": "Diffusion Policy represents an observation-conditioned action distribution by iterative denoising. Rather than predicting an average action at each step, it can model multiple coherent action sequences. Visual observations condition a denoiser implemented with temporal convolutional or Transformer variants, and generated action chunks are executed with receding-horizon feedback. The denoising training target concerns robot actions, not image pixels or next physical state. Consequently, using diffusion does not make this policy a world model; the modeled variable and the inference interface determine that distinction.",
+      "example": "A robot can move around an obstacle on either side. Independent average actions may point toward the obstacle, while a sampled action sequence can remain consistent with one route. The policy observes the scene again after executing part of the chunk, rather than assuming the entire imagined action sequence remains appropriate.",
+      "role_en": "This provides a key generative-policy branch parallel to ID-WM. Both use denoising machinery, but Diffusion Policy generates actions and ID-WM high-level diffusion generates local future states.",
+      "latex": "\\mathcal L=\\mathbb E_{A,\\epsilon,k}\\|\\epsilon-\\epsilon_\\theta(A^k,k,o)\\|_2^2",
+      "notation": [
+        {
+          "symbol": "A^k",
+          "meaning": "Noisy demonstrated action sequence at diffusion step k."
+        },
+        {
+          "symbol": "o",
+          "meaning": "Observation conditioning."
+        },
+        {
+          "symbol": "\\epsilon_\\theta",
+          "meaning": "Noise predictor used to generate actions."
+        }
+      ],
+      "prereqs": [
+        "vla_behavior_cloning",
+        "vla_action_chunk",
+        "g_ddpm",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "Diffusion Policy paper",
+          "url": "https://arxiv.org/abs/2303.04137"
+        },
+        {
+          "title": "Official paper PDF",
+          "url": "https://diffusion-policy.cs.columbia.edu/diffusion_policy_2023.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2023-03-07",
+        "architecture": [
+          {
+            "label": "Observation encoder",
+            "node_id": "v_vit",
+            "role": "Encode visual or state observations."
+          },
+          {
+            "label": "Action denoiser",
+            "node_id": "g_ddpm",
+            "role": "Predict noise on action sequences."
+          },
+          {
+            "label": "Chunk execution",
+            "node_id": "vla_action_chunk",
+            "role": "Execute a prefix with feedback."
+          }
+        ],
+        "contribution": "Model multimodal action sequences using conditional diffusion and receding-horizon execution.",
+        "training": "Supervised noise prediction on demonstration action sequences.",
+        "inference": "Iteratively denoise a candidate chunk; execute part and reobserve.",
+        "evaluation": "Original study covers twelve tasks across four manipulation benchmarks, with real and simulated evaluations.",
+        "scale": "Architecture and sampling settings vary by task; do not equate video playback rate with denoising throughput.",
+        "limitations": "Sampling cost and task distribution remain important; it does not explicitly verify future physical feasibility.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_act",
+            "type": "parallel",
+            "relationship": "Both generate action chunks from demonstrations, but ACT uses a conditional variational Transformer formulation and Diffusion Policy uses iterative denoising."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_rt1",
+      "en": "RT-1: Robotics Transformer",
+      "title": "RT-1 机器人 Transformer",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "VLA foundations",
+      "summary": "Demonstrate a scalable task-agnostic robot Transformer trained on broad real robot data.",
+      "definition": "RT-1 studies scalable real-world robot policy learning from a large multi-task demonstration collection. Language-conditioned visual features are compressed into tokens and processed by a Transformer to predict discretized control actions. Its central result concerns how data diversity and model capacity support task generalization in one robot platform setting. The model directly returns actions rather than simulating consequences for a separate planner. RT-1 therefore supplies an important policy-learning predecessor to later VLAs, while its own pretraining recipe should not be retroactively described as the web-scale VLM adaptation used in RT-2.",
+      "example": "A mobile manipulator receives pick up the coke can and a history of camera observations. The network emits arm, gripper and base-related control tokens. Evaluation varies instructions and environmental conditions to check whether the learned policy transfers beyond its demonstrated combinations.",
+      "role_en": "RT-1 anchors the language-conditioned robot Transformer lineage. It connects visual tokens and supervised action prediction before the introduction of web-knowledge transfer in RT-2.",
+      "latex": "p_\\theta(a_t\\mid I_{t-k:t},l)",
+      "notation": [
+        {
+          "symbol": "I_{t-k:t}",
+          "meaning": "Recent camera images."
+        },
+        {
+          "symbol": "l",
+          "meaning": "Natural-language instruction."
+        },
+        {
+          "symbol": "a_t",
+          "meaning": "Tokenized robot action."
+        }
+      ],
+      "prereqs": [
+        "vla_behavior_cloning",
+        "d_transformer",
+        "vla_action_tokens"
+      ],
+      "sources": [
+        {
+          "title": "RT-1 paper",
+          "url": "https://arxiv.org/abs/2212.06817"
+        },
+        {
+          "title": "RT-1 project",
+          "url": "https://robotics-transformer1.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2022-12-13",
+        "architecture": [
+          {
+            "label": "Language-conditioned visual backbone",
+            "node_id": "d_cnn",
+            "role": "Extract task-conditioned image features."
+          },
+          {
+            "label": "Token compression",
+            "node_id": "d_attention",
+            "role": "Reduce visual sequence cost."
+          },
+          {
+            "label": "Transformer action predictor",
+            "node_id": "d_transformer",
+            "role": "Predict discrete action outputs."
+          }
+        ],
+        "contribution": "Demonstrate a scalable task-agnostic robot Transformer trained on broad real robot data.",
+        "training": "Supervised training on robot demonstrations with language instructions.",
+        "inference": "Use observation history and instruction to predict tokenized controls in a closed loop.",
+        "evaluation": "Real-world task generalization, robustness and ablation evaluations.",
+        "scale": "The original collection reports roughly 130,000 episodes and 700-plus tasks; the model is about 35M parameters.",
+        "limitations": "Specific embodiments, task distribution and data collection restrict conclusions; not an explicit dynamics model.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_rt2",
+      "en": "RT-2: Vision-Language-Action Models",
+      "title": "RT-2 视觉语言动作模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "VLA foundations",
+      "summary": "Transfer internet-scale visual-language knowledge into direct robot action prediction.",
+      "definition": "RT-2 adapts pretrained vision-language models into robot policies by representing robot actions as text-like tokens. Co-fine-tuning mixes robot trajectories with internet-scale visual-language tasks so the model retains semantic knowledge while learning physical action outputs. At inference generated action tokens are decoded into robot controls. The paper evaluates novel objects, symbols and instruction reasoning, showing a route for transferring web-trained semantics to manipulation. Its semantic capabilities are not equivalent to an explicit simulator, and recognizing a useful object remains different from executing a physically reliable manipulation.",
+      "example": "A robot is asked to pick the extinct animal from several objects, or choose an object that could serve as an improvised hammer. The language-image backbone can use concepts learned outside robot demonstrations, while the action decoder converts that interpretation into a familiar robot control interface.",
+      "role_en": "RT-2 establishes the named VLA recipe of co-training web and robot data through a shared token prediction interface. It is a direct methodological development beyond RT-1.",
+      "latex": "p_\\theta(z_{1:L}^{\\mathrm{action}}\\mid I,l)=\\prod_i p_\\theta(z_i^{\\mathrm{action}}\\mid z_{<i}^{\\mathrm{action}},I,l)",
+      "notation": [
+        {
+          "symbol": "z_i^{\\mathrm{action}}",
+          "meaning": "Action coordinate represented as a token."
+        },
+        {
+          "symbol": "I,l",
+          "meaning": "Image and language context."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_action_tokens",
+        "vla_behavior_cloning"
+      ],
+      "sources": [
+        {
+          "title": "RT-2 paper",
+          "url": "https://arxiv.org/abs/2307.15818"
+        },
+        {
+          "title": "RT-2 project",
+          "url": "https://robotics-transformer2.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2023-07-28",
+        "architecture": [
+          {
+            "label": "Pretrained VLM",
+            "node_id": "vla_vlm",
+            "role": "Transfer visual and language knowledge."
+          },
+          {
+            "label": "Action token representation",
+            "node_id": "vla_action_tokens",
+            "role": "Use compatible sequence outputs."
+          },
+          {
+            "label": "Co-fine-tuning",
+            "node_id": "vla_behavior_cloning",
+            "role": "Mix web tasks and robot demonstrations."
+          }
+        ],
+        "contribution": "Transfer internet-scale visual-language knowledge into direct robot action prediction.",
+        "training": "Co-fine-tuning pretrained VLMs on robot trajectories and visual-language tasks.",
+        "inference": "Autoregressively produce action tokens, decode and execute controls.",
+        "evaluation": "About 6,000 evaluation trials across generalization and semantic reasoning settings.",
+        "scale": "Reported variants use PaLM-E and PaLI-X foundations; sizes include 12B and 55B variants.",
+        "limitations": "Large inference cost and closed research checkpoints constrain reproduction; no explicit guaranteed dynamics or collision model.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_rt1",
+            "type": "evolution",
+            "relationship": "RT-2 develops the robot Transformer lineage by co-fine-tuning pretrained vision-language models and expressing actions as text-like tokens."
+          },
+          {
+            "from": "paper_emma",
+            "type": "parallel",
+            "relationship": "Both transfer multimodal foundation knowledge to embodied outputs, but EMMA predicts driving tasks and RT-2 predicts manipulation actions."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_oxe",
+      "en": "Open X-Embodiment and RT-X",
+      "title": "Open X-Embodiment 与 RT-X",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Cross-embodiment learning",
+      "summary": "Establish broad cross-embodiment data sharing and evaluate positive transfer in generalist policies.",
+      "definition": "Open X-Embodiment combines robot learning datasets from many institutions and embodiments and evaluates shared policy training through RT-X models. The scientific question is whether mixing compatible robot experience produces positive transfer instead of interference. The contribution includes standardized data access and cross-embodiment policy experiments, not merely a larger neural network. Dataset versions and mixtures evolve, so a named corpus does not uniquely specify training input. Observations, actions, language annotations and sampling weights must be documented to reproduce a particular policy result.",
+      "example": "A training batch can include tabletop arm data from one lab and mobile manipulation data from another. Standardized records simplify loading, but the meaning of actions and camera observations still differs. Experiments compare policies trained with and without the additional robot data to isolate positive transfer.",
+      "role_en": "This is a data and model foundation for Octo, OpenVLA and many later VLAs. It connects dataset engineering to transfer across bodies rather than implying that all embodiments can share raw controls.",
+      "latex": "\\mathcal D=\\bigcup_e\\mathcal D_e,\\qquad a\\sim\\pi_\\theta(\\cdot\\mid o,l,e)",
+      "notation": [
+        {
+          "symbol": "\\mathcal D_e",
+          "meaning": "Demonstrations collected on robot embodiment e."
+        },
+        {
+          "symbol": "e",
+          "meaning": "Embodiment-dependent observation/action conventions."
+        }
+      ],
+      "prereqs": [
+        "vla_embodiment",
+        "vla_behavior_cloning",
+        "e_dataset"
+      ],
+      "sources": [
+        {
+          "title": "Open X-Embodiment paper",
+          "url": "https://arxiv.org/abs/2310.08864"
+        },
+        {
+          "title": "Open X-Embodiment project",
+          "url": "https://robotics-transformer-x.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2023-10-13",
+        "architecture": [
+          {
+            "label": "Dataset standardization",
+            "node_id": "e_dataset",
+            "role": "Expose consistent episode records."
+          },
+          {
+            "label": "Cross-robot mixture",
+            "node_id": "vla_embodiment",
+            "role": "Align selected interfaces and sampling."
+          },
+          {
+            "label": "RT-X policies",
+            "node_id": "d_transformer",
+            "role": "Evaluate transfer under shared training."
+          }
+        ],
+        "contribution": "Establish broad cross-embodiment data sharing and evaluate positive transfer in generalist policies.",
+        "training": "Train RT-1-X and RT-2-X on multi-robot demonstration mixtures.",
+        "inference": "Use the trained policy through a supported robot-specific control interface.",
+        "evaluation": "Cross-embodiment transfer and generalization experiments on participating platforms.",
+        "scale": "Initial work aggregates over one million episodes across 22 robot embodiments; exact mixtures depend on model/version.",
+        "limitations": "Dataset breadth does not remove mismatched action semantics or guarantee transfer to a new robot without adaptation.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_rt1",
+            "type": "evolution",
+            "relationship": "The RT-X work scales robot Transformer training across standardized multi-embodiment datasets rather than only the original single-platform collection."
+          },
+          {
+            "from": "paper_rt2",
+            "type": "evolution",
+            "relationship": "RT-2-X extends the VLA recipe to cross-embodiment training mixtures; dataset and model variants must be identified separately."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_octo",
+      "en": "Octo: Open Generalist Robot Policy",
+      "title": "Octo 通用机器人策略",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Cross-embodiment learning",
+      "summary": "Offer open generalist policies with efficient adaptation to new sensors and action interfaces.",
+      "definition": "Octo is an open generalist manipulation policy designed for flexible task definitions and observation or action interfaces. A Transformer processes tokenized observations and language or image goals, while a diffusion head models action chunks. The model is pretrained on a broad robot dataset and adapted with task-specific data to new robots or sensors. Its architectural modularity is part of the contribution: adding or replacing observation and output interfaces supports different deployment settings. Octo is a conditional action policy; it does not require rendering a predicted physical future before choosing actions.",
+      "example": "A base Octo policy can be fine-tuned from one arm setup to another with a different camera combination or action dimension. A goal can be given as language or an image. Evaluation must say which robot data were used for adaptation instead of labeling every target-platform rollout as zero-shot.",
+      "role_en": "Octo is a compact, reproducible alternative to VLM-token VLAs and a bridge from Open X-Embodiment to diffusion-based generalist action prediction.",
+      "latex": "A\\sim p_\\theta(A\\mid o_{t-k:t},l\\ \\text{or}\\ I_g)",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Action chunk sampled by diffusion decoding."
+        },
+        {
+          "symbol": "I_g",
+          "meaning": "Optional goal image."
+        },
+        {
+          "symbol": "o_{t-k:t}",
+          "meaning": "Multimodal observation history."
+        }
+      ],
+      "prereqs": [
+        "vla_action_chunk",
+        "vla_embodiment",
+        "d_transformer",
+        "g_ddpm"
+      ],
+      "sources": [
+        {
+          "title": "Octo paper",
+          "url": "https://arxiv.org/abs/2405.12213"
+        },
+        {
+          "title": "Octo project",
+          "url": "https://octo-models.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2024-05-20",
+        "architecture": [
+          {
+            "label": "Flexible observation tokenizers",
+            "node_id": "vla_embodiment",
+            "role": "Handle sensor and robot variations."
+          },
+          {
+            "label": "Transformer backbone",
+            "node_id": "d_transformer",
+            "role": "Fuse history and task context."
+          },
+          {
+            "label": "Diffusion action decoder",
+            "node_id": "g_ddpm",
+            "role": "Generate multimodal action chunks."
+          }
+        ],
+        "contribution": "Offer open generalist policies with efficient adaptation to new sensors and action interfaces.",
+        "training": "Pretraining on about 800,000 robot episodes, followed by target-domain fine-tuning.",
+        "inference": "Condition on language or image goals and observation history; sample and execute action chunks.",
+        "evaluation": "Generalist and adapted manipulation across robot/sensor setups.",
+        "scale": "Official Small and Base models are 27M and 93M parameters.",
+        "limitations": "Fine-tuning data and interface design affect transfer; small parameter count does not imply arbitrary-task competence.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_oxe",
+            "type": "application",
+            "relationship": "Octo uses Open X-Embodiment data to pretrain a modular diffusion-based generalist policy."
+          },
+          {
+            "from": "paper_diffusion_policy",
+            "type": "evolution",
+            "relationship": "Octo applies diffusion action decoding within a flexible, broadly pretrained robot Transformer policy."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_openvla",
+      "en": "OpenVLA",
+      "title": "OpenVLA 开源视觉语言动作模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "VLA foundations",
+      "summary": "Release a strong open VLA and a reproducible fine-tuning ecosystem.",
+      "definition": "OpenVLA is an open vision-language-action model that adapts a pretrained multimodal backbone for robot manipulation. It combines visual features with a language model and predicts discretized action tokens using demonstration supervision. Its release includes weights and a PyTorch training pipeline, enabling controlled fine-tuning and deployment research. The paper studies generalist manipulation and parameter-efficient adaptation rather than claiming a complete dynamics simulator. Later OpenVLA extensions can change action decoding, latency and chunking; those changes should be identified separately from the original model.",
+      "example": "A model pretrained on multiple robot datasets can be evaluated directly on supported platforms or fine-tuned for a new Franka task. The visual-language representation identifies instruction-relevant objects, while action tokens encode the motion convention used by that deployment. An out-of-box rollout and a target-task fine-tuned rollout are different evidence levels.",
+      "role_en": "OpenVLA is a key open VLA reference for comparing token-based actions, fine-tuning cost and cross-embodiment transfer against flow and diffusion policies.",
+      "latex": "\\mathcal L=-\\mathbb E\\sum_i\\log p_\\theta(z_i^{\\mathrm{action}}\\mid z_{<i}^{\\mathrm{action}},I,l)",
+      "notation": [
+        {
+          "symbol": "z_i^{\\mathrm{action}}",
+          "meaning": "Discrete action output token."
+        },
+        {
+          "symbol": "I,l",
+          "meaning": "Visual observation and instruction."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_action_tokens",
+        "vla_embodiment"
+      ],
+      "sources": [
+        {
+          "title": "OpenVLA paper",
+          "url": "https://arxiv.org/abs/2406.09246"
+        },
+        {
+          "title": "OpenVLA project",
+          "url": "https://openvla.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2024-06-13",
+        "architecture": [
+          {
+            "label": "Visual encoders",
+            "node_id": "v_vit",
+            "role": "Provide complementary image features."
+          },
+          {
+            "label": "Language backbone",
+            "node_id": "vla_vlm",
+            "role": "Fuse instructions and visual context."
+          },
+          {
+            "label": "Discrete action head",
+            "node_id": "vla_action_tokens",
+            "role": "Predict robot controls."
+          },
+          {
+            "label": "Efficient fine-tuning",
+            "node_id": "d_backprop",
+            "role": "Adapt selected model parameters."
+          }
+        ],
+        "contribution": "Release a strong open VLA and a reproducible fine-tuning ecosystem.",
+        "training": "Robot demonstration training on a filtered Open X-Embodiment mixture.",
+        "inference": "Generate action tokens conditioned on images and instructions, then decode controls.",
+        "evaluation": "Generalist real-robot manipulation and fine-tuning across supported platforms.",
+        "scale": "Original model is 7B parameters, trained on about 970,000 robot episodes.",
+        "limitations": "Action normalization and embodiment setup matter; original inference design can be expensive and is not automatically equivalent to later optimized variants.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_oxe",
+            "type": "application",
+            "relationship": "OpenVLA trains on a filtered Open X-Embodiment mixture with its own action and observation preprocessing."
+          },
+          {
+            "from": "paper_rt2",
+            "type": "evolution",
+            "relationship": "OpenVLA adopts the VLA action-token paradigm while providing open weights and a reproducible fine-tuning pipeline."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_pi0",
+      "en": "pi0: Vision-Language-Action Flow Model",
+      "title": "π0 视觉语言动作流模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Physical Intelligence VLA family",
+      "summary": "Combine large visual-language pretraining with flow-based continuous action generation for general robot control.",
+      "definition": "pi0 combines a pretrained vision-language backbone with a continuous action expert trained by flow matching. The model conditions on images, language and robot state to generate action chunks across multiple robot platforms. Continuous action generation supports high-frequency dexterous behavior without representing every control coordinate as an independent text token. Its training mixes robot data and builds on visual-language pretraining, but the model directly produces a policy output rather than solving a separate trajectory search with a learned transition model.",
+      "example": "For folding a shirt, camera images and joint state condition a vector field over a future action chunk. Starting from noise, integration generates the chunk, which is executed through the robot interface. Repeating this process supplies feedback; the generated chunk is a sequence of controls, not a prediction of future shirt pixels.",
+      "role_en": "pi0 connects VLM grounding to flow matching and high-frequency robot actions. It is the direct architectural foundation for the later pi0.5 family described in the official work.",
+      "latex": "\\mathcal L=\\mathbb E\\|v_\\theta(A^\\tau,\\tau,I,l,q)-u(A^\\tau\\mid A)\\|_2^2",
+      "notation": [
+        {
+          "symbol": "A^\\tau",
+          "meaning": "Noisy/interpolated action chunk."
+        },
+        {
+          "symbol": "u",
+          "meaning": "Conditional-path target velocity."
+        },
+        {
+          "symbol": "I,l,q",
+          "meaning": "Images, language and robot state."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_flow_matching",
+        "vla_action_chunk",
+        "vla_embodiment"
+      ],
+      "sources": [
+        {
+          "title": "pi0 paper",
+          "url": "https://arxiv.org/abs/2410.24164"
+        },
+        {
+          "title": "pi0 official project",
+          "url": "https://www.pi.website/blog/pi0"
+        }
+      ],
+      "paper": {
+        "date": "2024-10-31",
+        "architecture": [
+          {
+            "label": "Pretrained visual-language backbone",
+            "node_id": "vla_vlm",
+            "role": "Represent semantic context."
+          },
+          {
+            "label": "Robot-state conditioning",
+            "node_id": "r_state",
+            "role": "Provide current proprioception."
+          },
+          {
+            "label": "Flow-matching action expert",
+            "node_id": "g_flow_matching",
+            "role": "Generate continuous control chunks."
+          }
+        ],
+        "contribution": "Combine large visual-language pretraining with flow-based continuous action generation for general robot control.",
+        "training": "Flow-matching imitation on diverse multi-task, multi-robot demonstrations.",
+        "inference": "Integrate an action-conditioned velocity field from noise, decode and execute a chunk.",
+        "evaluation": "Dexterous manipulation, mobile manipulation and adaptation studies on multiple robots.",
+        "scale": "Official model uses a roughly 3B VLM plus an approximately 300M action expert; total system accounting depends on components.",
+        "limitations": "Demonstration coverage, embodiment interfaces and inference scheduling limit deployment. A generated action does not certify contact or collision feasibility.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_openvla",
+            "type": "parallel",
+            "relationship": "OpenVLA provides a discrete action-token baseline, while pi0 emphasizes continuous flow-based action chunks conditioned on a VLM."
+          },
+          {
+            "from": "paper_smolvla",
+            "type": "parallel",
+            "relationship": "Both use visual-language context and continuous flow action generation, but model size, data and deployment recipes differ substantially."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_fast",
+      "en": "FAST: Efficient Action Tokenization",
+      "title": "FAST 高效动作词元化",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Physical Intelligence VLA family",
+      "summary": "Enable effective autoregressive robot action learning through frequency-domain action compression.",
+      "definition": "FAST changes how action chunks are represented for autoregressive VLA training. It transforms temporal action sequences into frequency coefficients, quantizes them and compresses the resulting symbols using byte-pair encoding. Smooth structure can therefore be represented with fewer tokens than independent per-step bins. The model still predicts discrete outputs, but the tokenizer is designed for high-frequency dexterous trajectories. Tokenization quality trades off compression, reconstruction error and downstream control, so a token-count reduction is not by itself a physical success guarantee.",
+      "example": "A fifty-step joint trajectory often varies smoothly. Independent binning emits a long sequence even when most temporal detail is low frequency. FAST compresses the transform coefficients, and a decoder reconstructs a continuous chunk. Precision should be checked on the reconstructed controls and actual robot tasks, not only on compression ratio.",
+      "role_en": "FAST provides a distinct action-representation branch from pi0 flow generation. The pi0-FAST model demonstrates how action token design affects VLM transfer and training efficiency.",
+      "latex": "z=\\operatorname{BPE}\\!\\left(\\operatorname{Quantize}(\\operatorname{DCT}(A))\\right)",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Normalized action chunk."
+        },
+        {
+          "symbol": "\\operatorname{DCT}",
+          "meaning": "Discrete cosine transform along time."
+        },
+        {
+          "symbol": "z",
+          "meaning": "Compressed token sequence for autoregressive prediction."
+        }
+      ],
+      "prereqs": [
+        "vla_action_tokens",
+        "vla_action_chunk",
+        "m_trig",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "FAST paper",
+          "url": "https://arxiv.org/abs/2501.09747"
+        },
+        {
+          "title": "FAST official project",
+          "url": "https://www.pi.website/research/fast"
+        }
+      ],
+      "paper": {
+        "date": "2025-01-16",
+        "architecture": [
+          {
+            "label": "Temporal transform",
+            "node_id": "m_trig",
+            "role": "Represent action trajectories in frequency coordinates."
+          },
+          {
+            "label": "Quantization",
+            "node_id": "vla_action_tokens",
+            "role": "Map coefficients into discrete symbols."
+          },
+          {
+            "label": "Sequence compression",
+            "node_id": "d_transformer",
+            "role": "Provide compact targets for token prediction."
+          }
+        ],
+        "contribution": "Enable effective autoregressive robot action learning through frequency-domain action compression.",
+        "training": "Learn/train a tokenizer and fit a token-predicting VLA on robot action sequences.",
+        "inference": "Predict compressed action tokens, invert tokenization and execute the reconstructed chunk.",
+        "evaluation": "High-frequency dexterous robot tasks and transfer to new environments.",
+        "scale": "FAST+ is trained on about one million action sequences; VLA size depends on the chosen backbone.",
+        "limitations": "Compression and reconstruction choices can affect precision; faster training claims are benchmark-specific and do not imply a fixed deployment speedup.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pi0",
+            "type": "parallel",
+            "relationship": "FAST studies an alternative compressed action-token interface; pi0 flow generation and pi0-FAST autoregressive generation should not be conflated."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_pi05",
+      "en": "pi0.5: Open-World Generalization",
+      "title": "π0.5 开放环境泛化",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Physical Intelligence VLA family",
+      "summary": "Improve environmental and semantic generalization by jointly training on diverse supervision sources.",
+      "definition": "pi0.5 extends the pi0 line by co-training on heterogeneous robot and non-robot supervision to support generalization to new environments. It combines physical action learning with high-level semantic and task-structure information. The official work emphasizes mobile manipulation in homes that were not used for scene-specific training. Open-world generalization here denotes those evaluated environmental variations; it should not be interpreted as solving every unseen task or eliminating the need for robot action data. The paper and release should be distinguished from later memory and reinforcement-learning extensions.",
+      "example": "A mobile manipulator is asked to clean a new kitchen. It must infer a sequence of subtasks, identify familiar object categories in a different layout and execute learned skills. A task can fail at semantic choice, navigation or contact execution; an overall successful example does not identify which component generalized.",
+      "role_en": "This paper connects heterogeneous co-training, high-level language and continuous action experts. Its published model is a policy baseline, not an explicit local-state planner like ID-WM.",
+      "latex": "p_\\theta(A,\\hat l\\mid I,l,q)",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Low-level action chunk."
+        },
+        {
+          "symbol": "\\hat l",
+          "meaning": "High-level subtask or language output in the heterogeneous training formulation."
+        },
+        {
+          "symbol": "I,l,q",
+          "meaning": "Observation, requested task and robot state."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_flow_matching",
+        "vla_action_chunk",
+        "vla_embodiment",
+        "r_markov"
+      ],
+      "sources": [
+        {
+          "title": "pi0.5 paper",
+          "url": "https://arxiv.org/abs/2504.16054"
+        },
+        {
+          "title": "pi0.5 official project",
+          "url": "https://www.pi.website/blog/pi05"
+        }
+      ],
+      "paper": {
+        "date": "2025-04-22",
+        "architecture": [
+          {
+            "label": "Heterogeneous co-training",
+            "node_id": "vla_embodiment",
+            "role": "Learn from robots and semantic data."
+          },
+          {
+            "label": "High-level task conditioning",
+            "node_id": "vla_vlm",
+            "role": "Represent subtask context."
+          },
+          {
+            "label": "Continuous action expert",
+            "node_id": "g_flow_matching",
+            "role": "Execute dexterous skills."
+          }
+        ],
+        "contribution": "Improve environmental and semantic generalization by jointly training on diverse supervision sources.",
+        "training": "Co-training across robot embodiments, environments and high-level/non-robot tasks.",
+        "inference": "Condition low-level chunk generation on current observation, task and high-level context.",
+        "evaluation": "Long-horizon household tasks and held-out homes under the official evaluation protocol.",
+        "scale": "Uses the pi VLA family; distinguish all parameters from the subset updated in a particular fine-tune.",
+        "limitations": "Success is not universal and environment coverage remains finite; long-term memory and autonomous RL are separate later methods.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pi0",
+            "type": "evolution",
+            "relationship": "The official pi0.5 work extends the pi0 family with heterogeneous co-training aimed at held-out environment generalization."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_pistar06",
+      "en": "pi-star-0.6: Learning from Experience",
+      "title": "π*0.6 从经验中学习",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Physical Intelligence VLA family",
+      "summary": "Use experience and corrections to improve VLA reliability and task throughput.",
+      "definition": "pi-star-0.6 applies RECAP, reinforcement learning with experience and corrections via advantage-conditioned policies, to improve a generalist VLA beyond demonstration-only training. Demonstrations establish task behavior, human corrections address observed mistakes, and autonomous experience provides additional outcomes for improvement. The resulting model is the RL-trained pi-star variant, while pi0.6 denotes the underlying model family. Treating these names as interchangeable hides the training change that the paper studies. Its main evidence concerns task reliability and throughput in repeated real-world execution.",
+      "example": "On espresso preparation, a policy can recover from conditions absent in successful demonstrations. Data from its own attempts and interventions can improve behavior on those visited states. Evaluating an all-day run tests sustained reliability differently from measuring the error of a single predicted action.",
+      "role_en": "This connects policy imitation to reward/value concepts and distribution shift. It does not require differentiating a learned world model in the SuperMimic manner.",
+      "latex": "\\pi_\\theta(A\\mid o,l,c_{\\mathrm{adv}})",
+      "notation": [
+        {
+          "symbol": "c_{\\mathrm{adv}}",
+          "meaning": "Advantage-related conditioning used by the RECAP policy formulation."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Action chunk."
+        },
+        {
+          "symbol": "o,l",
+          "meaning": "Robot observations and instruction."
+        }
+      ],
+      "prereqs": [
+        "vla_behavior_cloning",
+        "r_policy",
+        "g_flow_matching",
+        "r_offline"
+      ],
+      "sources": [
+        {
+          "title": "pi-star-0.6 technical report",
+          "url": "https://www.pi.website/download/pistar06.pdf"
+        },
+        {
+          "title": "pi-star-0.6 official project",
+          "url": "https://www.pi.website/blog/pistar06"
+        }
+      ],
+      "paper": {
+        "date": "2025-11-17",
+        "architecture": [
+          {
+            "label": "Base VLA policy",
+            "node_id": "vla_vlm",
+            "role": "Supply broadly pretrained robot behavior."
+          },
+          {
+            "label": "Demonstrations and corrections",
+            "node_id": "vla_behavior_cloning",
+            "role": "Initialize and repair behavior."
+          },
+          {
+            "label": "Advantage-conditioned improvement",
+            "node_id": "r_policy",
+            "role": "Learn from autonomous outcomes."
+          }
+        ],
+        "contribution": "Use experience and corrections to improve VLA reliability and task throughput.",
+        "training": "RECAP combines demonstrations, corrections and autonomous experience with advantage-conditioned policy learning.",
+        "inference": "Generate action chunks from the learned policy in closed-loop task execution.",
+        "evaluation": "Repeated espresso, laundry and box assembly tasks, including long continuous runs.",
+        "scale": "Generalist pi0.6 family; exact total and active parameter counts are not separately asserted in this entry.",
+        "limitations": "Task outcomes and interventions define the training signal; closed source data and deployment details limit independent replication.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pi05",
+            "type": "evolution",
+            "relationship": "The later pi family adds autonomous experience and corrections through RECAP; this is a training development, not only a larger network."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_pi07",
+      "en": "pi0.7: A Steerable Generalist Model",
+      "title": "π0.7 可引导通用模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Physical Intelligence VLA family",
+      "summary": "Train a steerable generalist model using rich context to disambiguate diverse robot behavior.",
+      "definition": "pi0.7 studies a steerable generalist VLA trained with varied multimodal context. Prompts can specify not only task identity but how a task should be executed, including visual subgoals, desired duration or strategy-related information. Such context helps disambiguate heterogeneous behaviors in large data mixtures. The official work reports improved generalization and compositional behavior, including combinations not demonstrated on a target robot. These are evaluated capabilities rather than a formal guarantee of arbitrary skill composition, and the visual subgoal interface should be distinguished from a dynamics model that proves reachability.",
+      "example": "A reasoning system can supply a visual arrangement showing where objects should end up, alongside a language instruction. The policy then generates low-level actions conditioned on that context. A visual plan that looks plausible can still fail physically; task execution and adaptation data remain necessary evaluation evidence.",
+      "role_en": "pi0.7 connects VLA control to visual steering and richer contextual conditioning. It illustrates a current bridge between explicit goals, generative observations and direct action policies.",
+      "latex": "A\\sim\\pi_\\theta(\\cdot\\mid o,l,c_{\\mathrm{strategy}},I_{\\mathrm{subgoal}})",
+      "notation": [
+        {
+          "symbol": "c_{\\mathrm{strategy}}",
+          "meaning": "Additional behavior or performance context."
+        },
+        {
+          "symbol": "I_{\\mathrm{subgoal}}",
+          "meaning": "Optional visual subgoal conditioning."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Generated robot action chunk."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_flow_matching",
+        "vla_embodiment",
+        "r_goal"
+      ],
+      "sources": [
+        {
+          "title": "pi0.7 technical report",
+          "url": "https://www.pi.website/download/pi07.pdf"
+        },
+        {
+          "title": "pi0.7 official project",
+          "url": "https://www.pi.website/blog/pi07"
+        }
+      ],
+      "paper": {
+        "date": "2026-04-16",
+        "architecture": [
+          {
+            "label": "Multimodal context",
+            "node_id": "vla_vlm",
+            "role": "Specify task, strategy and visual targets."
+          },
+          {
+            "label": "Heterogeneous training mixture",
+            "node_id": "vla_embodiment",
+            "role": "Include robot, human and autonomous data."
+          },
+          {
+            "label": "Steerable action policy",
+            "node_id": "g_flow_matching",
+            "role": "Generate context-conditioned controls."
+          }
+        ],
+        "contribution": "Train a steerable generalist model using rich context to disambiguate diverse robot behavior.",
+        "training": "Broad multi-robot/human/autonomous data with multiple context structures.",
+        "inference": "Use standard language or additional visual/strategy context to generate actions.",
+        "evaluation": "Official generalization, dexterity and cross-platform demonstrations and quantitative tests.",
+        "scale": "The public report is available; this entry does not infer undisclosed parameter counts or unrestricted model access.",
+        "limitations": "Compositional results have a defined data and evaluation scope; generated visual goals do not establish physical feasibility.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pistar06",
+            "type": "evolution",
+            "relationship": "The official pi0.7 report compares and develops the prior family toward a steerable generalist; specialist RL results and generalist results remain distinct."
+          },
+          {
+            "from": "paper_gr00t2",
+            "type": "parallel",
+            "relationship": "Both can use visual outcomes or goals in action control, but joint future prediction and externally supplied visual steering are different mechanisms."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_mem",
+      "en": "MEM: Multi-Scale Embodied Memory",
+      "title": "MEM 多尺度具身记忆",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Memory and deployment",
+      "summary": "Combine visual short-term and language long-term memory for sustained robot tasks.",
+      "definition": "Multi-Scale Embodied Memory equips a VLA with short-horizon visual history and longer-horizon abstract language memory. The short-term encoder preserves recent motion and interaction information, while language records task progress and relevant events beyond the raw-image window. The method jointly reasons about what to do and what to retain. Memory helps partial observability but can introduce causal confusion if irrelevant past information creates spurious shortcuts. The system therefore addresses a specific architectural and training problem rather than assuming that unlimited context automatically improves robot control.",
+      "example": "During kitchen cleanup, an object can leave the camera view after being placed in a drawer. A recent image window no longer contains the event, but a textual memory can retain that the drawer contains the object and that this subtask is complete. Incorrect memory must still be corrected by new evidence.",
+      "role_en": "MEM extends VLA policies with task memory and connects history windows to long-horizon reasoning. It remains separate from updating a simulator state or training a predictive world model.",
+      "latex": "A_t\\sim\\pi_\\theta(\\cdot\\mid o_{t-k:t},m_t,l),\\qquad m_{t+1}=U_\\theta(m_t,o_{t-k:t},l)",
+      "notation": [
+        {
+          "symbol": "m_t",
+          "meaning": "Long-term task memory expressed through language."
+        },
+        {
+          "symbol": "o_{t-k:t}",
+          "meaning": "Short-term visual history."
+        },
+        {
+          "symbol": "U_\\theta",
+          "meaning": "Learned reasoning/memory update mechanism; schematic notation."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "r_markov",
+        "d_transformer"
+      ],
+      "sources": [
+        {
+          "title": "MEM technical report",
+          "url": "https://www.pi.website/download/Mem.pdf"
+        },
+        {
+          "title": "MEM official project",
+          "url": "https://www.pi.website/research/memory"
+        }
+      ],
+      "paper": {
+        "date": "2026-03-03",
+        "architecture": [
+          {
+            "label": "Short-term video encoder",
+            "node_id": "d_transformer",
+            "role": "Represent recent observations efficiently."
+          },
+          {
+            "label": "Language memory",
+            "node_id": "vla_vlm",
+            "role": "Retain abstract task-relevant history."
+          },
+          {
+            "label": "Memory-aware policy",
+            "node_id": "r_markov",
+            "role": "Condition decisions on both time scales."
+          }
+        ],
+        "contribution": "Combine visual short-term and language long-term memory for sustained robot tasks.",
+        "training": "Co-training on robot/non-robot images and videos with memory and task reasoning supervision.",
+        "inference": "Update memory and generate actions or subtasks using recent observations and retained context.",
+        "evaluation": "Long-duration tasks, partial observability and in-context adaptation; official examples extend to about fifteen minutes.",
+        "scale": "Memory context length and encoder choices affect runtime; no universal parameter-size claim is made here.",
+        "limitations": "Memory can amplify spurious correlations or preserve incorrect facts; task duration alone does not establish reliable unlimited memory.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pi05",
+            "type": "evolution",
+            "relationship": "MEM extends later pi-family VLA control with short-term visual and long-term language memory rather than relying only on the current observation."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_rtc",
+      "en": "Real-Time Action Chunking",
+      "title": "实时动作分块",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Memory and deployment",
+      "summary": "Enable continuous chunked execution while handling inference delay and cross-chunk consistency.",
+      "definition": "Real-Time Chunking addresses the mismatch between slow generative action inference and continuous robot motion. A new flow-policy chunk is generated while an older chunk continues executing, and consistency constraints account for the portion of the old plan that cannot be changed during inference delay. This avoids treating each chunk as if the robot were still at the original observation state. The initial method is an inference-time procedure compatible with existing diffusion or flow policies; a later training-time follow-up is explicitly a separate development.",
+      "example": "While the controller executes an existing chunk, the model observes the scene and predicts a replacement. If generation takes several control steps, the replacement must agree with the motion already committed before the switch time. Simply averaging incompatible strategies can produce invalid intermediate motions.",
+      "role_en": "RTC connects action-generation models to latency-aware control systems. A faster completion time should be measured end to end, not inferred from token speed or video playback.",
+      "latex": "A_{t+d:t+H}\\sim p_\\theta(\\cdot\\mid o_t,A_{\\mathrm{committed}},d)",
+      "notation": [
+        {
+          "symbol": "d",
+          "meaning": "Inference delay expressed in control steps."
+        },
+        {
+          "symbol": "A_{\\mathrm{committed}}",
+          "meaning": "Actions that will execute before the new chunk can take effect."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Chunk horizon; formula is a scheduling abstraction."
+        }
+      ],
+      "prereqs": [
+        "r_async_inference",
+        "g_flow_matching",
+        "vla_action_chunk"
+      ],
+      "sources": [
+        {
+          "title": "RTC paper",
+          "url": "https://arxiv.org/abs/2506.07339"
+        },
+        {
+          "title": "RTC official project",
+          "url": "https://www.pi.website/research/real_time_chunking"
+        }
+      ],
+      "paper": {
+        "date": "2025-06-09",
+        "architecture": [
+          {
+            "label": "Chunk execution buffer",
+            "node_id": "vla_action_chunk",
+            "role": "Continue already scheduled controls."
+          },
+          {
+            "label": "Latency-aware alignment",
+            "node_id": "r_async_inference",
+            "role": "Identify committed actions at switch time."
+          },
+          {
+            "label": "Conditioned generative inference",
+            "node_id": "g_flow_matching",
+            "role": "Generate compatible future controls."
+          }
+        ],
+        "contribution": "Enable continuous chunked execution while handling inference delay and cross-chunk consistency.",
+        "training": "Initial method modifies inference without retraining; a training-time follow-up exists.",
+        "inference": "Overlap execution and generation while conditioning on unchangeable near-term motion.",
+        "evaluation": "Six-task real-time evaluations with injected latency and task throughput measurements.",
+        "scale": "Policies in the official study use fifty-action chunks; timing depends on model, hardware and network delay.",
+        "limitations": "Asynchrony without consistency is insufficient; improvements apply under specified policy and delay settings.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_pi05",
+            "type": "application",
+            "relationship": "RTC can change inference scheduling for existing flow-based policies, including pi0.5, without the initial method requiring retraining."
+          },
+          {
+            "from": "paper_act",
+            "type": "parallel",
+            "relationship": "RTC compares latency-aware chunk generation with temporal ensembling; smooth averaging alone does not guarantee cross-chunk action consistency."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_smolvla",
+      "en": "SmolVLA",
+      "title": "SmolVLA 小型视觉语言动作模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Efficient open policies",
+      "summary": "Provide an efficient open VLA trained on community robot data with an asynchronous deployment stack.",
+      "definition": "SmolVLA is a compact open VLA built around a vision-language backbone and a flow-matching action expert. Its design reduces visual token and model computation while using openly shared community robot data. An asynchronous inference stack separates perception/action prediction from action execution to improve responsiveness. The work shows that deployment and data choices matter alongside parameter count. A small model can still require adaptation, compatible observations and careful scheduling; consumer-hardware availability does not imply every task runs at the same latency or success rate.",
+      "example": "An affordable arm is given images, joint state and a language instruction. The compact backbone extracts task-relevant features and the action expert predicts a future control chunk. A background inference loop computes the next chunk while the controller executes available actions, subject to the interface’s scheduling assumptions.",
+      "role_en": "SmolVLA is an accessible reference for studying flow-based VLA training and systems efficiency. It is useful for controlled comparisons with larger models under matched tasks and hardware.",
+      "latex": "A\\sim\\pi_\\theta(\\cdot\\mid F_{\\mathrm{VLM}}(I,l),q)",
+      "notation": [
+        {
+          "symbol": "F_{\\mathrm{VLM}}",
+          "meaning": "Compact pretrained visual-language feature extractor."
+        },
+        {
+          "symbol": "q",
+          "meaning": "Proprioceptive robot state."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Flow-generated action chunk."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_flow_matching",
+        "r_async_inference"
+      ],
+      "sources": [
+        {
+          "title": "SmolVLA paper",
+          "url": "https://arxiv.org/abs/2506.01844"
+        },
+        {
+          "title": "SmolVLA official blog",
+          "url": "https://huggingface.co/blog/smolvla"
+        }
+      ],
+      "paper": {
+        "date": "2025-06-02",
+        "architecture": [
+          {
+            "label": "Compact VLM",
+            "node_id": "vla_vlm",
+            "role": "Encode visual and instruction context."
+          },
+          {
+            "label": "Flow action expert",
+            "node_id": "g_flow_matching",
+            "role": "Predict continuous chunks."
+          },
+          {
+            "label": "Asynchronous stack",
+            "node_id": "r_async_inference",
+            "role": "Overlap model computation and execution."
+          }
+        ],
+        "contribution": "Provide an efficient open VLA trained on community robot data with an asynchronous deployment stack.",
+        "training": "Robot action training with a compact VLM/action expert and open community data.",
+        "inference": "Conditioned flow inference plus asynchronous chunk execution.",
+        "evaluation": "LIBERO, Meta-World and affordable real-robot tasks in the official evaluation.",
+        "scale": "Base model is about 450M parameters; reported deployment throughput is hardware and task dependent.",
+        "limitations": "Pretraining data, camera setup and target-task fine-tuning matter; asynchronous gains are not a universal factor.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_gr00t_n1",
+      "en": "GR00T N1",
+      "title": "GR00T N1 通用人形机器人模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "World-action and humanoid policies",
+      "summary": "Provide an open dual-system foundation VLA for generalist humanoid robot skills.",
+      "definition": "GR00T N1 uses a dual-system VLA architecture: a vision-language module represents observations and instructions, and a diffusion Transformer produces continuous action chunks. The modules are coupled and trained using heterogeneous data, including real robot trajectories, human video and synthetic sources. The paper targets generalist humanoid manipulation and cross-embodiment learning. High-level visual-language understanding does not itself stabilize a floating-base robot; deployment still needs appropriate body interfaces and lower-level control. Later GR00T releases change models and training recipes and must not be silently treated as the original N1 checkpoint.",
+      "example": "For a humanoid bimanual task, language identifies the requested manipulation while cameras and proprioception describe the current configuration. The action model predicts controls through the supported robot interface. Whole-body balance and task action success should be evaluated separately when transferring beyond the demonstrated platform.",
+      "role_en": "This is an important bridge between VLA semantics, generative action heads, synthetic data and humanoid deployment. It is a predecessor to the world-action-model formulation in GR00T2.",
+      "latex": "A\\sim p_\\theta(\\cdot\\mid h_{\\mathrm{VLM}}(I,l),q)",
+      "notation": [
+        {
+          "symbol": "h_{\\mathrm{VLM}}",
+          "meaning": "Vision-language representation."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Continuous action chunk produced by a diffusion Transformer."
+        },
+        {
+          "symbol": "q",
+          "meaning": "Embodiment-specific robot state."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_diffusion",
+        "vla_embodiment"
+      ],
+      "sources": [
+        {
+          "title": "GR00T N1 paper",
+          "url": "https://arxiv.org/abs/2503.14734"
+        },
+        {
+          "title": "NVIDIA official whitepaper",
+          "url": "https://d1qx31qr3h6wln.cloudfront.net/publications/GR00T_1_Whitepaper.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2025-03-18",
+        "architecture": [
+          {
+            "label": "System 2 visual-language module",
+            "node_id": "vla_vlm",
+            "role": "Encode environment and instructions."
+          },
+          {
+            "label": "System 1 diffusion Transformer",
+            "node_id": "g_diffusion",
+            "role": "Generate action chunks."
+          },
+          {
+            "label": "Embodiment adapters",
+            "node_id": "vla_embodiment",
+            "role": "Map shared representations to robot controls."
+          }
+        ],
+        "contribution": "Provide an open dual-system foundation VLA for generalist humanoid robot skills.",
+        "training": "Joint heterogeneous training over real robot, human video and synthetic data.",
+        "inference": "Read visual-language context and proprioception, generate and execute actions.",
+        "evaluation": "Standard manipulation simulations and real Fourier GR-1 bimanual tasks.",
+        "scale": "Original release is approximately 2.2B parameters; later N1.5/N1.6/N1.7 are distinct releases.",
+        "limitations": "Generalist manipulation results do not guarantee dynamic locomotion or arbitrary humanoid transfer; lower-level controllers and data conventions remain required.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_gr00t2",
+      "en": "GR00T 2: Foundation World-Action Models",
+      "title": "GR00T 2 基础世界动作模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "World-action and humanoid policies",
+      "summary": "Learn future visual outcomes and actions jointly to support transfer, dexterity and fast adaptation.",
+      "definition": "GR00T2 is a foundation world-action model that jointly predicts future video and robot actions using a diffusion Transformer. Joint prediction allows human video and multiple robot interfaces to contribute to a model of physical interaction, while embodiment heads produce executable commands. The official November2026 whitepaper studies cross-adaptation, few-shot learning, dexterity and agentic control. Its reported future video is a model rollout rather than evidence that the real robot has already completed the task. The page also describes a smaller Turbo variant with a whole-body controller interface.",
+      "example": "A bimanual robot sees recent camera video and a task instruction. The model jointly denoises future views and an action chunk, then executes and observes again. Human-only demonstrations can be evaluated for transfer to a target robot, but task-agnostic target-body data and any subsequent fine-tuning must be recorded explicitly.",
+      "role_en": "This current work connects predictive world models to action policies. It supplies a clear comparison with policies that generate actions only and with ID-WM, which searches state-space subgoals.",
+      "latex": "(\\hat V_{t+1:t+H},A_{t:t+H-1})\\sim p_\\theta(\\cdot\\mid V_{\\le t},l,q)",
+      "notation": [
+        {
+          "symbol": "\\hat V",
+          "meaning": "Generated future video, distinct from ground-truth future observations."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Jointly generated robot actions."
+        },
+        {
+          "symbol": "V_{\\le t},l,q",
+          "meaning": "Recent video, instruction and robot state."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "g_diffusion",
+        "vla_action_chunk",
+        "vla_embodiment",
+        "r_rollout"
+      ],
+      "sources": [
+        {
+          "title": "GR00T2 official project",
+          "url": "https://research.nvidia.com/labs/gear/gr00t-2/"
+        },
+        {
+          "title": "GR00T2 whitepaper",
+          "url": "https://research.nvidia.com/labs/gear/gr00t-2/assets/gr00t2_whitepaper.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2026-11",
+        "architecture": [
+          {
+            "label": "Multimodal history",
+            "node_id": "vla_vlm",
+            "role": "Encode recent video and task context."
+          },
+          {
+            "label": "Joint video-action DiT",
+            "node_id": "g_diffusion",
+            "role": "Denoise future observations and actions together."
+          },
+          {
+            "label": "Embodiment-specific heads",
+            "node_id": "vla_embodiment",
+            "role": "Produce supported robot controls."
+          },
+          {
+            "label": "Execution and reobservation",
+            "node_id": "r_feedback",
+            "role": "Continue the closed loop."
+          }
+        ],
+        "contribution": "Learn future visual outcomes and actions jointly to support transfer, dexterity and fast adaptation.",
+        "training": "Mixture of human egocentric video, handheld demonstrations and robot teleoperation; task-specific post-training and RL are separately evaluated.",
+        "inference": "Jointly predict future video/action chunks, execute controls and reobserve.",
+        "evaluation": "Official whitepaper evaluates unseen-target-robot tasks, adaptation, dexterity and repeated agent-controlled assembly.",
+        "scale": "Official data mixture: 402,730 human-video hours, 10,184 handheld-demonstration hours and 23,500 robot-teleoperation hours. Model counts not inferred here.",
+        "limitations": "As of the verified page, code is announced for December; 40% average zero-shot success is distinct from 40/50 tasks succeeding at least once. Agentic and fine-tuned results use additional components/data.",
+        "evidence_level": "Official November2026 whitepaper and project; code release announced for December, not verified as released",
+        "lineage": [
+          {
+            "from": "paper_gr00t_n1",
+            "type": "evolution",
+            "relationship": "GR00T2 develops the family toward joint future-video and action prediction, distinct from the earlier VLA action-generation formulation."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_gemini_robotics",
+      "en": "Gemini Robotics",
+      "title": "Gemini Robotics 机器人模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Reasoning and action models",
+      "summary": "Bring multimodal foundation-model capabilities into robot actions and embodied reasoning.",
+      "definition": "Gemini Robotics adapts a multimodal foundation model into a robot action model, while Gemini Robotics-ER provides embodied reasoning capabilities for spatial understanding and higher-level decisions. These are related but different outputs: one produces robot behavior and the other supports reasoning about the environment. The technical report studies generality, dexterity and interactive instruction following across robot tasks. A single brand name does not imply one fully public architecture or a single model performing all low-level stabilization. Evidence should specify the action model, reasoning model and control stack used.",
+      "example": "A user changes the instruction while a robot manipulates objects. A VLA can condition the next action on the new instruction and visual state, while an embodied reasoning model can describe spatial relations or task goals. Only execution trials establish whether that interpretation produces a successful physical action.",
+      "role_en": "This branch separates multimodal reasoning from action generation and enables comparison with open VLA policies. It is not an explicit simulator merely because it reasons about the physical world.",
+      "latex": "A\\sim\\pi_\\theta(\\cdot\\mid I,l,q)",
+      "notation": [
+        {
+          "symbol": "I,l,q",
+          "meaning": "Images, instruction and robot state."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Continuous robot actions; schematic interface, not an undisclosed implementation equation."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_action_chunk",
+        "vla_embodiment"
+      ],
+      "sources": [
+        {
+          "title": "Gemini Robotics technical report",
+          "url": "https://arxiv.org/abs/2503.20020"
+        },
+        {
+          "title": "Official technical report PDF",
+          "url": "https://storage.googleapis.com/deepmind-media/gemini-robotics/gemini_robotics_report.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2025-03-25",
+        "architecture": [
+          {
+            "label": "Gemini multimodal foundation",
+            "node_id": "vla_vlm",
+            "role": "Provide visual-language knowledge."
+          },
+          {
+            "label": "Robotics action model",
+            "node_id": "vla_action_chunk",
+            "role": "Produce physical controls."
+          },
+          {
+            "label": "Embodied reasoning interface",
+            "node_id": "r_goal",
+            "role": "Support spatial/task-level decisions."
+          }
+        ],
+        "contribution": "Bring multimodal foundation-model capabilities into robot actions and embodied reasoning.",
+        "training": "Specialized robot-data adaptation built on a multimodal foundation; complete private training details are not public.",
+        "inference": "Condition action generation on robot observations and language; reasoning variants expose different interfaces.",
+        "evaluation": "Technical-report real-robot generality, dexterity and interactivity evaluations.",
+        "scale": "Parameter counts and full training compute are not publicly specified in the cited report.",
+        "limitations": "Closed models and incomplete architecture disclosure limit independent reproduction; high-level reasoning and hardware stability are separate claims.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_gemini15",
+      "en": "Gemini Robotics 1.5",
+      "title": "Gemini Robotics 1.5",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Reasoning and action models",
+      "summary": "Extend embodied reasoning and action models toward multi-step tasks and cross-robot transfer.",
+      "definition": "Gemini Robotics1.5 develops a two-model reasoning-and-action workflow for longer and more complex physical tasks. The embodied reasoning model interprets goals and decomposes work, while the robotics action model turns task instructions and observations into motor behavior. The public report also studies transfer across robot embodiments. It is important to distinguish reasoning API availability from action-model deployment access: access to one component does not provide a complete executable robot system. The displayed interface summarizes the system division without asserting an undisclosed internal layer design.",
+      "example": "For sorting household items according to an instruction, the reasoning component can select the next subtask after checking the current scene. The action model performs the corresponding manipulation and returns a new observable state. Repeated execution is needed to verify progress instead of trusting a text plan.",
+      "role_en": "This connects embodied reasoning, task decomposition and VLA control. Its lineage is a release development from Gemini Robotics, not a prerequisite for understanding every VLA.",
+      "latex": "l_t^{\\mathrm{subtask}}=R(o_{\\le t},l),\\qquad A_t\\sim\\pi(\\cdot\\mid o_{\\le t},l_t^{\\mathrm{subtask}})",
+      "notation": [
+        {
+          "symbol": "R",
+          "meaning": "Embodied reasoning component."
+        },
+        {
+          "symbol": "l_t^{\\mathrm{subtask}}",
+          "meaning": "Task-level instruction sent to action control."
+        },
+        {
+          "symbol": "\\pi",
+          "meaning": "Robotics action model; schematic two-component interface."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "r_goal",
+        "r_markov"
+      ],
+      "sources": [
+        {
+          "title": "Gemini Robotics1.5 official announcement",
+          "url": "https://deepmind.google/blog/gemini-robotics-15-brings-ai-agents-into-the-physical-world/"
+        },
+        {
+          "title": "Gemini Robotics1.5 technical report",
+          "url": "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-1-5-Tech-Report.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2025-09-25",
+        "architecture": [
+          {
+            "label": "Embodied reasoning model",
+            "node_id": "vla_vlm",
+            "role": "Interpret and decompose physical tasks."
+          },
+          {
+            "label": "Task-to-action interface",
+            "node_id": "r_goal",
+            "role": "Pass current subtask context."
+          },
+          {
+            "label": "Robotics action model",
+            "node_id": "vla_action_chunk",
+            "role": "Execute and supply new observations."
+          }
+        ],
+        "contribution": "Extend embodied reasoning and action models toward multi-step tasks and cross-robot transfer.",
+        "training": "Official robot and multimodal training/post-training; full data and compute accounting is not disclosed.",
+        "inference": "Reason over observations and goals, then use the action model to perform selected subtasks.",
+        "evaluation": "Official report evaluates long-horizon tasks and cross-embodiment transfer.",
+        "scale": "Total model sizes are not publicly specified in the cited sources.",
+        "limitations": "Separate component availability and closed data limit independent replication; task decomposition does not prove low-level execution success.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_gemini_robotics",
+            "type": "evolution",
+            "relationship": "The official1.5 release extends the Gemini Robotics reasoning-and-action workflow toward longer tasks and cross-embodiment transfer."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_gemini25",
+      "en": "Gemini Robotics 2.5",
+      "title": "Gemini Robotics 2.5",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Reasoning and action models",
+      "summary": "Official release reporting broader task capability, dexterity and reliability in partner deployments.",
+      "definition": "Gemini Robotics2.5 is an official November2026 VLA release reporting increased skill breadth, dexterity and reliability across multiple robot types. The announcement distinguishes an embodied reasoning model that tracks workflow from the action model that controls hands and arms in an industrial proof of concept. Public task results establish reported release capabilities, but the announcement alone does not supply a reproducible layer-by-layer architecture or full training recipe. This atlas records it as a current official model release rather than inventing a paper title or undisclosed technical mechanism.",
+      "example": "In the reported automotive kitting pilot, a reasoning system tracks which parts are needed and the action model picks and places physical components. The published ninety-six percent result applies to that pilot protocol. It should not be generalized into a universal success rate for every task or robot.",
+      "role_en": "This keeps the current VLA branch up to date while separating release evidence from open-paper reproducibility. It illustrates the need to document task scope, model access and undisclosed architectural details.",
+      "latex": "A_t\\sim\\pi_{\\mathrm{GR2.5}}(\\cdot\\mid o_{\\le t},l_t)",
+      "notation": [
+        {
+          "symbol": "\\pi_{\\mathrm{GR2.5}}",
+          "meaning": "Officially announced action model; internal architecture is not specified here."
+        },
+        {
+          "symbol": "l_t",
+          "meaning": "Task instruction or reasoning-model subtask context."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_embodiment",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "Gemini Robotics2.5 official announcement",
+          "url": "https://deepmind.google/blog/gemini-robotics-2-5-accelerates-real-world-physical-intelligence/"
+        }
+      ],
+      "paper": {
+        "date": "2026-11-10",
+        "architecture": [
+          {
+            "label": "Embodied reasoning workflow",
+            "node_id": "vla_vlm",
+            "role": "Track task progress in the reported system."
+          },
+          {
+            "label": "VLA action model",
+            "node_id": "r_policy",
+            "role": "Control manipulation from observations."
+          },
+          {
+            "label": "Robot interface",
+            "node_id": "vla_embodiment",
+            "role": "Support demonstrated hands and arms."
+          }
+        ],
+        "contribution": "Official release reporting broader task capability, dexterity and reliability in partner deployments.",
+        "training": "Detailed architecture, data mixture and optimizer recipe are not publicly specified by the cited announcement.",
+        "inference": "Action-model inference conditioned on task/observations; partner systems may include separate embodied reasoning.",
+        "evaluation": "Official announcement discusses over two hundred tasks and an automotive kitting proof of concept.",
+        "scale": "Parameter count and training compute are not disclosed. Access is rolling out to robotics partners.",
+        "limitations": "Release claims are not an independently reproduced benchmark or an open checkpoint; the exact model implementation is not inferred.",
+        "evidence_level": "Official release announcement; full reproducible technical report and architecture not established by this source",
+        "lineage": [
+          {
+            "from": "paper_gemini15",
+            "type": "evolution",
+            "relationship": "The2.5 announcement describes a later Gemini Robotics generation; release claims are not a disclosure of all intervening architectural changes."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_supermimic",
+      "en": "SuperMimic",
+      "title": "SuperMimic 可微世界模型全身控制",
+      "group": "control_papers",
+      "kind": "paper",
+      "branch": "Humanoid control",
+      "summary": "Amortize humanoid control learning through one differentiable state world model.",
+      "definition": "SuperMimic trains a humanoid motion-tracking policy through short imagined rollouts of a learned differentiable world model. The model fits transitions collected from a standard rigid-body simulator, and policy gradients propagate through the learned predictor rather than through the simulator. Model and policy updates alternate within the training loop. This shares dynamics across many reference motions and provides analytic gradients for policy improvement. The result concerns controller training and motion tracking; it does not replace video-to-motion reconstruction, retargeting, ball perception or task-specific contact planning.",
+      "example": "For a G1 reference motion, collect simulator transitions under the current policy. Fit the three-hidden-layer dynamics MLP, then hold its weights fixed inside a policy update and differentiate a short imagined return. A physical G1 rollout evaluates the resulting policy; the learned training predictor need not run as the final motor controller.",
+      "role_en": "This is the key differentiable world-model branch requested by the user. It connects state dynamics, BPTT and model-based policy optimization, with different computation and outputs from visual video generators.",
+      "latex": "\\hat s_{t+1}=f_\\omega(\\hat s_t,\\pi_\\theta(\\hat o_t,g_t),\\xi),\\quad \\theta\\leftarrow\\theta+\\eta\\nabla_\\theta\\hat J",
+      "notation": [
+        {
+          "symbol": "f_\\omega",
+          "meaning": "Learned differentiable state dynamics."
+        },
+        {
+          "symbol": "\\xi",
+          "meaning": "Physical/environment parameters supplied to the model."
+        },
+        {
+          "symbol": "\\theta",
+          "meaning": "Tracking-policy parameters updated through imagined rollouts."
+        }
+      ],
+      "prereqs": [
+        "concept_differentiable_dynamics",
+        "r_dynamics",
+        "d_bptt",
+        "r_policy"
+      ],
+      "sources": [
+        {
+          "title": "SuperMimic paper",
+          "url": "https://arxiv.org/abs/2610.28480"
+        },
+        {
+          "title": "SuperMimic official project",
+          "url": "https://supermimic.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2026-10",
+        "architecture": [
+          {
+            "label": "Simulator transition collection",
+            "node_id": "r_dynamics",
+            "role": "Supply real simulator transition labels without differentiating the simulator."
+          },
+          {
+            "label": "Learned dynamics MLP",
+            "node_id": "concept_differentiable_dynamics",
+            "role": "Predict next physical state."
+          },
+          {
+            "label": "Imagined rollout and critic",
+            "node_id": "r_policy",
+            "role": "Estimate and differentiate policy return."
+          },
+          {
+            "label": "Deployable tracking policy",
+            "node_id": "r_feedback",
+            "role": "Run closed-loop control on the robot."
+          }
+        ],
+        "contribution": "Amortize humanoid control learning through one differentiable state world model.",
+        "training": "Alternate simulator data collection, dynamics fitting and policy/critic updates; BPTT through learned short rollouts.",
+        "inference": "Deploy the learned tracking policy; evaluations distinguish training imagination from real robot action.",
+        "evaluation": "Large motion-library coverage and real G1 demonstrations; benchmark failure counts measure training-motion coverage.",
+        "scale": "Dynamics MLP has three hidden layers of width2048. Reported one-H100 training and comparison hardware/data differ; no universal fixed speedup is asserted.",
+        "limitations": "Simulator data remain needed; learned dynamics are approximate. Soccer contact, perception and unseen terrain are not established by general motion-tracking success.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [
+          {
+            "from": "paper_beyondmimic",
+            "type": "parallel",
+            "relationship": "Both address humanoid motion tracking, but SuperMimic changes controller-training gradients while BeyondMimic also includes guided diffusion skill composition."
+          },
+          {
+            "from": "concept_differentiable_dynamics",
+            "type": "application",
+            "relationship": "SuperMimic optimizes its tracking policy through learned differentiable state dynamics, without differentiating the simulator that supplies transitions."
+          }
+        ],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_beyondmimic",
+      "en": "BeyondMimic",
+      "title": "BeyondMimic 全身动作跟踪与技能组合",
+      "group": "control_papers",
+      "kind": "paper",
+      "branch": "Humanoid control",
+      "summary": "Connect high-quality motion tracking with flexible cost-guided whole-body control.",
+      "definition": "BeyondMimic combines robust motion tracking from human kinematic references with a guided diffusion policy for composing learned motion primitives into downstream humanoid behavior. The tracking stage converts references into dynamically executable motions in simulation and transfers controllers to hardware. The diffusion stage provides task-specific steering using cost guidance rather than requiring a separate specialist for each downstream task. It is therefore broader than only a tracking-training optimizer, while still depending on motion data, robot control interfaces and appropriate sim-to-real evaluation.",
+      "example": "A humanoid learns motions that include turns and agile actions. At test time a waypoint cost can guide a shared generative controller toward navigation behavior. The reference motion, simulated tracked motion and physical robot execution are separate artifacts; a clean kinematic preview does not establish dynamic tracking.",
+      "role_en": "BeyondMimic supplies an important humanoid-control comparison for SuperMimic. Their stages overlap in tracking, but guided diffusion and downstream composition are not automatically replaced by changing the tracking-training method.",
+      "latex": "A\\sim\\pi_\\theta(\\cdot\\mid o,g),\\qquad A^*\\approx\\operatorname{GuidedDiffusion}(o,C)",
+      "notation": [
+        {
+          "symbol": "g",
+          "meaning": "Motion reference or downstream task context."
+        },
+        {
+          "symbol": "C",
+          "meaning": "Guidance cost for downstream control."
+        },
+        {
+          "symbol": "A",
+          "meaning": "Policy/action or motion-control sequence, schematic abstraction."
+        }
+      ],
+      "prereqs": [
+        "r_policy",
+        "g_diffusion",
+        "vla_behavior_cloning",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "BeyondMimic paper",
+          "url": "https://arxiv.org/abs/2508.08241"
+        },
+        {
+          "title": "BeyondMimic official project",
+          "url": "https://beyondmimic.github.io/"
+        }
+      ],
+      "paper": {
+        "date": "2025-08-11",
+        "architecture": [
+          {
+            "label": "Kinematic motion reference",
+            "node_id": "r_dynamics",
+            "role": "Specify target body movement."
+          },
+          {
+            "label": "Robust tracking learning",
+            "node_id": "r_policy",
+            "role": "Learn executable dynamic behavior."
+          },
+          {
+            "label": "Guided diffusion policy",
+            "node_id": "g_diffusion",
+            "role": "Compose primitives using task costs."
+          },
+          {
+            "label": "Hardware feedback",
+            "node_id": "r_feedback",
+            "role": "Test sim-to-real behavior."
+          }
+        ],
+        "contribution": "Connect high-quality motion tracking with flexible cost-guided whole-body control.",
+        "training": "Simulation-based tracking learning followed by diffusion-based policy distillation/composition.",
+        "inference": "Use tracked skills or guided shared policy under a specified task cost.",
+        "evaluation": "Real hardware agile tracking, waypoint navigation, teleoperation and obstacle-related tasks.",
+        "scale": "Motion duration and GPU count are separate quantities; no training-time equivalence to other full pipelines is inferred.",
+        "limitations": "Requires valid retargeted references and physical validation. Motion tracking quality is not a complete task or ball-contact solution.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    },
+    {
+      "id": "paper_emma",
+      "en": "EMMA: Multimodal Autonomous Driving",
+      "title": "EMMA 多模态自动驾驶模型",
+      "group": "vla_papers",
+      "kind": "paper",
+      "branch": "Driving-adjacent embodied models",
+      "summary": "Use a multimodal language-model foundation for multiple autonomous-driving outputs in a shared text representation.",
+      "definition": "EMMA is Waymo research on end-to-end multimodal autonomous driving built on a multimodal language-model foundation. Camera inputs are combined with navigation and ego-state context, while trajectories, perception objects and road-graph elements are represented in a unified textual output space. The work studies how shared training across driving tasks transfers foundation-model knowledge to embodied outputs. It is related to VLA ideas but belongs to driving research rather than general robot-arm control. It is distinct from the later Waymo World Model, which is a controllable simulation/generation system.",
+      "example": "Given camera views, an instruction to turn and current vehicle status, the model can output a planned trajectory through a language-formatted interface. Evaluating that trajectory on a driving dataset is different from proving safety in live autonomous deployment, and different again from generating sensor data under hypothetical actions.",
+      "role_en": "This is a verified Waymo work relevant to the user’s ambiguous Waymo-VLA phrase. The exact phrase was not resolved to a unique official title, so the atlas names EMMA accurately and links the distinction.",
+      "latex": "p_\\theta(y_{\\mathrm{trajectory}},y_{\\mathrm{perception}},y_{\\mathrm{map}}\\mid I,n,s_{\\mathrm{ego}})",
+      "notation": [
+        {
+          "symbol": "I",
+          "meaning": "Camera observations."
+        },
+        {
+          "symbol": "n,s_{\\mathrm{ego}}",
+          "meaning": "Navigation instruction and ego-vehicle status."
+        },
+        {
+          "symbol": "y",
+          "meaning": "Task-specific outputs represented through a common language interface."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_action_tokens",
+        "r_goal"
+      ],
+      "sources": [
+        {
+          "title": "EMMA paper",
+          "url": "https://arxiv.org/abs/2410.23262"
+        },
+        {
+          "title": "Waymo EMMA official research",
+          "url": "https://waymo.com/research/emma/"
+        }
+      ],
+      "paper": {
+        "date": "2024-10-30",
+        "architecture": [
+          {
+            "label": "Multimodal foundation",
+            "node_id": "vla_vlm",
+            "role": "Combine camera inputs and text context."
+          },
+          {
+            "label": "Unified output representation",
+            "node_id": "vla_action_tokens",
+            "role": "Express driving outputs as text."
+          },
+          {
+            "label": "Joint driving tasks",
+            "node_id": "r_goal",
+            "role": "Train/evaluate trajectory, perception and map outputs."
+          }
+        ],
+        "contribution": "Use a multimodal language-model foundation for multiple autonomous-driving outputs in a shared text representation.",
+        "training": "Joint task mixtures with driving supervision built on pretrained multimodal knowledge.",
+        "inference": "Prompt for trajectory planning or another driving task from camera and ego context.",
+        "evaluation": "nuScenes motion planning and Waymo Open Motion Dataset evaluations.",
+        "scale": "Backbone/experiment variants are described in the paper; this entry does not assign an unsupported single total parameter count.",
+        "limitations": "Dataset planning results are not autonomous-deployment safety proof. EMMA and Waymo World Model are different projects.",
+        "evidence_level": "Primary paper and official project documentation",
+        "lineage": [],
+        "formula_scope": "Schematic teaching formulation of the method; not a claimed verbatim equation unless stated."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "to": "paper_rt2",
+      "type": "evolution",
+      "why_en": "RT-2 develops the robot Transformer lineage by co-fine-tuning pretrained vision-language models and expressing actions as text-like tokens.",
+      "from": "paper_rt1"
+    },
+    {
+      "to": "paper_oxe",
+      "type": "evolution",
+      "why_en": "The RT-X work scales robot Transformer training across standardized multi-embodiment datasets rather than only the original single-platform collection.",
+      "from": "paper_rt1"
+    },
+    {
+      "to": "paper_oxe",
+      "type": "evolution",
+      "why_en": "RT-2-X extends the VLA recipe to cross-embodiment training mixtures; dataset and model variants must be identified separately.",
+      "from": "paper_rt2"
+    },
+    {
+      "to": "paper_octo",
+      "type": "application",
+      "why_en": "Octo uses Open X-Embodiment data to pretrain a modular diffusion-based generalist policy.",
+      "from": "paper_oxe"
+    },
+    {
+      "to": "paper_openvla",
+      "type": "application",
+      "why_en": "OpenVLA trains on a filtered Open X-Embodiment mixture with its own action and observation preprocessing.",
+      "from": "paper_oxe"
+    },
+    {
+      "to": "paper_openvla",
+      "type": "evolution",
+      "why_en": "OpenVLA adopts the VLA action-token paradigm while providing open weights and a reproducible fine-tuning pipeline.",
+      "from": "paper_rt2"
+    },
+    {
+      "to": "paper_diffusion_policy",
+      "type": "parallel",
+      "why_en": "Both generate action chunks from demonstrations, but ACT uses a conditional variational Transformer formulation and Diffusion Policy uses iterative denoising.",
+      "from": "paper_act"
+    },
+    {
+      "to": "paper_octo",
+      "type": "evolution",
+      "why_en": "Octo applies diffusion action decoding within a flexible, broadly pretrained robot Transformer policy.",
+      "from": "paper_diffusion_policy"
+    },
+    {
+      "to": "paper_pi0",
+      "type": "parallel",
+      "why_en": "OpenVLA provides a discrete action-token baseline, while pi0 emphasizes continuous flow-based action chunks conditioned on a VLM.",
+      "from": "paper_openvla"
+    },
+    {
+      "to": "paper_pi05",
+      "type": "evolution",
+      "why_en": "The official pi0.5 work extends the pi0 family with heterogeneous co-training aimed at held-out environment generalization.",
+      "from": "paper_pi0"
+    },
+    {
+      "to": "paper_fast",
+      "type": "parallel",
+      "why_en": "FAST studies an alternative compressed action-token interface; pi0 flow generation and pi0-FAST autoregressive generation should not be conflated.",
+      "from": "paper_pi0"
+    },
+    {
+      "to": "paper_pistar06",
+      "type": "evolution",
+      "why_en": "The later pi family adds autonomous experience and corrections through RECAP; this is a training development, not only a larger network.",
+      "from": "paper_pi05"
+    },
+    {
+      "to": "paper_pi07",
+      "type": "evolution",
+      "why_en": "The official pi0.7 report compares and develops the prior family toward a steerable generalist; specialist RL results and generalist results remain distinct.",
+      "from": "paper_pistar06"
+    },
+    {
+      "to": "paper_rtc",
+      "type": "application",
+      "why_en": "RTC can change inference scheduling for existing flow-based policies, including pi0.5, without the initial method requiring retraining.",
+      "from": "paper_pi05"
+    },
+    {
+      "to": "paper_rtc",
+      "type": "parallel",
+      "why_en": "RTC compares latency-aware chunk generation with temporal ensembling; smooth averaging alone does not guarantee cross-chunk action consistency.",
+      "from": "paper_act"
+    },
+    {
+      "to": "paper_mem",
+      "type": "evolution",
+      "why_en": "MEM extends later pi-family VLA control with short-term visual and long-term language memory rather than relying only on the current observation.",
+      "from": "paper_pi05"
+    },
+    {
+      "to": "paper_pi0",
+      "type": "parallel",
+      "why_en": "Both use visual-language context and continuous flow action generation, but model size, data and deployment recipes differ substantially.",
+      "from": "paper_smolvla"
+    },
+    {
+      "to": "paper_gr00t2",
+      "type": "evolution",
+      "why_en": "GR00T2 develops the family toward joint future-video and action prediction, distinct from the earlier VLA action-generation formulation.",
+      "from": "paper_gr00t_n1"
+    },
+    {
+      "to": "paper_gemini15",
+      "type": "evolution",
+      "why_en": "The official1.5 release extends the Gemini Robotics reasoning-and-action workflow toward longer tasks and cross-embodiment transfer.",
+      "from": "paper_gemini_robotics"
+    },
+    {
+      "to": "paper_gemini25",
+      "type": "evolution",
+      "why_en": "The2.5 announcement describes a later Gemini Robotics generation; release claims are not a disclosure of all intervening architectural changes.",
+      "from": "paper_gemini15"
+    },
+    {
+      "to": "paper_supermimic",
+      "type": "parallel",
+      "why_en": "Both address humanoid motion tracking, but SuperMimic changes controller-training gradients while BeyondMimic also includes guided diffusion skill composition.",
+      "from": "paper_beyondmimic"
+    },
+    {
+      "to": "paper_supermimic",
+      "type": "application",
+      "why_en": "SuperMimic optimizes its tracking policy through learned differentiable state dynamics, without differentiating the simulator that supplies transitions.",
+      "from": "concept_differentiable_dynamics"
+    },
+    {
+      "to": "paper_rt2",
+      "type": "parallel",
+      "why_en": "Both transfer multimodal foundation knowledge to embodied outputs, but EMMA predicts driving tasks and RT-2 predicts manipulation actions.",
+      "from": "paper_emma"
+    },
+    {
+      "to": "paper_pi07",
+      "type": "parallel",
+      "why_en": "Both can use visual outcomes or goals in action control, but joint future prediction and externally supplied visual steering are different mechanisms.",
+      "from": "paper_gr00t2"
+    }
+  ],
+  "research": [
+    {
+      "title": "ACT paper",
+      "url": "https://arxiv.org/abs/2304.13705",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "ALOHA / ACT official project",
+      "url": "https://tonyzhaozh.github.io/aloha/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Diffusion Policy paper",
+      "url": "https://arxiv.org/abs/2303.04137",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Official paper PDF",
+      "url": "https://diffusion-policy.cs.columbia.edu/diffusion_policy_2023.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RT-1 paper",
+      "url": "https://arxiv.org/abs/2212.06817",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RT-1 project",
+      "url": "https://robotics-transformer1.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RT-2 paper",
+      "url": "https://arxiv.org/abs/2307.15818",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RT-2 project",
+      "url": "https://robotics-transformer2.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Open X-Embodiment paper",
+      "url": "https://arxiv.org/abs/2310.08864",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Open X-Embodiment project",
+      "url": "https://robotics-transformer-x.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Octo paper",
+      "url": "https://arxiv.org/abs/2405.12213",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Octo project",
+      "url": "https://octo-models.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "OpenVLA paper",
+      "url": "https://arxiv.org/abs/2406.09246",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "OpenVLA project",
+      "url": "https://openvla.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0 paper",
+      "url": "https://arxiv.org/abs/2410.24164",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0 official project",
+      "url": "https://www.pi.website/blog/pi0",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "FAST paper",
+      "url": "https://arxiv.org/abs/2501.09747",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "FAST official project",
+      "url": "https://www.pi.website/research/fast",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0.5 paper",
+      "url": "https://arxiv.org/abs/2504.16054",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0.5 official project",
+      "url": "https://www.pi.website/blog/pi05",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi-star-0.6 technical report",
+      "url": "https://www.pi.website/download/pistar06.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi-star-0.6 official project",
+      "url": "https://www.pi.website/blog/pistar06",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0.7 technical report",
+      "url": "https://www.pi.website/download/pi07.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "pi0.7 official project",
+      "url": "https://www.pi.website/blog/pi07",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "MEM technical report",
+      "url": "https://www.pi.website/download/Mem.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "MEM official project",
+      "url": "https://www.pi.website/research/memory",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RTC paper",
+      "url": "https://arxiv.org/abs/2506.07339",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "RTC official project",
+      "url": "https://www.pi.website/research/real_time_chunking",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "SmolVLA paper",
+      "url": "https://arxiv.org/abs/2506.01844",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "SmolVLA official blog",
+      "url": "https://huggingface.co/blog/smolvla",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "GR00T N1 paper",
+      "url": "https://arxiv.org/abs/2503.14734",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "NVIDIA official whitepaper",
+      "url": "https://d1qx31qr3h6wln.cloudfront.net/publications/GR00T_1_Whitepaper.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "GR00T2 official project",
+      "url": "https://research.nvidia.com/labs/gear/gr00t-2/",
+      "checked_date": "2026-11-14",
+      "notes": "Official November2026 whitepaper and project; code release announced for December, not verified as released",
+      "http_check": 200
+    },
+    {
+      "title": "GR00T2 whitepaper",
+      "url": "https://research.nvidia.com/labs/gear/gr00t-2/assets/gr00t2_whitepaper.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Official November2026 whitepaper and project; code release announced for December, not verified as released",
+      "http_check": 200
+    },
+    {
+      "title": "Gemini Robotics technical report",
+      "url": "https://arxiv.org/abs/2503.20020",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Official technical report PDF",
+      "url": "https://storage.googleapis.com/deepmind-media/gemini-robotics/gemini_robotics_report.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Gemini Robotics1.5 official announcement",
+      "url": "https://deepmind.google/blog/gemini-robotics-15-brings-ai-agents-into-the-physical-world/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Gemini Robotics1.5 technical report",
+      "url": "https://storage.googleapis.com/deepmind-media/gemini-robotics/Gemini-Robotics-1-5-Tech-Report.pdf",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Gemini Robotics2.5 official announcement",
+      "url": "https://deepmind.google/blog/gemini-robotics-2-5-accelerates-real-world-physical-intelligence/",
+      "checked_date": "2026-11-14",
+      "notes": "Official release announcement; full reproducible technical report and architecture not established by this source",
+      "http_check": 200
+    },
+    {
+      "title": "SuperMimic paper",
+      "url": "https://arxiv.org/abs/2610.28480",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "SuperMimic official project",
+      "url": "https://supermimic.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "BeyondMimic paper",
+      "url": "https://arxiv.org/abs/2508.08241",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "BeyondMimic official project",
+      "url": "https://beyondmimic.github.io/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "EMMA paper",
+      "url": "https://arxiv.org/abs/2410.23262",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Waymo EMMA official research",
+      "url": "https://waymo.com/research/emma/",
+      "checked_date": "2026-11-14",
+      "notes": "Primary paper and official project documentation",
+      "http_check": 200
+    },
+    {
+      "title": "Waymo-VLA name resolution",
+      "url": "https://waymo.com/research/emma/",
+      "checked_date": "2026-11-14",
+      "notes": "No unique official paper named Waymo-VLA was established. Verified EMMA is a multimodal driving model; the separately verified Waymo World Model is a Genie3-based simulation project. Keep the user term unresolved rather than silently identifying either one.",
+      "http_check": 200
+    },
+    {
+      "title": "Coverage and evidence boundaries",
+      "url": "https://www.pi.website/blog",
+      "checked_date": "2026-11-14",
+      "notes": "Selection covers influential foundational papers and current official releases; no social-heat ranking or claim of complete literature coverage. Official release-only records are explicitly distinguished from reproducible technical papers."
+    }
+  ]
+}
