@@ -12,3 +12,7 @@ Mathematical architecture variant: the canonical Transformer node formula and th
 Robot records use official [Unitree model descriptions](https://github.com/unitreerobotics/unitree_ros) and [Booster robot assets](https://github.com/BoosterRobotics/booster_assets). Each record links its exact commit and URDF path. Joint counts, declared mass sums, link counts and selected numerical limits were parsed from those XML files on 2026-11-16; seven source hashes were independently rechecked. No manufacturer mesh files are redistributed. File validation does not establish simulator correctness or physical hardware performance.
 
 All new perception, software, motion and soccer topics attach their primary references directly to their nodes. Ambiguous remembered names remain recorded as unresolved names rather than being assigned to unrelated papers.
+
+## Classification and course readings
+
+The typed browsing taxonomy distinguishes learning paradigms, models, objective functions, fitting/transfer methods, application domains and system families. [EECS545](https://web.eecs.umich.edu/~honglak/teaching/eecs545/) and the primary textbooks linked at each node inform the organization; it is an editorial learning structure. The CSE598 collection publishes paper references and professional presenter associations, with reading context distinguished from authorship and talk delivery. Private course files, meeting logistics and learning progress are excluded.

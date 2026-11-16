@@ -17,16 +17,16 @@ def expand_atlas(P,nodes,edges):
  base['i_overview']['kind']='paper';base['i_overview']['group']='world_papers';base['i_overview']['branch']='Latent dynamics and planning'
  base['i_overview']['paper']=dict(date='2026-10-30 (arXiv v1)',contribution='Composes local reachable-state generation with low-level action planning for long-horizon goal reaching.',architecture=[dict(label='Observation representation',node_id='r_state',role='Encode current and goal observations into compatible state or feature representations.'),dict(label='High-level diffusion generator',node_id='g_ddim',role='Map current state and selected initial noise to a local future state.'),dict(label='High-level and low-level CEM',node_id='r_cem',role='Search noise sequences for subgoals and action sequences for execution.'),dict(label='Action-conditioned forward model',node_id='d_transformer',role='Predict candidate local outcomes from state and action histories.'),dict(label='Execution feedback',node_id='r_mpc',role='Read actual observations after action blocks and replan according to the algorithm.')],training='Offline state pairs train the high-level denoiser; action-conditioned temporal windows train the low-level next-state predictor. Task rewards are not required for these dynamics objectives.',inference='CEM first searches diffusion-noise sequences for subgoals, then searches executable actions using low-level forward rollouts. Real execution updates the observed state.',evaluation='Wall, PushT and Maze suites. Success, object coverage, prediction quality, planning budgets and ablations belong to this paper record, not separate graph nodes.',scale='State-based low-level configuration reports a six-layer Transformer with eight heads. The full system parameter count is not explicitly summarized; visual experiments use a different backbone. Depth is not parameter count.',limitations='Finite offline coverage, model exploitation, subgoal executability and repeated planning cost remain relevant. Navigation/manipulation evidence does not establish humanoid soccer performance.',evidence_level='Public research paper and project demonstrations; no reproduction claim by this atlas.',sections=[dict(id=k,en=base[k]['en'],definition=base[k]['definition'],example=base[k]['example'],latex=base[k]['latex'],role_en=base[k]['role_en']) for k in retired])
  nodes=[n for n in nodes if n['id'] not in retired]
- research=[];new_edges=[];hardware_audits=[];unresolved_terms=[]
- for branch in ['foundations','systems','world','vla','learning','robotics_stack','urdf','humanoid_control','soccer_motion']:
+ research=[];new_edges=[];hardware_audits=[];unresolved_terms=[];course598={}
+ for branch in ['foundations','systems','world','vla','learning','robotics_stack','urdf','humanoid_control','soccer_motion','ml_taxonomy','learning_roles','course598']:
   f=P/f'expansion_{branch}.json'
   if not f.exists():continue
-  data=json.loads(f.read_text());research+=data.get('research',[]);new_edges+=data.get('edges',[]);hardware_audits+=data.get('hardware_audits',[]);unresolved_terms+=data.get('unresolved_terms',[])
+  data=json.loads(f.read_text());research+=data.get('research',[]);new_edges+=data.get('edges',[]);hardware_audits+=data.get('hardware_audits',[]);unresolved_terms+=data.get('unresolved_terms',[]);course598=data.get('course598',course598)
   existing={n['id'] for n in nodes}
   for n in data['nodes']:
    if n['id'] in existing:
     # A researched paper may enrich a retained canonical identifier.
-    if n.get('paper'):
+    if n.get('paper') or n.get('replaces'):
      next(x for x in nodes if x['id']==n['id']).update(n)
     continue
    n=copy.deepcopy(n);n.setdefault('kind','concept');n.setdefault('explain',n.get('definition',''));n.setdefault('formula',n.get('latex',''));n.setdefault('symbols','');n.setdefault('role',n.get('role_en',''));n.setdefault('pitfall','');n.setdefault('quiz','');n.setdefault('answer','');n.setdefault('sources',[]);n.setdefault('prereqs',[]);nodes.append(n);existing.add(n['id'])
@@ -59,6 +59,13 @@ def expand_atlas(P,nodes,edges):
   elif n['group']=='engineering':n['group']='computing'
   elif n['group']=='robot':n['group']='robot_basics'
   n['prereqs']=list(dict.fromkeys(retired.get(p,p) for p in n.get('prereqs',[]) if retired.get(p,p)!=id))
+ # Separate camera calibration from depth API conventions and reconstruction.
+ if 'sim_camera' in D and 'per_camera' in D:
+  n=D['sim_camera'];n.update(en='Depth Conventions and Unprojection',title='深度约定与反投影',definition='Optical-axis depth measures a point’s camera-frame z coordinate; range measures its Euclidean distance from the camera center. They agree on the optical axis and differ away from it. Unprojection reconstructs a three-dimensional point from a calibrated pixel ray and one of these depth quantities. The formula must match the depth sensor or simulator API, image scaling, clipping rules and units. An invalid depth sample must be handled separately rather than reconstructed as an ordinary surface point.',latex=[r'r=K^{-1}[u,v,1]^{\top}',r'P_C=Z_C\,r\quad\text{or}\quad P_C=d_{\mathrm{ray}}\frac{r}{\|r\|_2}'],notation=[dict(symbol=r'K,u,v',meaning='Calibrated intrinsic matrix and distortion-corrected pixel coordinates.'),dict(symbol=r'r',meaning='Pinhole camera ray normalized to z component one, not unit Euclidean length.'),dict(symbol=r'P_C,Z_C,d_{\mathrm{ray}}',meaning='Camera-frame point, optical-axis depth and Euclidean range, in compatible metric units.')],role_en='Connects calibrated image geometry to depth-based reconstruction and simulator observations. Select the correct optical-depth or range formula before comparing robot perception and simulation.')
+  n['latex']=[x.replace('\\\\','\\') for x in n['latex']]
+  for x in n['notation']:x['symbol']=x['symbol'].replace('\\\\','\\')
+  n['prereqs']=list(dict.fromkeys(n['prereqs']+['per_camera']))
+  new_edges.append({'from':'per_camera','to':'sim_camera','type':'prereq','why_en':'Calibrated intrinsics define the pixel ray; the depth convention determines how to scale that ray into a metric point.'})
  cross_links={'g_flow_matching':['c_ode'],'paper_supermimic':['pt_vjp','concept_differentiable_dynamics','sim_mujoco','sim_warp'],'wm_planet':['wm_rssm'],'wm_dreamer':['wm_rssm','rl_actorcritic'],'wm_dreamerv2':['wm_rssm','rl_actorcritic'],'wm_dreamerv3':['wm_rssm','rl_actorcritic'],'wm_tdmpc':['rl_bellman'],'wm_tdmpc2':['rl_bellman'],'sim_warp':['gpu_kernel'],'sim_isaaclab':['r_policy','train_batch']}
  for id,ps in cross_links.items():
   if id in D:D[id]['prereqs']=list(dict.fromkeys(D[id]['prereqs']+[p for p in ps if p in D]))
@@ -162,16 +169,14 @@ def expand_atlas(P,nodes,edges):
   if id in visiting:raise ValueError('Prerequisite cycle at '+id)
   visiting.add(id);n['rank']=max([rank(p)+1 for p in n['prereqs']]+[0]);visiting.remove(id);return n['rank']
  for n in nodes:rank(n['id'])
- # Tree taxonomy. Each node is stored once; cross-links preserve its other uses.
- spec=[('math_root','Mathematics','数学',None,['algebra','linear_algebra','calculus','geometry','probability','optimization']),('models_root','Learning & Representations','学习与表征',None,['ml','deep','vision','generative']),('robot_root','Robotics & Physics','机器人与物理',None,['robot_basics','robot_description','robot_hardware','robotics_software','physics','kinematics','dynamics','control','estimation','perception','planning','motion','soccer']),('simulation_root','Simulation & Sim-to-Real','仿真与迁移',None,['simulation']),('systems_root','Computing & Training Systems','计算与训练系统',None,['computing','cuda','pytorch_systems','training']),('papers_root','Robotics Research Papers','机器人学习论文',None,['world_papers','representation_papers','generative_papers','vla_papers','control_papers','motion_papers','soccer_papers','slam_papers','driving_papers'])]
- labels={'algebra':('Algebra & Notation','代数与记号'),'linear_algebra':('Linear Algebra','线性代数'),'calculus':('Calculus & Differentiation','微积分与微分'),'geometry':('Geometry & Transformations','几何与变换'),'probability':('Probability & Statistics','概率与统计'),'optimization':('Optimization','优化'),'ml':('Classical Machine Learning','经典机器学习'),'deep':('Neural Network Components','神经网络组件'),'vision':('Visual Representation Concepts','视觉表征概念'),'generative':('Generative Modelling Concepts','生成建模概念'),'robot_basics':('States, Dynamics & Planning','状态、动力学与规划'),'physics':('Classical Mechanics','经典力学'),'kinematics':('Robot Kinematics','机器人运动学'),'dynamics':('Robot Dynamics','机器人动力学'),'control':('Control Theory','控制理论'),'estimation':('State Estimation','状态估计'),'planning':('Motion Planning','运动规划'),'simulation':('Simulators & Transfer','仿真器与迁移'),'computing':('Computer Fundamentals','计算机基础'),'cuda':('GPU & CUDA Architecture','GPU与CUDA架构'),'pytorch_systems':('PyTorch Execution Stack','PyTorch执行栈'),'training':('Training Systems & Performance','训练系统与性能'),'world_papers':('World Models & Planning','世界模型与规划'),'representation_papers':('JEPA & Representation Papers','JEPA与表征论文'),'generative_papers':('Generative World Models','生成式世界模型'),'vla_papers':('VLA & Generalist Policies','VLA与通用策略'),'control_papers':('Differentiable Models & Control','可微模型与控制'),'driving_papers':('Driving-Adjacent Research','自动驾驶相关研究')}
- labels.update({'robot_description':('Robot Descriptions & URDF','机器人描述与URDF'),'robot_hardware':('Robot Models & Hardware','机器人模型与硬件'),'robotics_software':('Robotics Software & Interfaces','机器人软件与接口'),'perception':('Perception & Mapping','感知与建图'),'motion':('Human Motion & Retargeting','人体运动与重定向'),'soccer':('Robot Soccer Systems','机器人足球系统'),'soccer_papers':('Robot Soccer Research','机器人足球论文'),'motion_papers':('Motion Recovery, Retargeting & Control','运动恢复、重定向与控制论文'),'slam_papers':('SLAM & Odometry Research','SLAM与里程计论文')})
- unknown=sorted(set(n['group'] for n in nodes)-set(labels))
- if unknown:raise ValueError('Unclassified groups: '+str(unknown))
- tax={};colors=['#748f64','#67888d','#6a8d79','#a28c62','#8c7a65','#7e7f9c']
- for idx,(id,en,zh,_,children) in enumerate(spec):
-  populated=[g for g in children if any(n['group']==g for n in nodes)]
-  tax[id]=dict(id=id,en=en,title=zh,color=colors[idx],children=populated,parent=None)
-  for g in populated:tax[g]=dict(id=g,en=labels[g][0],title=labels[g][1],color=colors[idx],children=[],parent=id)
- overview_rows=[['papers_root'],['models_root','robot_root','simulation_root'],['math_root','systems_root']]
- return nodes,E,dict(aliases=aliases,taxonomy=tax,overviewRows=overview_rows,research=research,hardwareAudits={a['id']:a for a in hardware_audits},coverage=dict(checked_date='2026-11-16',scope='Robotics learning foundations and selected influential/recent primary-source research; not an exhaustive or popularity-ranked inventory.',granularity='One paper or official release per paper node. Evaluation, scale and implementation guidance stay inside that paper. Reusable concepts have independent nodes.',unresolved_terms=unresolved_terms+[dict(term='Waymo-VLA',status='Exact intended work is not uniquely identified. Verified Waymo EMMA and Waymo World Model are separate records, not asserted aliases.')]))
+ # Course membership is a collection, separate from scientific taxonomy.
+ for session in course598.get('sessions',[]):
+  for reading in session.get('readings',[]):
+   id=reading.get('node_id')
+   if id in D:
+    node=D[id];node.setdefault('course_topics',[]);node.setdefault('course_speakers',[])
+    node['course_topics']=list(dict.fromkeys(node['course_topics']+[session['topic']]))
+    node['course_speakers']=list(dict.fromkeys(node['course_speakers']+[s['name'] for s in session.get('speakers',[])]))
+ from taxonomy_build import organize
+ tax,overview_rows=organize(nodes,E)
+ return nodes,E,dict(aliases=aliases,taxonomy=tax,overviewRows=overview_rows,research=research,course598=course598,hardwareAudits={a['id']:a for a in hardware_audits},coverage=dict(checked_date='2026-11-16',scope='Robotics, perception and learning foundations, selected influential/recent primary-source research, and an explicit course reading collection; curated rather than exhaustive or popularity-ranked.',granularity='One paper or official release per paper node. Evaluation, scale and implementation guidance stay inside that paper. Reusable concepts have independent nodes.',unresolved_terms=unresolved_terms+[dict(term='Waymo-VLA',status='Exact intended work is not uniquely identified. Verified Waymo EMMA and Waymo World Model are separate records, not asserted aliases.')]))

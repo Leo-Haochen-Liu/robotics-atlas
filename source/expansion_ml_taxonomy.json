@@ -1,0 +1,1982 @@
+{
+  "nodes": [
+    {
+      "id": "ml_unsupervised",
+      "en": "Unsupervised Learning",
+      "title": "无监督学习",
+      "kind": "concept",
+      "group": "ml_paradigms",
+      "entity_type": "paradigm",
+      "summary": "A learning setting without externally supplied task labels; it does not identify a specific algorithm.",
+      "definition": "Unsupervised learning groups settings in which the training data do not supply the external target labels required by a selected supervised task. Objectives can instead estimate a density, discover groups, reconstruct inputs, or learn representations. These are different tasks and can use different model families. The boundary with self-supervision depends on how training targets are constructed: predicting a withheld part of the input can be described as self-supervised training within broader learning from unlabeled data. Unsupervised does not mean that there is no objective function, model choice, or human-designed assumption.",
+      "example": "An unlabeled collection of robot sensor vectors can be clustered by similarity, modeled with a density, or reconstructed with an autoencoder. These produce different outputs. None guarantees that the discovered groups correspond to meaningful robot behaviors without evaluation against the intended use.",
+      "role_en": "Places clustering, mixture fitting, PCA and representation learning in a learning-setting axis distinct from model architecture.",
+      "latex": "\\mathcal D=\\{x_i\\}_{i=1}^{n},\\qquad \\hat\\theta=\\arg\\min_\\theta\\mathcal L(\\mathcal D;\\theta)",
+      "notation": [
+        {
+          "symbol": "\\mathcal D",
+          "meaning": "Training observations without external task labels."
+        },
+        {
+          "symbol": "\\mathcal L",
+          "meaning": "Chosen learning objective; there is no single universal unsupervised loss."
+        }
+      ],
+      "prereqs": [
+        "p_random"
+      ],
+      "sources": [
+        {
+          "title": "Deep Learning: Machine Learning Basics",
+          "url": "https://www.deeplearningbook.org/contents/ml.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_semisupervised",
+      "en": "Semi-Supervised Learning",
+      "title": "半监督学习",
+      "kind": "concept",
+      "group": "ml_paradigms",
+      "entity_type": "paradigm",
+      "summary": "Combine limited labeled data with unlabeled observations under explicit assumptions.",
+      "definition": "Semi-supervised learning uses both labeled examples and unlabeled observations for a target prediction task. Typical approaches use consistency regularization, pseudo-labels, or graph-based propagation. The unlabeled data help only when the modeling assumptions connect their structure to the desired labels. A confident model prediction can still be wrong, so pseudo-labeling can reinforce errors. The labeled and unlabeled distributions, label quality, class coverage, and evaluation split must be checked. This setting is compatible with many model families and should be classified separately from a particular classifier or loss function.",
+      "example": "A small set of ball images has human labels while a larger recorded dataset has none. A detector generates candidate pseudo-labels, which are filtered before training. Validate on independently labeled sequences; a larger pseudo-labeled dataset alone does not establish that detection improved.",
+      "role_en": "Connects supervised tasks with unlabeled robot observations while distinguishing a data setting from an architecture.",
+      "latex": "\\mathcal L=\\mathcal L_{\\mathrm{labeled}}+\\lambda\\mathcal L_{\\mathrm{unlabeled}}",
+      "notation": [
+        {
+          "symbol": "\\lambda",
+          "meaning": "Weight controlling the chosen unlabeled-data objective."
+        },
+        {
+          "symbol": "\\mathcal L_{\\mathrm{unlabeled}}",
+          "meaning": "Method-specific term, such as consistency or pseudo-label loss."
+        }
+      ],
+      "prereqs": [
+        "ml_supervised",
+        "ml_unsupervised"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Semi-supervised learning",
+          "url": "https://scikit-learn.org/stable/modules/semi_supervised.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_erm",
+      "en": "Empirical Risk and Objective Design",
+      "title": "经验风险与目标设计",
+      "kind": "concept",
+      "group": "ml_objectives",
+      "entity_type": "objective",
+      "summary": "Separate the predictor family, per-example loss, regularizer and optimizer.",
+      "definition": "Empirical risk is the average loss of a predictor on a finite training dataset. A model family specifies the functions available; a loss assigns a penalty to predictions; a regularizer expresses additional preference; an optimizer searches for parameters. These components are distinct and can be recombined. Minimizing empirical risk does not directly minimize unknown test risk, especially with finite or shifted data. Classification, regression, and density estimation have different target structures and suitable losses. This decomposition prevents treating supervised learning, linear regression, and mean squared error as equivalent-level algorithm names.",
+      "example": "Linear regression specifies an affine predictor, squared error specifies a fitting criterion, and gradient descent specifies one solver. The same squared error can fit a neural network. The same affine scores can be used in a classifier with another loss, so the names describe different choices.",
+      "role_en": "Provides the classification principle used throughout the atlas and links losses to models through explicit relations.",
+      "latex": "\\hat\\theta=\\arg\\min_\\theta\\left[\\frac1n\\sum_{i=1}^n\\ell(f_\\theta(x_i),y_i)+\\lambda\\Omega(\\theta)\\right]",
+      "notation": [
+        {
+          "symbol": "f_\\theta",
+          "meaning": "Predictor from a chosen model family."
+        },
+        {
+          "symbol": "\\ell",
+          "meaning": "Per-example loss."
+        },
+        {
+          "symbol": "\\Omega,\\lambda",
+          "meaning": "Regularizer and its strength; optimization method is a separate choice."
+        }
+      ],
+      "prereqs": [
+        "m_function",
+        "p_expectation",
+        "ml_supervised"
+      ],
+      "sources": [
+        {
+          "title": "Deep Learning: Machine Learning Basics",
+          "url": "https://www.deeplearningbook.org/contents/ml.html"
+        },
+        {
+          "title": "An Introduction to Statistical Learning: author site",
+          "url": "https://www.statlearning.com/"
+        }
+      ]
+    },
+    {
+      "id": "ml_knn",
+      "en": "k-Nearest Neighbors",
+      "title": "k 近邻",
+      "kind": "concept",
+      "group": "ml_neighbors",
+      "entity_type": "model_family",
+      "summary": "Predict using nearby training examples under a chosen feature distance.",
+      "definition": "k-nearest neighbors stores training examples and predicts from the k examples nearest to a query in feature space. Classification can vote among their labels; regression can average their target values, possibly using distance weights. The distance metric, feature scaling, and k determine what counts as local evidence. Training need not fit a compact parameter vector, but storage and query computation can be large. High-dimensional features can make distances less informative. kNN is a concrete model family usable for multiple tasks, rather than a learning paradigm or loss function.",
+      "example": "Standardize joint-state features using training statistics, retrieve nearby recorded states, and average their measured next-step velocities. Select k on validation data. This baseline is useful for comparing a learned dynamics network, but it may extrapolate poorly outside the recorded state distribution.",
+      "role_en": "Introduces instance-based prediction and motivates metrics, preprocessing, representation quality and retrieval cost.",
+      "latex": "\\hat y(x)=\\frac1k\\sum_{i\\in\\mathcal N_k(x)}y_i",
+      "notation": [
+        {
+          "symbol": "\\mathcal N_k(x)",
+          "meaning": "Indices of the k selected nearest training examples."
+        },
+        {
+          "symbol": "\\hat y",
+          "meaning": "Unweighted regression estimate; classification uses an appropriate voting rule."
+        }
+      ],
+      "prereqs": [
+        "m_norm",
+        "ml_normalize",
+        "ml_supervised"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Nearest Neighbors",
+          "url": "https://scikit-learn.org/stable/modules/neighbors.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_tree",
+      "en": "Decision Trees",
+      "title": "决策树",
+      "kind": "concept",
+      "group": "ml_trees",
+      "entity_type": "model_family",
+      "summary": "Recursive feature tests partition the input space into prediction regions.",
+      "definition": "A decision tree recursively applies feature tests to divide inputs into regions. Each terminal leaf stores a prediction, such as class frequencies or a regression mean. Training typically chooses splits greedily to improve an impurity or loss criterion; it does not exhaustively solve every possible tree structure. Depth, leaf size, and pruning control complexity and generalization. Trees model nonlinear feature interactions without requiring a neural network, but small dataset changes can change a fitted tree substantially. Classification and regression trees use related structures with task-specific leaf predictions and split criteria.",
+      "example": "A regression tree predicts motor temperature using joint speed and load. It first separates high-load samples, then splits by speed, and outputs a leaf mean. A threshold is an interpretable fitted rule, but it may reflect confounding in the recorded data rather than a causal law.",
+      "role_en": "Provides the base learner for forests and gradient-boosted trees, and a contrasting model to smooth neural predictors.",
+      "latex": "\\hat y(x)=\\sum_{m=1}^{M}c_m\\mathbf1[x\\in R_m]",
+      "notation": [
+        {
+          "symbol": "R_m",
+          "meaning": "Disjoint terminal regions defined by the tree tests."
+        },
+        {
+          "symbol": "c_m",
+          "meaning": "Regression leaf prediction; classification leaves store class-related values."
+        }
+      ],
+      "prereqs": [
+        "ml_supervised",
+        "ml_bias_variance"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Decision Trees",
+          "url": "https://scikit-learn.org/stable/modules/tree.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_bagging",
+      "en": "Bootstrap Aggregation (Bagging)",
+      "title": "自助采样集成",
+      "kind": "concept",
+      "group": "ml_training_methods",
+      "entity_type": "training_method",
+      "summary": "Fit predictors on bootstrap datasets and aggregate their outputs.",
+      "definition": "Bagging trains several predictors on bootstrap samples of a training dataset and aggregates their predictions. A bootstrap sample draws examples with replacement, so some examples repeat and others are absent. Averaging can reduce variance when prediction errors are not perfectly correlated; it does not automatically remove bias or distribution shift. Classification commonly aggregates votes or probabilities. Out-of-bag examples support an internal evaluation route when its assumptions match the sampling process. Bagging is an ensemble construction method, distinct from both its chosen base model and the loss used to fit each member.",
+      "example": "Fit many regression trees on independently resampled robot logs and average predicted power. If every tree makes the same error in unseen terrain, averaging will not correct it. Episode or robot-level correlations must be considered when selecting resampling and validation units.",
+      "role_en": "Enables random forests and clarifies variance reduction versus changes to the predictor family.",
+      "latex": "\\hat f_{\\mathrm{bag}}(x)=\\frac1B\\sum_{b=1}^{B}\\hat f_b(x)",
+      "notation": [
+        {
+          "symbol": "B",
+          "meaning": "Number of fitted ensemble members."
+        },
+        {
+          "symbol": "\\hat f_b",
+          "meaning": "Predictor fitted on bootstrap sample b; formula is regression averaging."
+        }
+      ],
+      "prereqs": [
+        "p_sampling",
+        "ml_bias_variance"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Ensembles",
+          "url": "https://scikit-learn.org/stable/modules/ensemble.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_randomforest",
+      "en": "Random Forests",
+      "title": "随机森林",
+      "kind": "concept",
+      "group": "ml_trees",
+      "entity_type": "model_family",
+      "summary": "Aggregate randomized trees; feature subsampling reduces member correlation.",
+      "definition": "A random forest combines multiple decision trees trained with randomized data and feature choices. In common classification and regression implementations, trees use bootstrap samples and consider a random subset of features at each split. Aggregation stabilizes predictions relative to a single high-variance tree. Important settings include tree count, depth, leaf size, feature sampling, and class handling. Feature importance scores depend on the scoring procedure and can be misleading under correlated inputs or biased splitting opportunities. A forest is a model ensemble, not a distinct learning paradigm or evidence of causal feature effects.",
+      "example": "Predict failure risk from actuator statistics using a random forest, and evaluate on held-out operating sessions. Compare it with a single tree and calibrated baselines. High importance assigned to a sensor channel means the trained prediction uses that channel under the selected importance calculation; it does not prove causation.",
+      "role_en": "Connects decision-tree modeling and bagging to a strong tabular baseline for robotics telemetry.",
+      "latex": "\\hat p(y=c\\mid x)=\\frac1B\\sum_{b=1}^{B}\\hat p_b(y=c\\mid x)",
+      "notation": [
+        {
+          "symbol": "\\hat p_b",
+          "meaning": "Class-frequency-based prediction of tree b in this common aggregation form."
+        },
+        {
+          "symbol": "B",
+          "meaning": "Number of trees; calibration is a separate evaluation question."
+        }
+      ],
+      "prereqs": [
+        "ml_tree",
+        "ml_bagging"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Ensembles",
+          "url": "https://scikit-learn.org/stable/modules/ensemble.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_boosting",
+      "en": "Boosting and Gradient-Boosted Trees",
+      "title": "提升与梯度提升树",
+      "kind": "concept",
+      "group": "ml_trees",
+      "entity_type": "model_family",
+      "summary": "Sequentially add learners that improve the current ensemble objective.",
+      "definition": "Boosting constructs a predictor by adding learners sequentially. Different boosting algorithms choose observation weights or update directions differently; AdaBoost and gradient boosting are related but not identical. Gradient boosting fits a new learner to a direction that reduces a differentiable training loss, often its negative gradient on current predictions. Tree learners yield gradient-boosted trees. Learning rate, tree complexity, subsampling, and early stopping affect generalization. Unlike bagging, the members depend on earlier ensemble errors. The method can optimize several losses, so boosting is not itself one universal loss function.",
+      "example": "A temperature predictor initially outputs a constant. A small tree models residual structure, and another tree models errors of the updated predictor. With squared loss these directions match ordinary residuals; with another loss the fitted pseudo-residuals differ. Choose iteration count on validation data.",
+      "role_en": "Links loss derivatives, functional optimization and trees, providing a classical counterpart to gradient-trained neural models.",
+      "latex": "r_{im}=-\\left.\\frac{\\partial\\ell(y_i,F(x_i))}{\\partial F(x_i)}\\right|_{F=F_{m-1}},\\quad F_m=F_{m-1}+\\eta h_m",
+      "notation": [
+        {
+          "symbol": "r_{im}",
+          "meaning": "Negative loss gradient used as a pseudo-target."
+        },
+        {
+          "symbol": "h_m",
+          "meaning": "New fitted learner; a step coefficient may be absorbed into it."
+        },
+        {
+          "symbol": "\\eta",
+          "meaning": "Shrinkage or learning rate."
+        }
+      ],
+      "prereqs": [
+        "ml_tree",
+        "m_partial",
+        "ml_erm"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Ensembles",
+          "url": "https://scikit-learn.org/stable/modules/ensemble.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_kernel",
+      "en": "Positive Semidefinite Kernels",
+      "title": "半正定核函数",
+      "kind": "concept",
+      "group": "ml_kernels",
+      "entity_type": "model_component",
+      "summary": "Compute inner products in an implicit feature representation.",
+      "definition": "A positive semidefinite kernel is a similarity function whose Gram matrix is positive semidefinite for every finite set of inputs. Such a kernel can be represented as an inner product in a possibly high-dimensional feature space. Kernel methods express suitable algorithms through these inner products, avoiding explicit construction of all features. The kernel choice still encodes assumptions about similarity, smoothness and scale. A kernel is neither a complete classifier nor a guarantee of good generalization. Full Gram-matrix storage and linear algebra can become expensive as training-set size grows.",
+      "example": "An RBF kernel treats nearby normalized sensor vectors as similar. A small length scale gives localized similarity, while a large scale smooths across a wider region. This same kernel family can appear in an SVM or Gaussian process, whose objectives and prediction semantics remain different.",
+      "role_en": "Provides a shared representation component for SVMs, Gaussian processes and kernel regression.",
+      "latex": "k(x,x^{\\prime})=\\langle\\phi(x),\\phi(x^{\\prime})\\rangle,\\qquad k_{\\mathrm{RBF}}=\\exp\\!\\left(-\\frac{\\|x-x^{\\prime}\\|^2}{2\\ell^2}\\right)",
+      "notation": [
+        {
+          "symbol": "\\phi",
+          "meaning": "Implicit feature map."
+        },
+        {
+          "symbol": "\\ell",
+          "meaning": "RBF length scale."
+        },
+        {
+          "symbol": "K_{ij}=k(x_i,x_j)",
+          "meaning": "Gram matrix required to be positive semidefinite."
+        }
+      ],
+      "prereqs": [
+        "m_matmul",
+        "la_psd",
+        "m_norm"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Pairwise metrics, affinities and kernels",
+          "url": "https://scikit-learn.org/stable/modules/metrics.html#pairwise-metrics-affinities-and-kernels"
+        },
+        {
+          "title": "Gaussian Processes for Machine Learning: authors book site",
+          "url": "https://www.gaussianprocess.org/gpml/"
+        }
+      ]
+    },
+    {
+      "id": "ml_svm",
+      "en": "Support Vector Machines",
+      "title": "支持向量机",
+      "kind": "concept",
+      "group": "ml_kernels",
+      "entity_type": "model_family",
+      "summary": "Regularized margin-based predictors can use linear features or kernels.",
+      "definition": "A support vector classifier fits a separating score while balancing a large margin against penalties for margin violations. The soft-margin formulation permits overlap or mislabeled examples. Linear SVMs act on explicit features; kernel SVMs replace feature-space inner products with a valid kernel. Support vectors are training examples that participate in the fitted decision function. Hyperparameters control regularization and kernel behavior and must be selected without test leakage. SVM scores are not automatically calibrated probabilities. Support vector regression uses a related but different regression loss and formulation.",
+      "example": "Classify foot-contact versus non-contact sensor windows using a normalized feature vector and an SVM. Compare linear and RBF kernels using episode-separated validation. Tune the penalty and kernel scale jointly. A high classification accuracy does not establish that the scores represent well-calibrated contact probabilities.",
+      "role_en": "Links constrained optimization, kernels and hinge loss in a concrete classical classifier.",
+      "latex": "\\min_{w,b,\\xi\\ge0}\\frac12\\|w\\|^2+C\\sum_i\\xi_i\\quad\\mathrm{s.t.}\\quad y_i(w^{\\top}\\phi(x_i)+b)\\ge1-\\xi_i",
+      "notation": [
+        {
+          "symbol": "y_i",
+          "meaning": "Binary target encoded as -1 or +1."
+        },
+        {
+          "symbol": "\\xi_i",
+          "meaning": "Slack permitting a margin violation."
+        },
+        {
+          "symbol": "C",
+          "meaning": "Tradeoff between margin regularization and violation penalties."
+        }
+      ],
+      "prereqs": [
+        "ml_kernel",
+        "c_constraints",
+        "ml_supervised"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Support Vector Machines",
+          "url": "https://scikit-learn.org/stable/modules/svm.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_gp",
+      "en": "Gaussian Processes",
+      "title": "高斯过程",
+      "kind": "concept",
+      "group": "ml_kernels",
+      "entity_type": "model_family",
+      "summary": "A distribution over functions specified by a mean and covariance kernel.",
+      "definition": "A Gaussian process defines a function distribution such that any finite vector of function values is jointly Gaussian. A mean function and positive semidefinite covariance kernel specify the prior. Gaussian-noise regression yields an analytically Gaussian predictive distribution after conditioning on observations. Other likelihoods can require approximate inference. Predictive uncertainty is conditional on kernel, likelihood, hyperparameters and data assumptions; it is not an unrestricted safety guarantee. Exact dense regression typically uses cubic training-time matrix factorization and quadratic storage in the number of examples, motivating sparse or structured approximations.",
+      "example": "Fit a residual dynamics function after a simple physical model. Nearby observed states reduce posterior uncertainty under the selected kernel. Test whether predicted intervals have suitable empirical coverage. A narrow posterior can still be wrong if the kernel or noise assumptions are inappropriate for an unobserved operating regime.",
+      "role_en": "Connects Gaussian conditioning, kernels and uncertainty-aware model-based robotics.",
+      "latex": "\\mu_*=k_*^{\\top}(K+\\sigma_n^2I)^{-1}y,\\quad v_*=k(x_*,x_*)-k_*^{\\top}(K+\\sigma_n^2I)^{-1}k_*",
+      "notation": [
+        {
+          "symbol": "K",
+          "meaning": "Training covariance matrix; zero prior mean assumed here."
+        },
+        {
+          "symbol": "k_*",
+          "meaning": "Kernel similarities between training inputs and test input."
+        },
+        {
+          "symbol": "v_*",
+          "meaning": "Latent-function posterior variance; observation variance additionally includes noise."
+        }
+      ],
+      "prereqs": [
+        "ml_kernel",
+        "p_gaussian",
+        "m_matrix"
+      ],
+      "sources": [
+        {
+          "title": "Gaussian Processes for Machine Learning: authors book site",
+          "url": "https://www.gaussianprocess.org/gpml/"
+        }
+      ]
+    },
+    {
+      "id": "ml_naivebayes",
+      "en": "Naive Bayes",
+      "title": "朴素贝叶斯",
+      "kind": "concept",
+      "group": "ml_probabilistic",
+      "entity_type": "model_family",
+      "summary": "A generative classifier assumes conditional feature independence given a class.",
+      "definition": "Naive Bayes classifies using Bayes theorem and a factorized class-conditional feature model. The assumption is that features are independent conditional on the class, not independent without conditioning. Different feature likelihoods produce Gaussian, multinomial, Bernoulli and other variants. Parameters can often be estimated efficiently from counts or class-specific statistics. Strongly dependent features can violate the model even when classification remains useful. Small estimated probabilities require appropriate smoothing or priors. A class score obtained from this simplifying model should not automatically be interpreted as a calibrated probability.",
+      "example": "A text classifier estimates word-count distributions for each task label and combines them with class priors. Log probabilities avoid numerical underflow when many terms are multiplied. Repeated correlated words can overcount evidence under the independence assumption, so probability calibration and predictive accuracy need separate checks.",
+      "role_en": "Makes conditional independence concrete and connects probabilistic modeling to classification and language baselines.",
+      "latex": "\\hat y=\\arg\\max_c\\left[\\log p(c)+\\sum_{j=1}^{d}\\log p(x_j\\mid c)\\right]",
+      "notation": [
+        {
+          "symbol": "c",
+          "meaning": "Candidate class."
+        },
+        {
+          "symbol": "x_j",
+          "meaning": "Feature j modeled conditionally independent given c."
+        }
+      ],
+      "prereqs": [
+        "p_bayes",
+        "p_conditional"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Naive Bayes",
+          "url": "https://scikit-learn.org/stable/modules/naive_bayes.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_gda",
+      "en": "Gaussian Discriminant Analysis: LDA and QDA",
+      "title": "高斯判别分析",
+      "kind": "concept",
+      "group": "ml_probabilistic",
+      "entity_type": "model_family",
+      "summary": "Model class-conditional Gaussians and classify with Bayes theorem.",
+      "definition": "Gaussian discriminant analysis models each class with a Gaussian feature distribution and a class prior. Linear discriminant analysis shares one covariance matrix across classes, yielding affine discriminant scores. Quadratic discriminant analysis estimates class-specific covariances, yielding quadratic decision boundaries. These are generative classification models, distinct from the discriminatively fitted logistic-regression model. Covariance estimation can be unstable with few examples or many dimensions, motivating shrinkage or dimensionality reduction. Gaussian assumptions are modeling choices and must be evaluated; a nonlinear boundary does not imply that QDA is universally better.",
+      "example": "Classify terrain from inertial features using class means and covariances. LDA pools covariance information across terrain classes; QDA estimates each covariance separately. Compare validation performance when one class has few examples. That class-specific covariance may be poorly estimated despite QDA offering a more flexible boundary.",
+      "role_en": "Connects multivariate Gaussian models and classification, complementing existing logistic regression.",
+      "latex": "\\delta_c(x)=\\log\\pi_c-\\frac12\\log|\\Sigma_c|-\\frac12(x-\\mu_c)^{\\top}\\Sigma_c^{-1}(x-\\mu_c)",
+      "notation": [
+        {
+          "symbol": "\\pi_c,\\mu_c,\\Sigma_c",
+          "meaning": "Class prior, mean and covariance."
+        },
+        {
+          "symbol": "\\Sigma_c=\\Sigma",
+          "meaning": "Shared covariance gives LDA; separate covariances give QDA."
+        }
+      ],
+      "prereqs": [
+        "p_gaussian",
+        "p_bayes"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Linear and Quadratic Discriminant Analysis",
+          "url": "https://scikit-learn.org/stable/modules/lda_qda.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_kmeans",
+      "en": "k-Means Clustering",
+      "title": "k 均值聚类",
+      "kind": "concept",
+      "group": "ml_clustering_models",
+      "entity_type": "algorithm",
+      "summary": "Alternate nearest-center assignments and mean updates for squared Euclidean distortion.",
+      "definition": "k-means partitions examples into a chosen number of groups by minimizing within-cluster squared Euclidean distance to cluster centers. A common iterative algorithm alternates assigning each point to its nearest center and replacing centers with assigned-point means. It converges to a local fixed point of this procedure, not necessarily the global best partition. Initialization, feature scaling, outliers and the chosen number of clusters affect results. The objective favors particular distance geometry; discovered clusters need not correspond to semantic classes, and an unlabeled cluster number is not an externally known category.",
+      "example": "Cluster standardized robot-state descriptors into motion regimes. Repeat several initializations and inspect whether assignments remain stable and useful for the downstream task. A transition between clusters reflects the chosen representation and distance, rather than proving that the robot changed a physically distinct behavior mode.",
+      "role_en": "Provides a concrete clustering algorithm and a hard-assignment comparison with Gaussian mixture models.",
+      "latex": "\\min_{\\mu_1,\\ldots,\\mu_K}\\sum_{i=1}^{n}\\min_{k\\in\\{1,\\ldots,K\\}}\\|x_i-\\mu_k\\|_2^2",
+      "notation": [
+        {
+          "symbol": "K",
+          "meaning": "Selected number of centers."
+        },
+        {
+          "symbol": "\\mu_k",
+          "meaning": "Cluster center."
+        },
+        {
+          "symbol": "x_i",
+          "meaning": "Feature vector; scale influences squared distance."
+        }
+      ],
+      "prereqs": [
+        "ml_unsupervised",
+        "m_norm",
+        "ml_normalize"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Clustering",
+          "url": "https://scikit-learn.org/stable/modules/clustering.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_em",
+      "en": "Expectation–Maximization",
+      "title": "期望最大化",
+      "kind": "concept",
+      "group": "ml_training_methods",
+      "entity_type": "algorithm",
+      "summary": "Alternate latent-variable posterior inference and expected complete-data fitting.",
+      "definition": "Expectation–maximization is an iterative maximum-likelihood or maximum-a-posteriori fitting approach for models with latent variables. The E-step computes or represents the current latent posterior; the M-step improves an expected complete-data objective using that posterior. Exact EM iterations do not decrease the associated observed-data likelihood when their conditions hold, but can converge to a local optimum or other stationary behavior. Approximate E-steps, incomplete optimization and numerical issues require separate analysis. EM is a training algorithm applicable to several model families, including Gaussian mixtures and hidden Markov models, rather than a distribution itself.",
+      "example": "For a Gaussian mixture, estimate how much each component is responsible for each example, then update weighted component statistics. Repeat until an appropriate stopping criterion. Different initial means can lead to different fitted mixtures; reporting convergence alone does not establish that the most meaningful grouping was found.",
+      "role_en": "Connects latent-variable inference to GMM fitting, HMM learning and the variational-learning branch.",
+      "latex": "Q(\\theta\\mid\\theta^{(t)})=\\mathbb E_{z\\sim p(z\\mid x,\\theta^{(t)})}[\\log p(x,z\\mid\\theta)]",
+      "notation": [
+        {
+          "symbol": "z",
+          "meaning": "Unobserved latent variables."
+        },
+        {
+          "symbol": "Q",
+          "meaning": "Expected complete-data log likelihood; the M-step optimizes this function."
+        },
+        {
+          "symbol": "\\theta^{(t)}",
+          "meaning": "Current parameter estimate used by the E-step."
+        }
+      ],
+      "prereqs": [
+        "p_conditional",
+        "p_expectation",
+        "p_likelihood"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Gaussian mixture models",
+          "url": "https://scikit-learn.org/stable/modules/mixture.html"
+        },
+        {
+          "title": "Probabilistic Machine Learning: An Introduction",
+          "url": "https://probml.github.io/pml-book/book1.html"
+        }
+      ]
+    },
+    {
+      "id": "ml_clustering",
+      "en": "Gaussian Mixture Models",
+      "title": "高斯混合模型",
+      "kind": "concept",
+      "group": "ml_probabilistic",
+      "entity_type": "model_family",
+      "summary": "A weighted sum of Gaussian components models a multimodal density.",
+      "definition": "A Gaussian mixture model represents a density as a weighted sum of Gaussian component densities. A latent categorical variable identifies which component generated an observation under the model. Posterior responsibilities give soft assignments rather than requiring one hard cluster per observation. Means, covariance structures and mixture weights determine model flexibility; covariance regularization helps avoid degenerate likelihood solutions. EM is a common fitting algorithm but is not the mixture definition. Component count and fitting quality require model selection, and components need not coincide with semantic categories or physical modes.",
+      "example": "A one-dimensional speed dataset contains slow and fast operating regimes with overlapping values. A two-component mixture assigns an intermediate sample partial responsibility for both components. That probability is a statement within the fitted density model; it does not identify a true discrete control mode without additional evidence.",
+      "role_en": "Preserves the canonical legacy ID while giving Gaussian mixtures a precise model-family definition separate from k-means and EM. It explains multimodal future distributions without making GMM fitting a requirement of ID-WM.",
+      "latex": "p(x)=\\sum_{k=1}^{K}\\pi_k\\mathcal N(x;\\mu_k,\\Sigma_k),\\quad \\pi_k\\ge0,\\quad\\sum_k\\pi_k=1",
+      "notation": [
+        {
+          "symbol": "\\pi_k",
+          "meaning": "Nonnegative mixture weight."
+        },
+        {
+          "symbol": "\\mu_k,\\Sigma_k",
+          "meaning": "Mean and covariance of component k."
+        }
+      ],
+      "prereqs": [
+        "p_gaussian",
+        "p_probability",
+        "ml_unsupervised"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Gaussian mixture models",
+          "url": "https://scikit-learn.org/stable/modules/mixture.html"
+        }
+      ],
+      "replaces": true
+    },
+    {
+      "id": "ml_ica",
+      "en": "Independent Component Analysis",
+      "title": "独立成分分析",
+      "kind": "concept",
+      "group": "ml_reduction",
+      "entity_type": "model_family",
+      "summary": "Recover statistically independent source components under a mixing model.",
+      "definition": "Independent component analysis models observed vectors as mixtures of latent source signals and seeks statistically independent components. Linear ICA commonly assumes independent non-Gaussian sources and a mixing structure satisfying identifiability conditions. The recovered components generally retain scale and permutation ambiguities. Whitening removes second-order correlation, but decorrelation alone does not establish independence. PCA and ICA therefore optimize different properties: principal variance directions need not be independent sources. Noise, nonlinear mixing, dependent sources and insufficient data can violate the simple model, requiring explicit validation rather than interpreting every component physically.",
+      "example": "Two microphones record mixtures of two independent sources. Under suitable mixing assumptions, ICA can recover source-like signals with arbitrary order and scale. Applying the same algorithm to robot sensor channels does not guarantee recovery of separate physical causes if the underlying signals are dependent.",
+      "role_en": "Completes the EECS545 decomposition branch and explains the difference between covariance structure and independence.",
+      "latex": "x=As,\\qquad\\hat s=Wx,\\qquad p(s)=\\prod_jp(s_j)",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Unknown linear mixing matrix."
+        },
+        {
+          "symbol": "W",
+          "meaning": "Estimated unmixing transform."
+        },
+        {
+          "symbol": "s_j",
+          "meaning": "Latent components assumed independent; identifiability requires additional conditions."
+        }
+      ],
+      "prereqs": [
+        "m_matmul",
+        "p_conditional",
+        "ml_pca"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Independent component analysis",
+          "url": "https://scikit-learn.org/stable/modules/decomposition.html#ica"
+        }
+      ]
+    },
+    {
+      "id": "ml_hmm",
+      "en": "Hidden Markov Models",
+      "title": "隐马尔可夫模型",
+      "kind": "concept",
+      "group": "ml_probabilistic",
+      "entity_type": "model_family",
+      "summary": "Discrete hidden states evolve through transitions and emit observations.",
+      "definition": "A hidden Markov model represents a sequence with an unobserved state at each step. The next state depends on the previous state under a Markov assumption, and each observation depends on its current hidden state under an emission model. Forward-backward inference estimates state marginals; Viterbi decoding finds a most probable state sequence, which is a different query. Parameters can be learned with an EM procedure when states are unobserved. State count, transition assumptions and emission distributions limit the model; a discrete state label is not automatically a verified physical behavior.",
+      "example": "Model a sequence of foot-contact observations with hidden gait phases. A noisy force reading informs its phase together with transition probabilities. The most likely phase at each individual time can differ from the states in the single most probable full sequence, because these inference objectives are different.",
+      "role_en": "Connects probabilistic temporal inference, EM and state-estimation ideas before recurrent neural sequence models.",
+      "latex": "p(z_{1:T},x_{1:T})=p(z_1)\\prod_{t=2}^{T}p(z_t\\mid z_{t-1})\\prod_{t=1}^{T}p(x_t\\mid z_t)",
+      "notation": [
+        {
+          "symbol": "z_t",
+          "meaning": "Discrete hidden state."
+        },
+        {
+          "symbol": "x_t",
+          "meaning": "Observed emission."
+        },
+        {
+          "symbol": "T",
+          "meaning": "Sequence length."
+        }
+      ],
+      "prereqs": [
+        "r_markov",
+        "p_conditional",
+        "est_bayesfilter"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: Hidden Markov Models",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/A.pdf"
+        }
+      ]
+    },
+    {
+      "id": "loss_hinge",
+      "en": "Hinge Loss and Classification Margins",
+      "title": "合页损失与分类间隔",
+      "kind": "concept",
+      "group": "ml_objectives",
+      "entity_type": "objective",
+      "summary": "Penalize signed scores that fail to reach a selected margin.",
+      "definition": "Hinge loss assigns zero penalty once a binary example has sufficiently large correctly signed score, and a linearly growing penalty when its margin falls below that threshold. It is a convex function of the score, but this does not make arbitrary neural-network parameter optimization convex. The score is not a probability. Combining hinge loss with suitable norm regularization gives a common soft-margin SVM objective. A loss function can be applied to different predictor families, so hinge loss belongs to the objective axis rather than being another model architecture.",
+      "example": "For a target encoded as positive one, a score of two has zero standard hinge loss, a score of one half has loss one half, and a score of negative one has loss two. All three calculations concern signed margin, not a predicted class probability.",
+      "role_en": "Connects the SVM constrained formulation to empirical-risk minimization while separating objective from model.",
+      "latex": "\\ell_{\\mathrm{hinge}}(y,s)=\\max(0,1-ys),\\qquad y\\in\\{-1,+1\\}",
+      "notation": [
+        {
+          "symbol": "s",
+          "meaning": "Real-valued classifier score."
+        },
+        {
+          "symbol": "ys",
+          "meaning": "Signed margin with the selected score normalization."
+        }
+      ],
+      "prereqs": [
+        "ml_erm",
+        "m_function"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: Support Vector Machines",
+          "url": "https://scikit-learn.org/stable/modules/svm.html"
+        }
+      ]
+    },
+    {
+      "id": "loss_huber",
+      "en": "Huber Loss and Robust Residual Fitting",
+      "title": "Huber 损失与稳健拟合",
+      "kind": "concept",
+      "group": "ml_objectives",
+      "entity_type": "objective",
+      "summary": "Quadratic for small residuals and linear for large residuals.",
+      "definition": "Huber loss combines a quadratic penalty around zero residual with a linear tail beyond a selected threshold. Its tail reduces the influence of very large residuals compared with ordinary squared error, while preserving a smooth first derivative at the transition. The threshold must match residual units and scaling. Robustness to some outliers does not correct systematic model errors, wrong coordinate frames, or arbitrary data corruption. This is an objective component usable with regression and geometric estimators; particular libraries may jointly estimate a scale and use a differently parameterized equivalent form.",
+      "example": "A range fit contains a few large measurement errors. Squared error makes those residuals dominate; Huber loss reduces their relative influence after the threshold. Inspect which examples receive reduced influence, because a large residual may also reveal an important failure of the physical model rather than disposable noise.",
+      "role_en": "Connects residual fitting in classical regression, geometric estimation and neural training without changing the underlying predictor family.",
+      "latex": "\\ell_\\delta(r)=\\begin{cases}\\tfrac12r^2,&|r|\\le\\delta,\\\\ \\delta(|r|-\\tfrac12\\delta),&|r|>\\delta.\\end{cases}",
+      "notation": [
+        {
+          "symbol": "r",
+          "meaning": "Prediction residual in specified units."
+        },
+        {
+          "symbol": "\\delta",
+          "meaning": "Positive transition threshold."
+        }
+      ],
+      "prereqs": [
+        "ml_mse",
+        "ml_erm"
+      ],
+      "sources": [
+        {
+          "title": "scikit-learn: HuberRegressor",
+          "url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.HuberRegressor.html"
+        }
+      ]
+    },
+    {
+      "id": "train_transfer",
+      "en": "Transfer Learning and Fine-Tuning",
+      "title": "迁移学习与微调",
+      "kind": "concept",
+      "group": "ml_training_methods",
+      "entity_type": "training_method",
+      "summary": "Reuse parameters or features learned from a source task or dataset.",
+      "definition": "Transfer learning uses knowledge learned in one setting to support another. Feature extraction freezes a pretrained representation and fits a new predictor; fine-tuning updates some or all pretrained parameters on target data. The pretraining objective, source distribution, target data and trainable subset are separate design choices. Transfer can help when representations are relevant, but negative transfer and catastrophic forgetting can occur. A fine-tuned system retains architectural and inference costs that parameter-efficient training does not automatically eliminate. Target-task evaluation must remain separate from adaptation examples and hyperparameter selection.",
+      "example": "Freeze a pretrained image encoder and train a contact-related prediction head from robot observations. Compare this with updating the encoder using a smaller learning rate. Evaluate on unseen sessions to determine whether adaptation improved the relevant behavior or merely fitted camera and recording details.",
+      "role_en": "Connects pretrained visual/language representations to robotics policies and enables understanding of LoRA and downstream adaptation.",
+      "latex": "\\theta=\\theta_0+\\Delta\\theta,\\qquad\\hat{\\Delta\\theta}=\\arg\\min_{\\Delta\\theta\\in\\mathcal U}\\mathcal L_{\\mathrm{target}}(\\theta_0+\\Delta\\theta)",
+      "notation": [
+        {
+          "symbol": "\\theta_0",
+          "meaning": "Pretrained parameters."
+        },
+        {
+          "symbol": "\\mathcal U",
+          "meaning": "Allowed update set; frozen parameters have zero update."
+        }
+      ],
+      "prereqs": [
+        "d_train_infer",
+        "ml_distribution_shift",
+        "d_backprop"
+      ],
+      "sources": [
+        {
+          "title": "Deep Learning: Representation Learning",
+          "url": "https://www.deeplearningbook.org/contents/representation.html"
+        }
+      ]
+    },
+    {
+      "id": "train_distillation",
+      "en": "Knowledge Distillation",
+      "title": "知识蒸馏",
+      "kind": "concept",
+      "group": "ml_training_methods",
+      "entity_type": "training_method",
+      "summary": "Train a student using teacher-generated outputs or representations.",
+      "definition": "Knowledge distillation trains a student to match information produced by a teacher, such as softened output distributions, features or actions. The teacher can be an ensemble, a larger model, or another training-time construction. Matching teacher predictions differs from learning only hard labels because relative output values can provide additional supervision. Teacher errors and the input distribution constrain what transfers. Distillation may produce a smaller or faster student, but compression is a design choice rather than a guarantee. Self-distillation and DINO-style representation training reuse related ideas with different objectives and target-generation mechanisms.",
+      "example": "A large classifier produces temperature-softened probabilities for robot-scene images. A smaller student fits these probabilities alongside available labels. Measure the student accuracy and end-to-end latency directly. A reduced parameter count alone does not establish speed improvement on the target accelerator or successful transfer outside teacher coverage.",
+      "role_en": "Connects ensembles, softmax, KL divergence, compressed deployment and the existing DINO/teacher-encoder branch.",
+      "latex": "\\mathcal L=(1-\\alpha)\\,\\mathrm{CE}(y,p_S)+\\alpha T^2D_{\\mathrm{KL}}(p_T^{(T)}\\|p_S^{(T)})",
+      "notation": [
+        {
+          "symbol": "p_T^{(T)},p_S^{(T)}",
+          "meaning": "Teacher and student softmax distributions at temperature T."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Weight between label and distillation terms."
+        },
+        {
+          "symbol": "T^2",
+          "meaning": "Common scaling convention for temperature-based distillation gradients."
+        }
+      ],
+      "prereqs": [
+        "d_softmax",
+        "p_kl",
+        "d_backprop"
+      ],
+      "sources": [
+        {
+          "title": "Distilling the Knowledge in a Neural Network",
+          "url": "https://arxiv.org/abs/1503.02531"
+        }
+      ]
+    },
+    {
+      "id": "train_lora",
+      "en": "Low-Rank Adaptation (LoRA)",
+      "title": "低秩适配",
+      "kind": "concept",
+      "group": "ml_training_methods",
+      "entity_type": "training_method",
+      "summary": "Freeze a weight matrix and learn a factorized additive update.",
+      "definition": "LoRA adapts selected pretrained weight matrices by learning a low-rank additive update while keeping their original weights frozen. A matrix update is represented as the product of two thinner matrices, reducing trainable parameter and optimizer-state counts when the selected rank is small. The rank, target modules and scaling are configuration choices. LoRA is an adaptation method, not a separate language-model architecture or learning paradigm. The base model still occupies inference memory; savings in trainable state do not imply the same reduction in total runtime memory, compute, or task error.",
+      "example": "For a matrix with four thousand input and output dimensions, a rank-eight update uses two thin matrices rather than a full dense update. The frozen dense matrix is still used during inference. Measure memory and accuracy under the actual model, target layers, batching and implementation.",
+      "role_en": "Connects low-rank linear algebra and transfer learning to practical LLM/VLM/VLA adaptation.",
+      "latex": "W=W_0+\\frac{\\alpha}{r}BA,\\quad A\\in\\mathbb R^{r\\times d_{\\mathrm{in}}},\\quad B\\in\\mathbb R^{d_{\\mathrm{out}}\\times r}",
+      "notation": [
+        {
+          "symbol": "W_0",
+          "meaning": "Frozen pretrained matrix."
+        },
+        {
+          "symbol": "r",
+          "meaning": "Chosen update rank, usually much smaller than matrix dimensions."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Scaling hyperparameter; conventions can vary."
+        }
+      ],
+      "prereqs": [
+        "train_transfer",
+        "m_matmul",
+        "la_svd"
+      ],
+      "sources": [
+        {
+          "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+          "url": "https://arxiv.org/abs/2106.09685"
+        }
+      ]
+    },
+    {
+      "id": "language_nlp",
+      "en": "Natural Language Processing: Tasks and Representations",
+      "title": "自然语言处理",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "application_domain",
+      "summary": "Language tasks are an application domain, not one model family.",
+      "definition": "Natural language processing studies computational processing of language, including classification, extraction, translation, retrieval, dialogue and generation. These tasks differ in inputs, outputs, evaluation and data requirements. They can use probabilistic models, linear classifiers, recurrent networks, Transformers or other architectures. Tokenization and embeddings define computational representations but do not themselves solve language understanding. NLP is therefore an application-domain axis that intersects learning settings and model families. A robotics instruction parser and a text generator can both use NLP while having very different requirements for grounding, uncertainty, latency and physical execution.",
+      "example": "An instruction such as move the red object can require identifying a referring expression, associating it with visual objects, and generating a robot target. Correct text parsing is only one part. The robot additionally needs perception, coordinate transforms, planning and feasible control.",
+      "role_en": "Creates an explicit language-domain branch connecting classical text models to LLM, VLM and VLA systems.",
+      "latex": "\\mathrm{text}\\xrightarrow{\\tau}w_{1:T}\\xrightarrow{f_\\theta}\\mathrm{task\\ output}",
+      "notation": [
+        {
+          "symbol": "\\tau",
+          "meaning": "Tokenizer."
+        },
+        {
+          "symbol": "w_{1:T}",
+          "meaning": "Token sequence."
+        },
+        {
+          "symbol": "\\mathrm{task\\ output}",
+          "meaning": "Task-dependent output, such as a class, structured extraction or generated text."
+        }
+      ],
+      "prereqs": [
+        "m_function"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: 2026 author manuscript",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/"
+        }
+      ],
+      "application_domains": [
+        "NLP"
+      ]
+    },
+    {
+      "id": "language_tokens",
+      "en": "Tokenization and Vocabulary",
+      "title": "分词与词表",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "model_component",
+      "summary": "Map text to discrete symbol IDs using a reproducible vocabulary and normalization.",
+      "definition": "Tokenization maps text into a sequence of discrete units and identifiers. Units may be characters, bytes, words or learned subword pieces. Vocabulary construction, normalization, whitespace handling and special tokens determine the mapping. The same visible sentence can produce different token counts under different tokenizers, affecting context length, compute and decoding. A token identifier is categorical rather than a numerical measure of meaning. Training and inference must use compatible tokenizer artifacts. A language token and a discretized robot action token are related representations but refer to different underlying quantities and decoding rules.",
+      "example": "The word robotics may be one vocabulary entry or several subword pieces. A command length limit therefore cannot be inferred from its character count. Store the tokenizer version with the model checkpoint so the same identifiers and special tokens are interpreted consistently during deployment.",
+      "role_en": "Provides the discrete input/output representation required by embeddings, language modeling and action-token comparisons.",
+      "latex": "\\tau(s)=(w_1,\\ldots,w_T),\\qquad w_t\\in\\{1,\\ldots,|V|\\}",
+      "notation": [
+        {
+          "symbol": "s",
+          "meaning": "Input text after tokenizer-specific normalization."
+        },
+        {
+          "symbol": "V",
+          "meaning": "Vocabulary with a fixed mapping to IDs."
+        },
+        {
+          "symbol": "T",
+          "meaning": "Token count, not word or character count."
+        }
+      ],
+      "prereqs": [
+        "language_nlp"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: Words and Tokens",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "language_embeddings",
+      "en": "Token Embeddings and Contextual Representations",
+      "title": "词元嵌入与上下文表征",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "model_component",
+      "summary": "An embedding lookup is different from a context-dependent hidden state.",
+      "definition": "A token embedding maps a categorical token ID to a learned vector, often by selecting a row of a parameter matrix. A contextual representation then transforms token vectors using surrounding sequence information, so the same token can have different hidden states in different contexts. Vector similarity is meaningful only with respect to the representation, training objective and evaluation. An embedding dimension is not an independently interpretable semantic attribute by default. Static word embeddings, contextual Transformer states and whole-sentence embeddings are related but distinct objects with different downstream uses.",
+      "example": "The token bank initially selects the same lookup vector in two sentences. After contextual processing, its representations can differ between a river context and a financial context. Using one initial embedding vector as if it already encoded the full sentence would discard this contextual computation.",
+      "role_en": "Connects matrix indexing and representation learning to Transformers, language-conditioned policies and multimodal alignment.",
+      "latex": "e_t=E[w_t],\\qquad h_{1:T}=F_\\theta(e_{1:T},P)",
+      "notation": [
+        {
+          "symbol": "E\\in\\mathbb R^{|V|\\times d}",
+          "meaning": "Token embedding table."
+        },
+        {
+          "symbol": "P",
+          "meaning": "Position information supplied to the sequence model."
+        },
+        {
+          "symbol": "h_t",
+          "meaning": "Contextual representation rather than merely the lookup vector."
+        }
+      ],
+      "prereqs": [
+        "language_tokens",
+        "m_matrix",
+        "d_position"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: Embeddings",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/5.pdf"
+        }
+      ]
+    },
+    {
+      "id": "language_causallm",
+      "en": "Autoregressive Language Modeling",
+      "title": "自回归语言建模",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "objective",
+      "summary": "Fit the next-token conditional distribution and generate through repeated decoding.",
+      "definition": "Autoregressive language modeling factorizes a sequence probability into successive next-token conditional probabilities. Training commonly minimizes negative log likelihood using observed prefixes, while generation feeds previously generated tokens back into the model. A causal attention mask prevents access to future tokens within a decoder-style Transformer. The objective specifies a prediction task, not a unique model size or architecture. Decoding choices such as greedy selection or sampling affect generated outputs without changing the fitted conditional distribution. Accurate text prediction alone does not establish factual correctness, visual grounding or physically valid robot actions.",
+      "example": "Train on a token sequence by predicting each next token from its preceding tokens. At deployment, a generated mistake enters the next prefix and can affect later output. This helps explain why training loss and generation quality require different evaluation, especially when text becomes an instruction to another system.",
+      "role_en": "Connects conditional probability, cross entropy and causal attention to the core pretraining objective of many LLMs.",
+      "latex": "p_\\theta(w_{1:T})=\\prod_{t=1}^{T}p_\\theta(w_t\\mid w_{<t}),\\qquad\\mathcal L=-\\sum_t\\log p_\\theta(w_t\\mid w_{<t})",
+      "notation": [
+        {
+          "symbol": "w_{<t}",
+          "meaning": "Earlier tokens, plus any explicit initial context."
+        },
+        {
+          "symbol": "\\mathcal L",
+          "meaning": "Sequence negative log likelihood; averaging and padding conventions vary."
+        }
+      ],
+      "prereqs": [
+        "language_tokens",
+        "p_conditional",
+        "p_entropy",
+        "d_self_attention"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: Transformers and Pretraining",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/7.pdf"
+        }
+      ]
+    },
+    {
+      "id": "language_maskedlm",
+      "en": "Masked Language Modeling",
+      "title": "掩码语言建模",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "objective",
+      "summary": "Predict selected corrupted or hidden tokens using available context.",
+      "definition": "Masked language modeling trains a model to predict selected original tokens from an input in which some content has been hidden or corrupted. Bidirectional encoders can use context on both sides of a target when the corruption scheme permits it. The mask selection, replacement policy and prediction target are part of the objective. BERT combines such pretraining with specific architecture and additional original training choices. A masked-token objective is not the same as a left-to-right sequence likelihood, and an encoder trained this way does not automatically provide ordinary autoregressive text generation.",
+      "example": "Hide the token ball in move the ball left and predict it using the remaining context. This differs from next-token prediction, where right-hand words are unavailable at that step. The learned representation can support classification or retrieval after adaptation, without the masked task itself being the downstream application.",
+      "role_en": "Connects self-supervised learning and bidirectional text representations, providing a contrast with causal LLM pretraining.",
+      "latex": "\\mathcal L_{\\mathrm{MLM}}=-\\sum_{t\\in M}\\log p_\\theta(w_t\\mid\\tilde w_{1:T})",
+      "notation": [
+        {
+          "symbol": "M",
+          "meaning": "Selected prediction positions."
+        },
+        {
+          "symbol": "\\tilde w",
+          "meaning": "Corrupted input sequence; exact replacement scheme belongs to the method."
+        }
+      ],
+      "prereqs": [
+        "v_selfsupervised",
+        "language_tokens",
+        "d_transformer"
+      ],
+      "sources": [
+        {
+          "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "url": "https://arxiv.org/abs/1810.04805"
+        }
+      ]
+    },
+    {
+      "id": "language_llm",
+      "en": "Large Language Models",
+      "title": "大语言模型",
+      "kind": "concept",
+      "group": "language_foundations",
+      "entity_type": "system_family",
+      "summary": "A scale-dependent family of language systems built from architecture, objectives and training stages.",
+      "definition": "Large language model is a system-family label for language models trained at substantial scale, not a mathematically fixed size threshold or one exclusive architecture. Many current examples use Transformer backbones, large-corpus pretraining and subsequent instruction or preference-related adaptation. Tokenization, context limits, decoding and deployment configurations are part of the system. Language modeling objectives, network components and transfer methods remain separate concepts. A model can also accept images or produce actions through additional interfaces, yielding overlapping VLM or VLA system labels rather than a single rigid progression of mutually exclusive categories.",
+      "example": "A decoder Transformer trained for next-token prediction can later be adapted to follow instructions. Adding an image encoder and learned projection changes its input pathway; connecting an action head changes its robot output interface. These labels describe the resulting system and do not determine whether its actions are physically feasible.",
+      "role_en": "Connects the NLP branch to existing VLM/VLA systems while preventing scale labels from replacing architecture and objective definitions.",
+      "latex": "\\mathrm{system}=(\\tau,f_\\theta,\\mathcal O,\\mathcal D,\\mathrm{decoding},\\mathrm{interfaces})",
+      "notation": [
+        {
+          "symbol": "\\tau,f_\\theta",
+          "meaning": "Tokenizer and parameterized backbone."
+        },
+        {
+          "symbol": "\\mathcal O,\\mathcal D",
+          "meaning": "Training objectives and datasets."
+        },
+        {
+          "symbol": "\\mathrm{interfaces}",
+          "meaning": "Input and output modalities; tuple is a classification aid, not a universal LLM equation."
+        }
+      ],
+      "prereqs": [
+        "language_causallm",
+        "d_transformer",
+        "train_transfer"
+      ],
+      "sources": [
+        {
+          "title": "Speech and Language Processing: 2026 author manuscript",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/"
+        },
+        {
+          "title": "Speech and Language Processing: Transformers and Pretraining",
+          "url": "https://web.stanford.edu/~jurafsky/slp3/7.pdf"
+        }
+      ]
+    },
+    {
+      "id": "multimodal_contrastive",
+      "en": "Contrastive Image–Text Alignment",
+      "title": "图文对比对齐",
+      "kind": "concept",
+      "group": "multimodal_systems",
+      "entity_type": "objective",
+      "summary": "Increase matched cross-modal similarity relative to selected mismatches.",
+      "definition": "Contrastive image-text training learns representations whose similarity distinguishes matched image-caption pairs from mismatched pairs. A dual-encoder design embeds images and text separately, then compares normalized vectors. A softmax-based contrastive objective can treat other batch examples as negatives, although sampling strategy and false-negative pairs affect what is learned. CLIP is a concrete system using this approach, not a synonym for every VLM. Alignment supports retrieval and prompt-based classification, but similarity does not guarantee fine spatial grounding, compositional understanding or a valid robot action. Other VLMs use generative or mixed objectives.",
+      "example": "Encode an image and candidate descriptions such as red ball and blue cup, then compare similarities. The highest score can support retrieval or classification. It does not by itself give the ball center in camera coordinates, a grasp pose, or a physically reachable motion target.",
+      "role_en": "Connects language and vision representations to VLM/VLA grounding while distinguishing an alignment objective from a complete multimodal system.",
+      "latex": "\\mathcal L_{I\\to T}=-\\frac1N\\sum_{i=1}^{N}\\log\\frac{\\exp(v_i^{\\top}t_i/\\tau)}{\\sum_{j=1}^{N}\\exp(v_i^{\\top}t_j/\\tau)}",
+      "notation": [
+        {
+          "symbol": "v_i,t_i",
+          "meaning": "Normalized image and text embeddings for a matched pair."
+        },
+        {
+          "symbol": "\\tau",
+          "meaning": "Temperature; CLIP-style training also includes the opposite direction."
+        },
+        {
+          "symbol": "N",
+          "meaning": "Number of paired examples in the illustrated contrastive batch."
+        }
+      ],
+      "prereqs": [
+        "language_embeddings",
+        "v_vit",
+        "d_softmax",
+        "p_entropy"
+      ],
+      "sources": [
+        {
+          "title": "Learning Transferable Visual Models From Natural Language Supervision",
+          "url": "https://arxiv.org/abs/2103.00020"
+        }
+      ],
+      "application_domains": [
+        "CV",
+        "NLP"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "p_random",
+      "to": "ml_unsupervised",
+      "type": "prereq",
+      "why_en": "Observed samples are treated as realizations of a data distribution."
+    },
+    {
+      "from": "ml_supervised",
+      "to": "ml_semisupervised",
+      "type": "prereq",
+      "why_en": "Semi-supervised prediction retains a supervised target task."
+    },
+    {
+      "from": "ml_unsupervised",
+      "to": "ml_semisupervised",
+      "type": "prereq",
+      "why_en": "Some training observations lack the target labels."
+    },
+    {
+      "from": "m_function",
+      "to": "ml_erm",
+      "type": "prereq",
+      "why_en": "A model is represented by a parameterized function."
+    },
+    {
+      "from": "p_expectation",
+      "to": "ml_erm",
+      "type": "prereq",
+      "why_en": "Empirical averages estimate expected prediction loss."
+    },
+    {
+      "from": "ml_supervised",
+      "to": "ml_erm",
+      "type": "prereq",
+      "why_en": "Labeled examples define targets for this supervised-risk expression."
+    },
+    {
+      "from": "m_norm",
+      "to": "ml_knn",
+      "type": "prereq",
+      "why_en": "A distance or similarity determines nearest examples."
+    },
+    {
+      "from": "ml_normalize",
+      "to": "ml_knn",
+      "type": "prereq",
+      "why_en": "Feature scale affects neighborhood selection."
+    },
+    {
+      "from": "ml_supervised",
+      "to": "ml_knn",
+      "type": "prereq",
+      "why_en": "Stored target labels or values support supervised prediction."
+    },
+    {
+      "from": "ml_supervised",
+      "to": "ml_tree",
+      "type": "prereq",
+      "why_en": "Labeled examples determine split quality and leaf predictions."
+    },
+    {
+      "from": "ml_bias_variance",
+      "to": "ml_tree",
+      "type": "prereq",
+      "why_en": "Tree depth and pruning change fit and generalization."
+    },
+    {
+      "from": "p_sampling",
+      "to": "ml_bagging",
+      "type": "prereq",
+      "why_en": "Bootstrap draws sample observed examples with replacement."
+    },
+    {
+      "from": "ml_bias_variance",
+      "to": "ml_bagging",
+      "type": "prereq",
+      "why_en": "Averaging changes estimator variance depending on error correlation."
+    },
+    {
+      "from": "ml_tree",
+      "to": "ml_randomforest",
+      "type": "prereq",
+      "why_en": "A forest uses decision trees as members."
+    },
+    {
+      "from": "ml_bagging",
+      "to": "ml_randomforest",
+      "type": "prereq",
+      "why_en": "Bootstrap aggregation supplies the ensemble idea; feature randomization adds diversity."
+    },
+    {
+      "from": "ml_tree",
+      "to": "ml_boosting",
+      "type": "prereq",
+      "why_en": "Tree-based boosting uses trees as incremental learners."
+    },
+    {
+      "from": "m_partial",
+      "to": "ml_boosting",
+      "type": "prereq",
+      "why_en": "Loss derivatives determine pseudo-residuals."
+    },
+    {
+      "from": "ml_erm",
+      "to": "ml_boosting",
+      "type": "prereq",
+      "why_en": "The selected objective determines the update target."
+    },
+    {
+      "from": "m_matmul",
+      "to": "ml_kernel",
+      "type": "prereq",
+      "why_en": "Kernel evaluation generalizes a feature-space inner product."
+    },
+    {
+      "from": "la_psd",
+      "to": "ml_kernel",
+      "type": "prereq",
+      "why_en": "Valid Gram matrices satisfy positive semidefiniteness."
+    },
+    {
+      "from": "m_norm",
+      "to": "ml_kernel",
+      "type": "prereq",
+      "why_en": "Distance enters common kernels such as the RBF kernel."
+    },
+    {
+      "from": "ml_kernel",
+      "to": "ml_svm",
+      "type": "prereq",
+      "why_en": "Kernel SVMs use implicit feature-space inner products."
+    },
+    {
+      "from": "c_constraints",
+      "to": "ml_svm",
+      "type": "prereq",
+      "why_en": "Soft-margin fitting is a constrained optimization problem."
+    },
+    {
+      "from": "ml_supervised",
+      "to": "ml_svm",
+      "type": "prereq",
+      "why_en": "Labeled classes define the desired score sign."
+    },
+    {
+      "from": "ml_kernel",
+      "to": "ml_gp",
+      "type": "prereq",
+      "why_en": "The kernel specifies correlations among function values."
+    },
+    {
+      "from": "p_gaussian",
+      "to": "ml_gp",
+      "type": "prereq",
+      "why_en": "Conditioning a joint Gaussian yields the regression posterior."
+    },
+    {
+      "from": "m_matrix",
+      "to": "ml_gp",
+      "type": "prereq",
+      "why_en": "Prediction uses covariance matrix solves."
+    },
+    {
+      "from": "p_bayes",
+      "to": "ml_naivebayes",
+      "type": "prereq",
+      "why_en": "Class posteriors combine class priors and feature likelihoods."
+    },
+    {
+      "from": "p_conditional",
+      "to": "ml_naivebayes",
+      "type": "prereq",
+      "why_en": "Conditional independence justifies likelihood factorization."
+    },
+    {
+      "from": "p_gaussian",
+      "to": "ml_gda",
+      "type": "prereq",
+      "why_en": "Class-conditional features use a multivariate Gaussian."
+    },
+    {
+      "from": "p_bayes",
+      "to": "ml_gda",
+      "type": "prereq",
+      "why_en": "Compare posterior class scores after combining likelihood and prior."
+    },
+    {
+      "from": "ml_unsupervised",
+      "to": "ml_kmeans",
+      "type": "prereq",
+      "why_en": "Cluster assignments are inferred without externally supplied class labels."
+    },
+    {
+      "from": "m_norm",
+      "to": "ml_kmeans",
+      "type": "prereq",
+      "why_en": "The objective sums squared Euclidean distances."
+    },
+    {
+      "from": "ml_normalize",
+      "to": "ml_kmeans",
+      "type": "prereq",
+      "why_en": "Input feature scales affect which partitions are favored."
+    },
+    {
+      "from": "p_conditional",
+      "to": "ml_em",
+      "type": "prereq",
+      "why_en": "The E-step infers latent variables conditioned on observations."
+    },
+    {
+      "from": "p_expectation",
+      "to": "ml_em",
+      "type": "prereq",
+      "why_en": "The complete-data objective is averaged over the latent posterior."
+    },
+    {
+      "from": "p_likelihood",
+      "to": "ml_em",
+      "type": "prereq",
+      "why_en": "EM targets an observed-data likelihood or posterior criterion."
+    },
+    {
+      "from": "p_gaussian",
+      "to": "ml_clustering",
+      "type": "prereq",
+      "why_en": "Each component is a Gaussian density."
+    },
+    {
+      "from": "p_probability",
+      "to": "ml_clustering",
+      "type": "prereq",
+      "why_en": "Mixture weights form a valid categorical distribution."
+    },
+    {
+      "from": "ml_unsupervised",
+      "to": "ml_clustering",
+      "type": "prereq",
+      "why_en": "Density fitting can proceed without external component labels."
+    },
+    {
+      "from": "m_matmul",
+      "to": "ml_ica",
+      "type": "prereq",
+      "why_en": "Linear mixing and unmixing are matrix transformations."
+    },
+    {
+      "from": "p_conditional",
+      "to": "ml_ica",
+      "type": "prereq",
+      "why_en": "Statistical independence is stronger than mere uncorrelatedness."
+    },
+    {
+      "from": "ml_pca",
+      "to": "ml_ica",
+      "type": "prereq",
+      "why_en": "PCA and whitening provide a useful comparison and common preprocessing step."
+    },
+    {
+      "from": "r_markov",
+      "to": "ml_hmm",
+      "type": "prereq",
+      "why_en": "Transitions use a first-order hidden-state dependency."
+    },
+    {
+      "from": "p_conditional",
+      "to": "ml_hmm",
+      "type": "prereq",
+      "why_en": "The joint sequence distribution factorizes through conditional independence."
+    },
+    {
+      "from": "est_bayesfilter",
+      "to": "ml_hmm",
+      "type": "prereq",
+      "why_en": "Recursive hidden-state inference provides a connection to Bayesian filtering."
+    },
+    {
+      "from": "ml_erm",
+      "to": "loss_hinge",
+      "type": "prereq",
+      "why_en": "A loss is one component of a learning objective."
+    },
+    {
+      "from": "m_function",
+      "to": "loss_hinge",
+      "type": "prereq",
+      "why_en": "The classifier supplies a score to the per-example loss."
+    },
+    {
+      "from": "ml_mse",
+      "to": "loss_huber",
+      "type": "prereq",
+      "why_en": "The central region retains the squared-error form."
+    },
+    {
+      "from": "ml_erm",
+      "to": "loss_huber",
+      "type": "prereq",
+      "why_en": "Changing a loss changes the objective while leaving the model family separable."
+    },
+    {
+      "from": "d_train_infer",
+      "to": "train_transfer",
+      "type": "prereq",
+      "why_en": "Adaptation changes training parameters, while inference uses the resulting predictor."
+    },
+    {
+      "from": "ml_distribution_shift",
+      "to": "train_transfer",
+      "type": "prereq",
+      "why_en": "Source and target distributions can differ."
+    },
+    {
+      "from": "d_backprop",
+      "to": "train_transfer",
+      "type": "prereq",
+      "why_en": "Fine-tuning commonly updates selected parameters through gradients."
+    },
+    {
+      "from": "d_softmax",
+      "to": "train_distillation",
+      "type": "prereq",
+      "why_en": "Temperature controls output-distribution softness."
+    },
+    {
+      "from": "p_kl",
+      "to": "train_distillation",
+      "type": "prereq",
+      "why_en": "KL divergence compares teacher and student distributions."
+    },
+    {
+      "from": "d_backprop",
+      "to": "train_distillation",
+      "type": "prereq",
+      "why_en": "The student is optimized through the chosen matching objective."
+    },
+    {
+      "from": "train_transfer",
+      "to": "train_lora",
+      "type": "prereq",
+      "why_en": "LoRA restricts how pretrained weights can be adapted."
+    },
+    {
+      "from": "m_matmul",
+      "to": "train_lora",
+      "type": "prereq",
+      "why_en": "The additive update is a product of two matrices."
+    },
+    {
+      "from": "la_svd",
+      "to": "train_lora",
+      "type": "prereq",
+      "why_en": "Low-rank approximations explain the representational restriction, although LoRA is not simply truncated SVD."
+    },
+    {
+      "from": "m_function",
+      "to": "language_nlp",
+      "type": "prereq",
+      "why_en": "Different language tasks can be specified through input-output mappings."
+    },
+    {
+      "from": "language_nlp",
+      "to": "language_tokens",
+      "type": "prereq",
+      "why_en": "Language tasks require a computational representation of text."
+    },
+    {
+      "from": "language_tokens",
+      "to": "language_embeddings",
+      "type": "prereq",
+      "why_en": "Embedding lookup takes discrete vocabulary IDs."
+    },
+    {
+      "from": "m_matrix",
+      "to": "language_embeddings",
+      "type": "prereq",
+      "why_en": "The embedding table stores a vector for each vocabulary item."
+    },
+    {
+      "from": "d_position",
+      "to": "language_embeddings",
+      "type": "prereq",
+      "why_en": "A sequence model needs an explicit mechanism for order information."
+    },
+    {
+      "from": "language_tokens",
+      "to": "language_causallm",
+      "type": "prereq",
+      "why_en": "The prediction targets are discrete vocabulary items."
+    },
+    {
+      "from": "p_conditional",
+      "to": "language_causallm",
+      "type": "prereq",
+      "why_en": "The probability chain rule yields the autoregressive factorization."
+    },
+    {
+      "from": "p_entropy",
+      "to": "language_causallm",
+      "type": "prereq",
+      "why_en": "Negative log likelihood corresponds to cross-entropy training."
+    },
+    {
+      "from": "d_self_attention",
+      "to": "language_causallm",
+      "type": "prereq",
+      "why_en": "A causal mask enforces prefix-only access in decoder-style attention."
+    },
+    {
+      "from": "v_selfsupervised",
+      "to": "language_maskedlm",
+      "type": "prereq",
+      "why_en": "Targets are generated from the input data rather than separate manual task labels."
+    },
+    {
+      "from": "language_tokens",
+      "to": "language_maskedlm",
+      "type": "prereq",
+      "why_en": "Masking and prediction act on token sequences."
+    },
+    {
+      "from": "d_transformer",
+      "to": "language_maskedlm",
+      "type": "prereq",
+      "why_en": "Bidirectional Transformer encoders can represent the available context."
+    },
+    {
+      "from": "language_causallm",
+      "to": "language_llm",
+      "type": "prereq",
+      "why_en": "Autoregressive modeling is a common, though not exclusive, LLM pretraining objective."
+    },
+    {
+      "from": "d_transformer",
+      "to": "language_llm",
+      "type": "prereq",
+      "why_en": "Transformers provide a widely used backbone."
+    },
+    {
+      "from": "train_transfer",
+      "to": "language_llm",
+      "type": "prereq",
+      "why_en": "Adaptation stages reuse pretrained language capabilities."
+    },
+    {
+      "from": "language_embeddings",
+      "to": "multimodal_contrastive",
+      "type": "prereq",
+      "why_en": "Text must be encoded into a suitable representation."
+    },
+    {
+      "from": "v_vit",
+      "to": "multimodal_contrastive",
+      "type": "prereq",
+      "why_en": "A visual encoder can supply image representations; CNN alternatives are also possible."
+    },
+    {
+      "from": "d_softmax",
+      "to": "multimodal_contrastive",
+      "type": "prereq",
+      "why_en": "The objective compares matched and mismatched similarities through a normalized distribution."
+    },
+    {
+      "from": "p_entropy",
+      "to": "multimodal_contrastive",
+      "type": "prereq",
+      "why_en": "Cross entropy supplies the matching objective."
+    },
+    {
+      "from": "ml_em",
+      "to": "ml_clustering",
+      "type": "method",
+      "why_en": "EM is a common fitting algorithm for GMM parameters; the model and algorithm are distinct."
+    },
+    {
+      "from": "ml_em",
+      "to": "ml_hmm",
+      "type": "method",
+      "why_en": "Baum–Welch uses EM for HMM parameter estimation with hidden states."
+    },
+    {
+      "from": "loss_hinge",
+      "to": "ml_svm",
+      "type": "objective",
+      "why_en": "The hinge-risk formulation connects to the soft-margin SVM objective."
+    },
+    {
+      "from": "ml_kmeans",
+      "to": "ml_clustering",
+      "type": "related",
+      "why_en": "k-means uses hard assignments and squared Euclidean distortion; GMMs model a density with soft responsibilities. They are related alternatives rather than the same method."
+    },
+    {
+      "from": "train_distillation",
+      "to": "v_dino",
+      "type": "related",
+      "why_en": "DINO uses a distinct self-distillation construction for unlabeled visual representation learning."
+    },
+    {
+      "from": "language_llm",
+      "to": "vla_vlm",
+      "type": "related",
+      "why_en": "Language backbones may participate in vision-language systems with additional visual interfaces."
+    },
+    {
+      "from": "multimodal_contrastive",
+      "to": "vla_vlm",
+      "type": "objective",
+      "why_en": "Contrastive alignment is one possible VLM training component; generative alternatives also exist."
+    },
+    {
+      "from": "train_lora",
+      "to": "paper_openvla",
+      "type": "related",
+      "why_en": "Low-rank adaptation is relevant to adapting released VLA backbones; use the particular release configuration."
+    },
+    {
+      "from": "ml_gp",
+      "to": "wm_uncertainty",
+      "type": "related",
+      "why_en": "GP posterior variance illustrates model-conditional uncertainty, complementing ensemble uncertainty."
+    }
+  ],
+  "research": [
+    {
+      "title": "University of Michigan EECS 545 official archived syllabus",
+      "url": "https://web.eecs.umich.edu/~honglak/teaching/eecs545/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "An Introduction to Statistical Learning: author site",
+      "url": "https://www.statlearning.com/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Probabilistic Machine Learning: An Introduction",
+      "url": "https://probml.github.io/pml-book/book1.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Deep Learning: Machine Learning Basics",
+      "url": "https://www.deeplearningbook.org/contents/ml.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Deep Learning: Representation Learning",
+      "url": "https://www.deeplearningbook.org/contents/representation.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Nearest Neighbors",
+      "url": "https://scikit-learn.org/stable/modules/neighbors.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Gaussian mixture models",
+      "url": "https://scikit-learn.org/stable/modules/mixture.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Clustering",
+      "url": "https://scikit-learn.org/stable/modules/clustering.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Independent component analysis",
+      "url": "https://scikit-learn.org/stable/modules/decomposition.html#ica",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Decision Trees",
+      "url": "https://scikit-learn.org/stable/modules/tree.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Ensembles",
+      "url": "https://scikit-learn.org/stable/modules/ensemble.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Support Vector Machines",
+      "url": "https://scikit-learn.org/stable/modules/svm.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Pairwise metrics, affinities and kernels",
+      "url": "https://scikit-learn.org/stable/modules/metrics.html#pairwise-metrics-affinities-and-kernels",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Gaussian Processes for Machine Learning: authors book site",
+      "url": "https://www.gaussianprocess.org/gpml/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Naive Bayes",
+      "url": "https://scikit-learn.org/stable/modules/naive_bayes.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Linear and Quadratic Discriminant Analysis",
+      "url": "https://scikit-learn.org/stable/modules/lda_qda.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: Semi-supervised learning",
+      "url": "https://scikit-learn.org/stable/modules/semi_supervised.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "scikit-learn: HuberRegressor",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.HuberRegressor.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Distilling the Knowledge in a Neural Network",
+      "url": "https://arxiv.org/abs/1503.02531",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "url": "https://arxiv.org/abs/2106.09685",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "url": "https://arxiv.org/abs/1810.04805",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Learning Transferable Visual Models From Natural Language Supervision",
+      "url": "https://arxiv.org/abs/2103.00020",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Speech and Language Processing: 2026 author manuscript",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Speech and Language Processing: Words and Tokens",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/2.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Speech and Language Processing: Embeddings",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/5.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Speech and Language Processing: Transformers and Pretraining",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/7.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    },
+    {
+      "title": "Speech and Language Processing: Hidden Markov Models",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/A.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary author textbook, original paper, official implementation documentation or official archived course page. Archived EECS545 syllabus is not represented as the current 2026 offering."
+    }
+  ],
+  "taxonomy_recommendation": {
+    "principle": "Use independent semantic axes rather than placing a paradigm, a model and a loss as equivalent algorithm categories. The display tree is one navigation view; typed cross-links and tags preserve overlapping relationships.",
+    "axes": {
+      "learning_setting": [
+        "supervised",
+        "unsupervised",
+        "semi-supervised",
+        "self-supervised",
+        "reinforcement"
+      ],
+      "entity_type": [
+        "paradigm",
+        "model_family",
+        "model_component",
+        "algorithm",
+        "objective",
+        "training_method",
+        "application_domain",
+        "system_family"
+      ],
+      "task": [
+        "regression",
+        "classification",
+        "clustering",
+        "density_estimation",
+        "representation_learning",
+        "generation",
+        "control"
+      ],
+      "application_domain": [
+        "CV",
+        "NLP",
+        "robotics",
+        "speech"
+      ],
+      "system_family": [
+        "LLM",
+        "VLM",
+        "VLA",
+        "world_model"
+      ]
+    },
+    "groups": {
+      "ml_paradigms": "Learning Settings",
+      "ml_neighbors": "Instance-Based Models",
+      "ml_trees": "Trees and Tree Ensembles",
+      "ml_kernels": "Kernel Models",
+      "ml_probabilistic": "Probabilistic and Latent-Variable Models",
+      "ml_objectives": "Losses and Learning Objectives",
+      "ml_training_methods": "Training and Transfer Methods",
+      "language_foundations": "Language Tasks, Representations and Models",
+      "multimodal_systems": "Multimodal Objectives and Systems",
+      "ml_linear_models": "Linear and Generalized Linear Models",
+      "ml_reduction": "Decomposition and Dimensionality Reduction",
+      "ml_clustering_models": "Clustering Algorithms"
+    },
+    "existing_node_reclassification": {
+      "ml_supervised": {
+        "group": "ml_paradigms",
+        "entity_type": "paradigm"
+      },
+      "v_selfsupervised": {
+        "group": "ml_paradigms",
+        "entity_type": "paradigm"
+      },
+      "ml_mse": {
+        "group": "ml_objectives",
+        "entity_type": "objective"
+      },
+      "p_entropy": {
+        "entity_type": "mathematical_concept",
+        "note": "Entropy and cross entropy retain their probability foundation; connect specific losses without duplicating the definition."
+      },
+      "ml_linear": {
+        "entity_type": "model_family",
+        "group": "ml_linear_models"
+      },
+      "ml_logistic": {
+        "entity_type": "model_family",
+        "group": "ml_linear_models"
+      },
+      "ml_pca": {
+        "entity_type": "model_family",
+        "group": "ml_reduction"
+      },
+      "ml_clustering": {
+        "group": "ml_probabilistic",
+        "entity_type": "model_family",
+        "note": "Explicitly replaced in this expansion with precise GMM content while retaining its canonical ID."
+      },
+      "d_sgd": {
+        "entity_type": "algorithm"
+      },
+      "d_adam": {
+        "entity_type": "algorithm"
+      },
+      "d_transformer": {
+        "entity_type": "model_component"
+      },
+      "vla_vlm": {
+        "entity_type": "system_family"
+      },
+      "rl_mdp": {
+        "entity_type": "problem_formulation"
+      }
+    },
+    "relation_semantics": {
+      "prereq": "Knowledge genuinely needed to understand the target; forms a DAG.",
+      "objective": "Loss used by a model or system; not a prerequisite or taxonomy parent.",
+      "method": "Training or inference algorithm applied to a model.",
+      "related": "Nonhierarchical relation, application, contrast or detailed legacy overview link."
+    },
+    "caution": "NLP and CV are domains. LLM/VLM/VLA/world-model labels overlap and are not a mandatory linear ancestry. Self-supervision is a target-construction setting and may be discussed within broader unlabeled-data learning."
+  },
+  "course_heading_audit": {
+    "course": "EECS545",
+    "evidence": "Local W26 lecture filenames and top-level note headings only. No private slide text, images or course files are included.",
+    "notes_location": "Lecture_Notes is at course root, not course_files_export.",
+    "headings": [
+      {
+        "lecture": 1,
+        "title": "Introduction"
+      },
+      {
+        "lecture": 2,
+        "title": "Linear Regression (Part 1)"
+      },
+      {
+        "lecture": 3,
+        "title": "Linear Regression (Part 2)"
+      },
+      {
+        "lecture": 4,
+        "title": "Classification (Part 1)"
+      },
+      {
+        "lecture": 5,
+        "title": "Classification (Part 2)"
+      },
+      {
+        "lecture": 6,
+        "title": "Regularization and Model Selection"
+      },
+      {
+        "lecture": 7,
+        "title": "Kernel Methods"
+      },
+      {
+        "lecture": 8,
+        "title": "Support Vector Machines"
+      },
+      {
+        "lecture": 9,
+        "title": "Kernelized SVM"
+      },
+      {
+        "lecture": 10,
+        "title": "Neural Networks and Deep Learning"
+      },
+      {
+        "lecture": 11,
+        "title": "Convolutional Neural Networks"
+      },
+      {
+        "lecture": 12,
+        "title": "RNNs and LSTMs"
+      },
+      {
+        "lecture": 13,
+        "title": "Attention and Transformers (Part 1)"
+      },
+      {
+        "lecture": 14,
+        "title": "Attention and Transformers (Part 2)"
+      },
+      {
+        "lecture": 15,
+        "title": "Unsupervised Learning: Clustering and EM"
+      },
+      {
+        "lecture": 16,
+        "title": "EM and PCA"
+      },
+      {
+        "lecture": 17,
+        "title": "ICA, Embedding and Representation Learning"
+      },
+      {
+        "lecture": 18,
+        "title": "Deep Generative Models"
+      }
+    ],
+    "public_syllabus": "https://web.eecs.umich.edu/~honglak/teaching/eecs545/"
+  }
+}

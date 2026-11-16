@@ -1,0 +1,200 @@
+{
+  "nodes": [
+    {
+      "id": "ml_reinforcement",
+      "en": "Reinforcement Learning",
+      "title": "强化学习",
+      "group": "ml_paradigms",
+      "kind": "concept",
+      "entity_type": "learning_paradigm",
+      "summary": "Reinforcement learning studies how an agent improves decisions to maximize expected cumulative reward.",
+      "definition": "Reinforcement learning studies how an agent improves decisions to maximize expected cumulative reward. Actions change later states and therefore later training experience. A learning paradigm specifies this feedback setup; it does not fix a network architecture, optimizer or robot. Policies may be neural or tabular, and algorithms can use real interaction, previously collected experience or model-generated rollouts. Immediate reward, discounted return, transition prediction error and policy training loss are distinct quantities. Model-free and model-based algorithms both fit within this paradigm.",
+      "latex": [
+        "J(\\pi)=\\mathbb E_{\\tau\\sim p_\\pi}\\!\\left[\\sum_{t=0}^{T-1}\\gamma^t r_t\\right]"
+      ],
+      "notation": [
+        {
+          "symbol": "\\pi,\\tau",
+          "meaning": "Action-selection policy and an interaction trajectory."
+        },
+        {
+          "symbol": "p_\\pi",
+          "meaning": "Trajectory distribution induced by the policy and environment."
+        },
+        {
+          "symbol": "r_t,\\gamma,T",
+          "meaning": "Reward at time t, discount factor, and horizon."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "p_expectation"
+      ],
+      "example": "A soccer policy can receive rewards for progress toward a target and penalties for falls. A high reward does not itself measure shot placement or successful recovery.",
+      "role_en": "Places PPO and actor–critic algorithms within a learning setup. Supervised losses and distillation can also train components of an RL system.",
+      "sources": [
+        {
+          "title": "Spinning Up: Key Concepts in RL",
+          "url": "https://spinningup.openai.com/en/latest/spinningup/rl_intro.html"
+        }
+      ]
+    },
+    {
+      "id": "loss_crossentropy",
+      "en": "Cross-Entropy Loss for Classification",
+      "title": "分类交叉熵损失",
+      "group": "loss_functions",
+      "kind": "concept",
+      "entity_type": "objective",
+      "summary": "Cross-entropy loss scores predicted class probabilities against target probabilities.",
+      "definition": "Cross-entropy loss scores predicted class probabilities against target probabilities. With a one-hot target, only the negative log probability assigned to the correct class contributes. The per-example function can be averaged to form a training objective or reported as an evaluation metric. It is neither a classifier architecture nor a learning paradigm. Logistic regression and neural classifiers can both use it. The mathematical cross-entropy between distributions is the underlying functional; classification specifies which targets and model probabilities enter that functional.",
+      "latex": [
+        "\\mathcal L_{CE}=-\\frac1N\\sum_{i=1}^N\\sum_{k=1}^K y_{ik}\\log p_\\theta(k\\mid x_i)"
+      ],
+      "notation": [
+        {
+          "symbol": "N,K",
+          "meaning": "Number of examples and classes."
+        },
+        {
+          "symbol": "y_{ik}",
+          "meaning": "Target probability of class k for example i; commonly one-hot."
+        },
+        {
+          "symbol": "p_\\theta(k\\mid x_i)",
+          "meaning": "Model probability for class k."
+        },
+        {
+          "symbol": "\\mathcal L_{CE}",
+          "meaning": "Empirical average cross-entropy; probabilities inside the log must be positive."
+        }
+      ],
+      "prereqs": [
+        "p_entropy",
+        "p_conditional",
+        "ml_supervised"
+      ],
+      "example": "For a correct-class probability of 0.8, the example loss is approximately 0.223 using the natural logarithm. Lower correct-class probability produces a larger loss.",
+      "role_en": "Separates the objective function from models such as logistic regression and from the supervised learning setup.",
+      "sources": [
+        {
+          "title": "Dive into Deep Learning: Softmax Regression",
+          "url": "https://d2l.ai/chapter_linear-classification/softmax-regression.html"
+        }
+      ]
+    },
+    {
+      "id": "domain_cv",
+      "en": "Computer Vision",
+      "title": "计算机视觉",
+      "group": "vision",
+      "kind": "concept",
+      "entity_type": "application_domain",
+      "summary": "Computer vision studies how to infer useful information from images and videos.",
+      "definition": "Computer vision studies how to infer useful information from images and videos. Tasks include classification, object detection, segmentation, depth estimation, geometry recovery and tracking. The application domain does not prescribe a single model or training regime: geometric methods, classical statistical models, CNNs and Transformers can all contribute. In robotics, outputs must be related to calibrated sensors, coordinate frames, uncertainty and timing before they support action. Recognizing an object category, estimating its metric position and predicting its motion are different tasks with different outputs.",
+      "latex": [
+        "\\hat y=f_\\theta(I),\\qquad I\\in\\mathbb R^{H\\times W\\times C}"
+      ],
+      "notation": [
+        {
+          "symbol": "I,H,W,C",
+          "meaning": "Image tensor with height, width and channel axes."
+        },
+        {
+          "symbol": "f_\\theta,\\hat y",
+          "meaning": "A selected perception mapping and its task-dependent output."
+        }
+      ],
+      "prereqs": [
+        "d_tensor",
+        "sim_camera"
+      ],
+      "example": "Ball detection outputs an image location or box. A calibrated geometric or learned depth step is needed to estimate a metric three-dimensional ball position.",
+      "role_en": "Provides an application-domain entry to visual representations, detection, geometry, tracking and robot perception papers.",
+      "sources": [
+        {
+          "title": "Stanford CS231n: Deep Learning for Computer Vision",
+          "url": "https://cs231n.stanford.edu/"
+        }
+      ]
+    },
+    {
+      "id": "system_world_model",
+      "en": "World Models as Predictive Systems",
+      "title": "世界模型预测系统",
+      "group": "multimodal_systems",
+      "kind": "concept",
+      "entity_type": "system_family",
+      "summary": "A world model predicts aspects of an environment and its evolution.",
+      "definition": "A world model predicts aspects of an environment and its evolution. Depending on the task, its representation can be physical state, learned features or generated observations. An action-conditioned transition model predicts how candidate actions influence later state. A renderer and a reward model are optional additional components, not requirements for every world model. Model size and output fidelity depend on this prediction interface. A compact learned robot dynamics model and a large video generator can therefore both be discussed as world models while serving different purposes.",
+      "latex": [
+        "p_\\theta(s_{t+1}\\mid s_{\\le t},a_{\\le t}),\\qquad \\hat o_{t+1}\\sim p_\\psi(o\\mid s_{t+1})"
+      ],
+      "notation": [
+        {
+          "symbol": "s_t,a_t,o_t",
+          "meaning": "Chosen state or latent representation, action and observation."
+        },
+        {
+          "symbol": "p_\\theta,p_\\psi",
+          "meaning": "Transition predictor and optional observation model."
+        }
+      ],
+      "prereqs": [
+        "r_dynamics",
+        "r_state",
+        "p_conditional"
+      ],
+      "example": "A joint-state predictor can support short imagined robot rollouts without synthesizing images. A video world model may instead generate observations at a much greater rendering cost.",
+      "role_en": "Connects model families to predictive interfaces and downstream planning. World models are not automatically larger or more physically accurate than classical simulators.",
+      "sources": [
+        {
+          "title": "Ha and Schmidhuber: World Models",
+          "url": "https://worldmodels.github.io/"
+        }
+      ]
+    },
+    {
+      "id": "system_vla",
+      "en": "Vision–Language–Action Systems",
+      "title": "视觉语言动作系统",
+      "group": "multimodal_systems",
+      "kind": "concept",
+      "entity_type": "system_family",
+      "summary": "A vision–language–action system maps visual observations and language context to robot actions or action representations.",
+      "definition": "A vision–language–action system maps visual observations and language context to robot actions or action representations. It combines modalities and an action interface; it does not imply one unique backbone or loss. Implementations may predict discrete action tokens, continuous action chunks or flow-based trajectories, often using supervised demonstrations and additional pretraining. A language model generates language, a vision-language model relates visual and textual information, and a VLA adds an executable action interface. These capabilities can share components without forming a universal historical sequence.",
+      "latex": [
+        "a_{t:t+H-1}\\sim\\pi_\\theta(\\cdot\\mid I_{\\le t},\\ell,q_t)"
+      ],
+      "notation": [
+        {
+          "symbol": "I_{\\le t},\\ell,q_t",
+          "meaning": "Visual context, language instruction and optional robot state."
+        },
+        {
+          "symbol": "a_{t:t+H-1},H",
+          "meaning": "An action chunk and its horizon."
+        },
+        {
+          "symbol": "\\pi_\\theta",
+          "meaning": "Conditional action predictor, with embodiment-specific action semantics."
+        }
+      ],
+      "prereqs": [
+        "vla_vlm",
+        "vla_action_chunk",
+        "r_state"
+      ],
+      "example": "The instruction “pick up the red cup” conditions camera-based predictions of robot commands. The commands must still match the arm’s coordinate frames, units and controller interface.",
+      "role_en": "Places RT-2, OpenVLA and pi-family papers within a system family while preserving their different architectures and training methods.",
+      "sources": [
+        {
+          "title": "RT-2: Vision-Language-Action Models",
+          "url": "https://arxiv.org/abs/2307.15818"
+        }
+      ]
+    }
+  ],
+  "edges": [],
+  "research": []
+}
