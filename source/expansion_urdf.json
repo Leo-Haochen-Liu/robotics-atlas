@@ -1,0 +1,2818 @@
+{
+  "nodes": [
+    {
+      "id": "desc_urdf",
+      "en": "Unified Robot Description Format (URDF)",
+      "title": "统一机器人描述格式",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "An XML description of named links, joints, geometry and inertial properties.",
+      "definition": "URDF is an XML format for describing a robot as named rigid links connected by named joints. A link can contain visual geometry, collision geometry, mass, center of mass and an inertia tensor. A joint specifies its parent and child, joint type, reference transform, motion axis and applicable limits. These fields describe structure and physical parameters; they do not themselves implement walking, perception or a trained controller. A valid robot description must also resolve external mesh paths. Software importing the same file can interpret unsupported extensions differently, so successful parsing is only the first validation step.",
+      "example": "For a two-link arm, create two link elements and one revolute joint connecting the parent to the child. Give the joint an origin, an axis and a lower and upper angle. A viewer can then display different joint positions. A physics simulation additionally needs usable inertial and contact properties and a control input.",
+      "role_en": "URDF is the entry point for loading G1, Go2 and Booster hardware into kinematics, planning and simulation. Open the linked robot records for pinned source files and audited numeric parameters.",
+      "latex": "\\mathcal{R}=(\\mathcal{L},\\mathcal{J},\\mathcal{G},\\mathcal{I})",
+      "notation": [
+        {
+          "symbol": "\\mathcal{L}",
+          "meaning": "Named links."
+        },
+        {
+          "symbol": "\\mathcal{J}",
+          "meaning": "Named joints and their connectivity."
+        },
+        {
+          "symbol": "\\mathcal{G}",
+          "meaning": "Visual and collision geometry."
+        },
+        {
+          "symbol": "\\mathcal{I}",
+          "meaning": "Mass, center of mass and inertia data."
+        }
+      ],
+      "prereqs": [
+        "ph_units",
+        "r_frames"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_link",
+      "en": "Rigid Links and Attached Frames",
+      "title": "刚体连杆与附着坐标系",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "A link is a rigid component; not every named link is a separate physical moving part.",
+      "definition": "A URDF link represents one rigid component and defines a local reference frame. Separate visual, collision and inertial elements may each have their own pose relative to that frame. Fixed joints can attach sensor frames, decorative components or rigidly connected subparts without adding independent motion. Therefore the number of links is not the number of motors or degrees of freedom. Some links serve only as coordinate frames and have no mass entry. For dynamics, the importer must handle these frames consistently, often merging fixed bodies while preserving their transformations and inertial contribution.",
+      "example": "The audited G1 29-DoF file has 38 links and 37 joints, of which only 29 joints are revolute. Camera and IMU frames remain useful for interpreting observations even though their fixed attachments add no motor command. Their geometry and inertial data should not be counted twice when fixed bodies are merged.",
+      "role_en": "Links provide the reference frames consumed by forward kinematics, camera extrinsics, contact placement and rigid-body dynamics.",
+      "latex": "{}^{L}\\mathbf p={}^L\\mathbf R_G\\,{}^G\\mathbf p+{}^L\\mathbf t_G",
+      "notation": [
+        {
+          "symbol": "L",
+          "meaning": "Link reference frame."
+        },
+        {
+          "symbol": "G",
+          "meaning": "Attached geometry or sensor frame."
+        },
+        {
+          "symbol": "\\mathbf R_G,\\mathbf t_G",
+          "meaning": "Rotation and translation locating the attached frame."
+        }
+      ],
+      "prereqs": [
+        "desc_urdf",
+        "r_frames"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_joint",
+      "en": "Joint Types and Allowed Motion",
+      "title": "关节类型与允许运动",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Joint types constrain relative motion and determine configuration dimensions.",
+      "definition": "A joint connects a parent link to a child link and constrains their relative motion. A fixed joint allows no relative motion. A revolute joint rotates about one axis within position limits; a continuous joint rotates about one axis without bounded angle. A prismatic joint translates along one axis. Planar and floating joints represent three and six physical degrees of freedom respectively, although importer support varies. Type alone does not identify a motor: a moving joint can be passive or mechanically coupled. Count joint coordinates, independent motion and independently commanded actuators separately.",
+      "example": "A humanoid knee is commonly represented as one revolute coordinate. A wrist decoration fixed to the forearm is a fixed joint, even if its name contains joint. A passive caster may rotate continuously but need no independent motor command. Summing every joint element would overcount all three cases.",
+      "role_en": "Joint types determine how URDF coordinates map into forward kinematics, generalized velocities and controller action dimensions.",
+      "latex": "d(\\text{fixed})=0,\\quad d(\\text{revolute})=d(\\text{prismatic})=1,\\quad d(\\text{planar})=3,\\quad d(\\text{floating})=6",
+      "notation": [
+        {
+          "symbol": "d",
+          "meaning": "Physical motion dimension allowed by the joint type."
+        }
+      ],
+      "prereqs": [
+        "desc_link"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_tree",
+      "en": "Kinematic Trees and Closed Loops",
+      "title": "运动学树与闭链",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "URDF parent-child connectivity forms a tree; a closed mechanism needs extra handling.",
+      "definition": "A kinematic tree has one root link and a unique parent path to every other link. Each URDF joint names exactly one parent and one child, giving a natural traversal for forward kinematics. For a connected tree, the joint count equals the link count minus one. A closed mechanical linkage cannot be represented merely by giving a child two parents in ordinary URDF. Typical workflows choose a spanning tree and express the remaining closure as simulator constraints or a separate mechanism model. A tree that parses successfully can still contain incorrect axes, offsets or inertial parameters.",
+      "example": "The audited Go2 file has 42 links and 41 joints, satisfying the connected-tree count. Its four legs branch from the base. If a parallel ankle mechanism is simplified into serial pitch and roll joints, that model must not be mistaken for an explicit simulation of every internal linkage.",
+      "role_en": "Unique tree paths support forward kinematics and frame transformations; extra loop constraints connect to constrained dynamics and simulator-specific mechanisms.",
+      "latex": "|\\mathcal J|=|\\mathcal L|-1,\\qquad {}^WT_E=\\prod_{j\\in\\operatorname{path}(W,E)}T_j(q_j)",
+      "notation": [
+        {
+          "symbol": "\\mathcal J,\\mathcal L",
+          "meaning": "Joints and links of a connected tree."
+        },
+        {
+          "symbol": "T_j(q_j)",
+          "meaning": "Relative transform across joint j."
+        }
+      ],
+      "prereqs": [
+        "desc_joint",
+        "geo_se3"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_origin",
+      "en": "Origins, XYZ and Roll-Pitch-Yaw",
+      "title": "原点、平移与欧拉角",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "An origin locates one local frame relative to another; joint and inertial origins have different roles.",
+      "definition": "An origin specifies a rigid transform with translation xyz and orientation rpy. URDF roll, pitch and yaw use radians and fixed-axis rotations about x, y and z; the equivalent rotation matrix is yaw times pitch times roll for column vectors. A joint origin locates the joint frame in the parent-link frame at zero joint displacement. Visual and collision origins locate geometry inside a link. An inertial origin locates the center-of-mass frame. These transforms are separate: changing a visual origin moves the drawing, whereas changing the inertial origin changes the body's modeled mass distribution.",
+      "example": "If a joint origin translates 0.2 m along the parent x direction, its rotation axis passes through that translated joint frame. A center of mass offset 0.05 m above the link origin belongs in the inertial origin; placing it only in the visual origin does not change the dynamics.",
+      "role_en": "Origin transforms connect robot descriptions to SE(3), camera calibration, forward kinematics and correct inertia placement.",
+      "latex": "T=\\begin{bmatrix}R_z(\\psi)R_y(\\theta)R_x(\\phi)&[x,y,z]^\\top\\\\0&1\\end{bmatrix}",
+      "notation": [
+        {
+          "symbol": "x,y,z",
+          "meaning": "Translation in metres."
+        },
+        {
+          "symbol": "\\phi,\\theta,\\psi",
+          "meaning": "Roll, pitch and yaw in radians."
+        }
+      ],
+      "prereqs": [
+        "desc_joint",
+        "geo_se3",
+        "m_trig"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "ROS REP-103: SI units and coordinate conventions",
+          "url": "https://www.ros.org/reps/rep-0103.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_joint_axis",
+      "en": "Joint Axes and Sign Conventions",
+      "title": "关节轴与正方向",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "The axis is expressed in the joint frame; its sign controls the sign of position and torque.",
+      "definition": "A joint axis is a direction expressed in the joint frame, not automatically in the world frame. For a revolute joint it is the axis of rotation; for a prismatic joint it is the direction of translation. Positive rotational displacement follows the right-hand rule. Forward kinematics rotates the axis into other reference frames when needed. Normalize a nonzero axis and verify its direction in a posed model. Renaming a coordinate or copying an axis from another robot does not preserve motion semantics when link frames differ, which matters during motion retargeting and policy deployment.",
+      "example": "A joint with axis 0 1 0 rotates about its own y direction. If the joint origin is already rotated relative to the torso, that direction is not the torso y direction. To compare a left and right hip, inspect both their origin rotations and axis signs before copying target angles.",
+      "role_en": "Correct axes connect URDF joint positions to Jacobians, inverse kinematics, retargeting and the action sign expected by a motor interface.",
+      "latex": "{}^W\\mathbf a_j={}^W R_j\\,{}^j\\mathbf a_j,\\qquad \\|\\mathbf a_j\\|_2=1",
+      "notation": [
+        {
+          "symbol": "\\mathbf a_j",
+          "meaning": "Joint axis unit vector."
+        },
+        {
+          "symbol": "{}^W R_j",
+          "meaning": "Rotation from the joint frame to the world frame."
+        }
+      ],
+      "prereqs": [
+        "desc_origin",
+        "rb_fk"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "ROS REP-103: SI units and coordinate conventions",
+          "url": "https://www.ros.org/reps/rep-0103.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_limits",
+      "en": "Joint Limits and Physical Units",
+      "title": "关节限位与物理单位",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Position, velocity and effort limits describe different quantities and are not controller gains.",
+      "definition": "The limit element can specify lower and upper position, maximum effort and maximum speed. Revolute positions are radians, revolute velocities are radians per second and revolute effort is torque in newton metres. Prismatic positions are metres, velocities are metres per second and effort is force in newtons. Continuous joints have no finite lower and upper angle requirement. A file's values are model metadata, not a guarantee that every software layer enforces them. Motor thermal limits, torque-speed curves, communication safety checks and proportional-derivative gains generally require additional controller or hardware specifications.",
+      "example": "A revolute joint with lower -1, upper 1, effort 40 and velocity 10 permits a modeled angle range of -1 to 1 rad, a 40 N m effort bound and a 10 rad/s speed bound. None of these four numbers specifies the proportional gain of a position controller.",
+      "role_en": "Limits bound inverse-kinematics solutions, trajectory optimization, RL action targets and safe command validation. Keep source model values distinct from measured motor capability.",
+      "latex": "q_{\\min}\\le q\\le q_{\\max},\\qquad |\\dot q|\\le v_{\\max},\\qquad |\\tau|\\le\\tau_{\\max}",
+      "notation": [
+        {
+          "symbol": "q",
+          "meaning": "Joint position, rad for revolute or m for prismatic."
+        },
+        {
+          "symbol": "\\dot q",
+          "meaning": "Joint velocity."
+        },
+        {
+          "symbol": "\\tau",
+          "meaning": "Torque for revolute joints; use force for prismatic joints."
+        }
+      ],
+      "prereqs": [
+        "desc_joint",
+        "ph_units",
+        "ph_torque"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "ROS REP-103: SI units and coordinate conventions",
+          "url": "https://www.ros.org/reps/rep-0103.html"
+        },
+        {
+          "title": "ros2_control hardware interfaces and URDF tags",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_inertial",
+      "en": "Mass, Center of Mass and Inertia Tensor",
+      "title": "质量、质心与惯性张量",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Mass and inertia set dynamic response; tensor entries must match their frame and units.",
+      "definition": "The inertial element contains a mass, a center-of-mass pose relative to the link frame and six independent entries of a symmetric inertia tensor. Tensor entries have units kilogram metre squared and are expressed in the inertial frame about its origin, which URDF uses as the center of mass. For a massive physical body, inertia must be physically realizable: positive principal moments alone are not sufficient; the triangle inequalities also matter. Zero-mass sensor frames need separate importer handling rather than being treated as finite massive bodies. Visual meshes do not automatically supply correct measured inertial parameters.",
+      "example": "A 2 kg body with its center of mass displaced from the link origin needs both the correct mass and inertial origin. Simply moving its visible mesh leaves those values unchanged. The audited Go2 file has zero-mass IMU and radar frames with zero inertia; fixed-frame merging differs from simulating them as ordinary massive bodies.",
+      "role_en": "Inertial parameters enter manipulator dynamics, centroidal dynamics, balance control and simulator stability. Validate massive-body tensors and preserve total mass when combining fixed links.",
+      "latex": "I=\\begin{bmatrix}I_{xx}&I_{xy}&I_{xz}\\\\I_{xy}&I_{yy}&I_{yz}\\\\I_{xz}&I_{yz}&I_{zz}\\end{bmatrix},\\quad T_{\\rm rot}=\\tfrac12\\omega^\\top I\\omega,\\quad \\lambda_i>0,\\quad \\lambda_i\\le\\lambda_j+\\lambda_k",
+      "notation": [
+        {
+          "symbol": "I",
+          "meaning": "Center-of-mass inertia in kg m squared."
+        },
+        {
+          "symbol": "\\omega",
+          "meaning": "Angular velocity expressed in the same frame."
+        },
+        {
+          "symbol": "\\lambda_i",
+          "meaning": "Principal moments; indices i,j,k are distinct."
+        }
+      ],
+      "prereqs": [
+        "desc_link",
+        "desc_origin",
+        "ph_inertia",
+        "m_eigen"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_geometry",
+      "en": "Visual Geometry and Collision Geometry",
+      "title": "可视几何与碰撞几何",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Appearance and contact geometry serve different computations and may use different meshes.",
+      "definition": "Visual geometry determines how a robot is displayed, including mesh shape and material. Collision geometry determines the shapes used for contact and collision queries. Both have local origins and may use primitives or meshes, but they need not have the same resolution or exact shape. Detailed triangles can increase collision cost; simplified collision shapes change contact locations and can alter learned behavior. A visually plausible foot therefore does not prove that its contact surface is correct. Mesh scale, frame alignment and resource resolution must be verified after import into the target renderer or physics engine.",
+      "example": "A foot can have a detailed textured visual mesh and a simple box collision shape. The box bottom defines the simulated support surface. If that bottom is 2 cm above the visible sole, the robot may appear to penetrate the ground even while the contact solver is correctly using its configured shape.",
+      "role_en": "Geometry links asset creation to collision checking, simulation contact dynamics, camera rendering and sim-to-real gaps.",
+      "latex": "\\mathcal G_{\\rm visual}\\ne\\mathcal G_{\\rm collision}\\quad\\text{in general},\\qquad d(\\mathcal G_1,\\mathcal G_2)\\le0\\Rightarrow\\text{contact candidate}",
+      "notation": [
+        {
+          "symbol": "\\mathcal G",
+          "meaning": "Geometry transformed into a common frame."
+        },
+        {
+          "symbol": "d",
+          "meaning": "Signed separation distance, when supported by the collision method."
+        }
+      ],
+      "prereqs": [
+        "desc_link",
+        "desc_origin"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        },
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_dof",
+      "en": "Degrees of Freedom and Actuation Counts",
+      "title": "自由度与驱动数量",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Movable joints, independent coordinates, action dimensions and motors are separate counts.",
+      "definition": "A degree of freedom is an independent motion variable. A scalar revolute joint usually contributes one kinematic degree of freedom, while a fixed joint contributes none. Mechanical coupling can reduce the independent count, and passive motion need not have an independent control input. The action vector of a policy may address only a subset of joints or may parameterize targets rather than torques. Consequently a robot record should state its exact file, movable joint types, mimic relationships and actuation evidence. The seven audited examples here have only independent revolute and fixed joints, consistent with their official named body layouts.",
+      "example": "G1 mode 11 has 29 revolute joints plus eight fixed joints. Its 29 body coordinates are not 37 motors. If a policy controls only the legs, its action dimension can be 12 while the simulated body still has 29 joint coordinates. Adding a free base increases physical state dimensions without adding six motors.",
+      "role_en": "DOF accounting determines model dimensions, retargeting outputs, policy action mappings and comparable hardware descriptions.",
+      "latex": "n_{\\rm independent}=n_{\\rm movable}-n_{\\rm dependent},\\qquad n_u\\le n_{\\rm independent}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm movable}",
+          "meaning": "Scalar movable coordinates before dependencies."
+        },
+        {
+          "symbol": "n_{\\rm dependent}",
+          "meaning": "Coordinates fixed by independent coupling relations."
+        },
+        {
+          "symbol": "n_u",
+          "meaning": "Independently commanded scalar actuator inputs, for a simple one-input-per-coordinate system."
+        }
+      ],
+      "prereqs": [
+        "desc_joint",
+        "desc_tree"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_floating_base",
+      "en": "Floating Bases and Quaternion Dimensions",
+      "title": "浮动基座与四元数维度",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "A free robot has six root-motion DOF, commonly stored with seven pose numbers.",
+      "definition": "A mobile robot's root pose is often added by the simulator or a planning system rather than by an explicit floating joint in its URDF. A free root has three translational and three rotational physical degrees of freedom. Storing orientation with a unit quaternion uses four numbers subject to one norm constraint. Therefore a robot with n scalar body joints can have n plus seven generalized position entries and n plus six generalized velocity entries. Quaternion order is a software convention and must be checked at each interface. Body DOF counts in robot product names normally exclude this unactuated free root.",
+      "example": "For G1 with 29 scalar joints, a quaternion free-base representation has 36 position entries and 35 velocity entries. Booster's motion CSV stores root position followed by quaternion x,y,z,w before its joint angles. Another simulator may use w,x,y,z. A matching array length does not guarantee a matching orientation convention.",
+      "role_en": "Floating-base dimensions connect URDF imports to humanoid state vectors, motion datasets, dynamics and retargeting coordinate conversion.",
+      "latex": "n_q=n+7,\\qquad n_v=n+6,\\qquad q_{\\rm root}=(\\mathbf p,\\mathbf r),\\quad \\|\\mathbf r\\|_2=1",
+      "notation": [
+        {
+          "symbol": "n",
+          "meaning": "Independent scalar body-joint coordinates."
+        },
+        {
+          "symbol": "n_q,n_v",
+          "meaning": "Position-storage dimension and tangent-velocity dimension."
+        },
+        {
+          "symbol": "\\mathbf r",
+          "meaning": "Unit quaternion; component order must be specified."
+        }
+      ],
+      "prereqs": [
+        "desc_dof",
+        "geo_quaternion"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo model computation: free-joint positions and velocities",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_mimic",
+      "en": "Mimic Joints and Passive Joints",
+      "title": "从动关节与被动关节",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "A mimic relation is a coordinate dependency; passive means unactuated.",
+      "definition": "A mimic joint declares that its position follows another joint through a multiplier and an offset. It therefore usually adds a named moving joint without adding an independent position variable. A passive joint is instead unactuated: it may have an independent motion determined by dynamics and constraints. These concepts must not be conflated. URDF mimic metadata can be understood by a kinematics library while a physics importer ignores it or requires an explicit coupling constraint. Always inspect the importer and actuator mapping rather than inferring controllability from a joint's nonfixed type or from the presence of a mimic element alone.",
+      "example": "Two fingers may satisfy right equals negative left plus a fixed offset, leaving one independent opening coordinate. A freely swinging hinge with no motor can still move independently and is passive, not necessarily mimic. None of the seven pinned URDF files audited here contains a mimic element; this does not generalize to their hand-equipped variants.",
+      "role_en": "Mimic and passive semantics connect hand models, mechanism constraints, independent-DOF accounting and motion-planning groups.",
+      "latex": "q_b=\\alpha q_a+\\beta,\\qquad \\dot q_b=\\alpha\\dot q_a",
+      "notation": [
+        {
+          "symbol": "q_a,q_b",
+          "meaning": "Source and dependent joint positions."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Mimic multiplier."
+        },
+        {
+          "symbol": "\\beta",
+          "meaning": "Mimic offset, in the dependent coordinate unit."
+        }
+      ],
+      "prereqs": [
+        "desc_dof"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        },
+        {
+          "title": "ros2_control hardware interfaces and URDF tags",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_transmission",
+      "en": "Transmissions and Motor-to-Joint Mapping",
+      "title": "传动与电机到关节映射",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Transmission models map actuator motion and effort to joint coordinates.",
+      "definition": "A transmission describes the relationship between actuator coordinates and joint coordinates. A simple gear reduction relates motor speed and torque to joint speed and torque, while a differential can couple multiple actuators and joints. Transmission metadata is distinct from joint limits and from a motor controller's gains. Availability and interpretation depend on the control framework and importer. An XML file with no transmission element can still describe actuated hardware if the mapping is configured elsewhere. Conversely a nonfixed joint element is not, by itself, proof of an independently controllable motor or of an available hardware driver.",
+      "example": "For an ideal 10:1 reduction, a motor turns ten radians while the output joint turns one radian. Neglecting loss, the output torque is ten times the motor torque. Sign conventions and efficiencies require explicit handling. None of the seven audited robot URDF files embeds a transmission element, so their motor integration must be checked outside these files.",
+      "role_en": "Transmissions connect actuator models, hardware interfaces, torque control and correct motor versus joint limits.",
+      "latex": "q_m=Nq_j,\\qquad \\dot q_m=N\\dot q_j,\\qquad \\tau_j=N\\tau_m\\quad\\text{(ideal scalar reduction)}",
+      "notation": [
+        {
+          "symbol": "N",
+          "meaning": "Signed gear reduction under the stated convention."
+        },
+        {
+          "symbol": "m,j",
+          "meaning": "Motor-side and joint-side quantities."
+        }
+      ],
+      "prereqs": [
+        "desc_joint",
+        "ph_torque",
+        "ph_energy"
+      ],
+      "sources": [
+        {
+          "title": "ros2_control transmission interfaces",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/transmission_interface/doc/index.html"
+        },
+        {
+          "title": "ros2_control hardware interfaces and URDF tags",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_ros2control",
+      "en": "ros2_control and Command Interfaces",
+      "title": "ROS 2 控制与命令接口",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "A robot description can declare command and state interfaces without defining a learned policy.",
+      "definition": "ros2_control connects controllers to hardware components through declared command and state interfaces. A ros2_control block identifies a hardware plugin and lists interfaces for joints, sensors or other hardware. A joint might expose position, velocity or effort commands, while measured states are reported separately. The plugin implements the actual communication or simulation backend; listing an interface does not make that backend work. Controller configuration supplies additional behavior such as gains and update settings. The joints referenced by this extension must exist in the robot description. Model-only URDF files may omit these tags entirely and use another runtime integration.",
+      "example": "A controller writes a desired joint position into a position command interface while reading measured position and velocity from state interfaces. A hardware plugin exchanges those values with the robot. G1's geometry-only URDF lacking ros2_control tags is still a valid description, but loading it alone does not establish a working robot command channel.",
+      "role_en": "Hardware interfaces connect URDF names and units to actual control software, avoiding confusion between a model that renders and a motor that can be commanded.",
+      "latex": "\\mathbf u_k=\\pi(\\mathbf x_k),\\qquad \\text{controller}\\to\\text{command interface}\\to\\text{hardware plugin}",
+      "notation": [
+        {
+          "symbol": "\\mathbf u_k",
+          "meaning": "Command values at update k."
+        },
+        {
+          "symbol": "\\mathbf x_k",
+          "meaning": "Reported states consumed by the controller."
+        }
+      ],
+      "prereqs": [
+        "desc_limits",
+        "desc_transmission"
+      ],
+      "sources": [
+        {
+          "title": "ros2_control hardware interfaces and URDF tags",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_xacro",
+      "en": "Xacro Parameters and Model Generation",
+      "title": "Xacro 参数与模型生成",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Xacro expands reusable XML macros into a concrete URDF for a chosen configuration.",
+      "definition": "Xacro is an XML macro system used to generate robot descriptions from reusable components, parameters and conditional choices. A leg macro can instantiate left and right limbs while shared properties specify dimensions or a mesh prefix. The generated URDF is the concrete artifact consumed by many downstream tools. Auditing only the macro source is insufficient because arguments can lock joints, select hands or change inertial properties. Record both the source revision and expansion arguments, then validate the expanded XML. Macro arithmetic also requires unit discipline: a syntactically valid expression can still generate physically inconsistent lengths or masses.",
+      "example": "One Xacro source may generate either a fixed-base arm or a mobile robot with sensors. Expand it with the intended arguments, inspect the resulting joint list and compare the model dimensions against the controller. To reproduce an audit, retain the command and arguments together with the source commit and output hash.",
+      "role_en": "Xacro connects configurable asset libraries to reproducible URDF variants, avoiding accidental comparisons between different generated robots.",
+      "latex": "\\mathrm{URDF}=\\operatorname{Expand}(\\mathrm{Xacro},\\mathbf a),\\qquad \\mathbf a=\\text{recorded macro arguments}",
+      "notation": [
+        {
+          "symbol": "\\mathbf a",
+          "meaning": "Parameter values selecting a concrete model variant."
+        }
+      ],
+      "prereqs": [
+        "desc_urdf",
+        "desc_tree"
+      ],
+      "sources": [
+        {
+          "title": "Official Xacro documentation and source",
+          "url": "https://github.com/ros/xacro"
+        }
+      ]
+    },
+    {
+      "id": "desc_srdf",
+      "en": "SRDF, Planning Groups and Collision Filters",
+      "title": "SRDF、规划组与碰撞过滤",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "SRDF adds planning semantics; it complements physical structure in URDF.",
+      "definition": "SRDF describes semantics used by motion-planning software alongside a URDF. It can define joint groups, named configurations, end effectors, a virtual connection to the world, passive joints and allowed or disabled self-collision pairs. A group may be a serial chain, a joint collection or a combination of subgroups. These declarations do not replace mass and geometry in the URDF. Disabling a collision pair means a planning system may skip that check, not that the two physical bodies can safely intersect. Check whether a simulator uses the same filters rather than assuming planning and physics collision settings are identical.",
+      "example": "Define a left_arm group from shoulder to wrist, then a both_arms group combining left and right arms. A planar virtual joint can connect a mobile root to the world for planning. If adjacent-link collision checks are disabled, document the reason and still inspect unintended collisions involving feet, hands and torso.",
+      "role_en": "SRDF connects robot structure to inverse kinematics, motion planning, passive-joint semantics and explicit self-collision policies.",
+      "latex": "\\mathcal J_{\\rm both\\ arms}=\\mathcal J_{\\rm left}\\cup\\mathcal J_{\\rm right},\\qquad \\mathcal C_{\\rm checked}=\\mathcal C_{\\rm candidates}\\setminus\\mathcal C_{\\rm disabled}",
+      "notation": [
+        {
+          "symbol": "\\mathcal J",
+          "meaning": "A named planning joint set."
+        },
+        {
+          "symbol": "\\mathcal C",
+          "meaning": "Sets of link pairs considered for collision checking."
+        }
+      ],
+      "prereqs": [
+        "desc_tree",
+        "desc_mimic",
+        "desc_geometry"
+      ],
+      "sources": [
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_import",
+      "en": "URDF Import and Simulator Semantics",
+      "title": "URDF 导入与仿真器语义",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "Parsing, rendering and running correct dynamics are different validation stages.",
+      "definition": "A simulator compiles a robot description into its own bodies, coordinates, collision shapes and dynamics data. During URDF import it may merge fixed links, discard unsupported tags, approximate meshes or add a floating root through an external setting. Therefore compiled link counts can differ from XML link counts without being wrong. Validate resolved resources, joint order, limits, total mass, base behavior and contact geometry in the target engine. URDF and MuJoCo's MJCF are different formats; an XML extension alone does not identify either one. A successful rendered model is evidence of asset loading, not evidence of a working controller.",
+      "example": "The audited G1 URDF has a pelvis root and no explicit floating joint. A locomotion environment must configure a free root during import. If instead it fixes the base, leg motion may render correctly while balance learning becomes a different problem. Inspect the compiled coordinate dimensions and the root's response to gravity.",
+      "role_en": "Import validation connects asset descriptions to MuJoCo, Isaac Sim and RL environments while preserving the difference between source parameters and compiled simulation behavior.",
+      "latex": "\\mathcal M_{\\rm compiled}=\\operatorname{Compile}(\\mathcal R,\\mathbf c),\\qquad n_q\\ne\\#\\text{XML joints in general}",
+      "notation": [
+        {
+          "symbol": "\\mathcal R",
+          "meaning": "Input robot description."
+        },
+        {
+          "symbol": "\\mathbf c",
+          "meaning": "Importer and simulator configuration."
+        },
+        {
+          "symbol": "n_q",
+          "meaning": "Compiled generalized position dimension."
+        }
+      ],
+      "prereqs": [
+        "desc_urdf",
+        "desc_floating_base",
+        "desc_inertial",
+        "desc_geometry"
+      ],
+      "sources": [
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        },
+        {
+          "title": "MuJoCo model computation: free-joint positions and velocities",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        }
+      ]
+    },
+    {
+      "id": "desc_variant",
+      "en": "Robot Variants and Reproducible Parameter Audits",
+      "title": "机器人变体与参数审计",
+      "group": "robot_description",
+      "kind": "concept",
+      "summary": "A model name alone is insufficient; pin the exact file, revision and configuration.",
+      "definition": "A reproducible robot record identifies manufacturer, model, variant, repository revision and exact source path. Audit the XML rather than reading a DOF number from its filename: locked joints, hands, sensors and coupled mechanisms can change the result. Store movable and fixed joint counts separately, list dependencies, record the root, sum declared masses and sample limits with their units. Cross-check intended actuation against official layout or controller documentation. A URDF mass sum describes this model, including omitted or artificial sensor masses; it is not an independent measurement of the shipped physical robot or its current payload.",
+      "example": "G1 mode 10 and mode 11 have 23 and 29 body joints respectively and different wrist and waist configurations. A policy checkpoint trained on one cannot be assumed compatible with the other. The records here pin mode-specific files and distinguish their model mass from product specifications and from a robot carrying an added computer.",
+      "role_en": "Parameter audits connect robot hardware, simulation configuration, policy checkpoints, retargeting and trustworthy experimental comparisons.",
+      "latex": "\\text{model identity}=(\\text{repository},\\text{commit},\\text{path},\\text{arguments}),\\qquad m_{\\rm XML}=\\sum_{\\ell\\in\\mathcal L_{\\rm inertial}}m_\\ell",
+      "notation": [
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of explicitly declared link masses."
+        },
+        {
+          "symbol": "\\mathcal L_{\\rm inertial}",
+          "meaning": "Links that contain an inertial mass entry."
+        }
+      ],
+      "prereqs": [
+        "desc_dof",
+        "desc_limits",
+        "desc_inertial",
+        "desc_xacro",
+        "desc_import"
+      ],
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        }
+      ]
+    },
+    {
+      "id": "hw_g1_23",
+      "en": "Unitree G1 — 23-DoF body, mode 10",
+      "title": "Unitree G1 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 23 revolute + 6 fixed joints; 30 links; XML mass sum 32.10585728 kg.",
+      "definition": "This record describes the official Unitree G1 23-DoF body, mode 10 URDF at one pinned repository revision. Parsing finds 23 independent revolute joints, 6 fixed joints and 30 links. The body layout is 12 leg + 1 waist + 10 arm joints. Its declared link masses sum to 32.10585728 kg; this is a simulation-model sum, not a measured product weight. The root frame is pelvis, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint left_hip_pitch_joint has axis 0 1 0, position bounds -2.5307 to 2.8798 rad, effort limit 139.0 N m and velocity limit 20.0 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=23,\\quad n_{q,\\rm free}=30,\\quad n_{v,\\rm free}=29,\\quad m_{\\rm XML}=32.10585728\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_23dof_mode_10.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Unitree",
+        "model": "G1",
+        "variant": "23-DoF body, mode 10",
+        "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+        "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+        "path": "robots/g1_description/g1_23dof_mode_10.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_23dof_mode_10.urdf",
+        "joint_counts_by_type": {
+          "revolute": 23,
+          "fixed": 6
+        },
+        "independent_actuated_dof": 23,
+        "links_count": 30,
+        "limits_examples": [
+          {
+            "name": "left_hip_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -2.5307,
+            "upper": 2.8798,
+            "effort": 139.0,
+            "velocity": 20.0
+          },
+          {
+            "name": "left_hip_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.5236,
+            "upper": 2.9671,
+            "effort": 139.0,
+            "velocity": 20.0
+          },
+          {
+            "name": "left_hip_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -2.7576,
+            "upper": 2.7576,
+            "effort": 88.0,
+            "velocity": 32.0
+          },
+          {
+            "name": "right_elbow_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -1.0472,
+            "upper": 2.0944,
+            "effort": 25.0,
+            "velocity": 37.0
+          },
+          {
+            "name": "right_wrist_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -1.972222054,
+            "upper": 1.972222054,
+            "effort": 25.0,
+            "velocity": 37.0
+          }
+        ],
+        "mass_total_kg": 32.10585728,
+        "format": "URDF",
+        "independent_movable_dof": 23,
+        "actuation_evidence": "12 leg + 1 waist + 10 arm joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root pelvis has no parent joint. If imported with a free base: 29 physical generalized velocity DOF and 30 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 157ff950351e5f535e03c5d85a16b7d594b3dbcc; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 9333e89c51614c92b416c2c22a28f1614284d02321548e10479cce73552bcf43. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 1 waist + 10 arm joints"
+      }
+    },
+    {
+      "id": "hw_g1_29",
+      "en": "Unitree G1 — 29-DoF body, mode 11",
+      "title": "Unitree G1 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 29 revolute + 8 fixed joints; 38 links; XML mass sum 36.73000002 kg.",
+      "definition": "This record describes the official Unitree G1 29-DoF body, mode 11 URDF at one pinned repository revision. Parsing finds 29 independent revolute joints, 8 fixed joints and 38 links. The body layout is 12 leg + 3 waist + 14 arm joints. Its declared link masses sum to 36.73000002 kg; this is a simulation-model sum, not a measured product weight. The root frame is pelvis, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint left_hip_pitch_joint has axis 0 1 0, position bounds -2.5307 to 2.8798 rad, effort limit 139.0 N m and velocity limit 20.0 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=29,\\quad n_{q,\\rm free}=36,\\quad n_{v,\\rm free}=35,\\quad m_{\\rm XML}=36.73000002\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_29dof_mode_11.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Unitree",
+        "model": "G1",
+        "variant": "29-DoF body, mode 11",
+        "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+        "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+        "path": "robots/g1_description/g1_29dof_mode_11.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_29dof_mode_11.urdf",
+        "joint_counts_by_type": {
+          "revolute": 29,
+          "fixed": 8
+        },
+        "independent_actuated_dof": 29,
+        "links_count": 38,
+        "limits_examples": [
+          {
+            "name": "left_hip_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -2.5307,
+            "upper": 2.8798,
+            "effort": 139.0,
+            "velocity": 20.0
+          },
+          {
+            "name": "left_hip_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.5236,
+            "upper": 2.9671,
+            "effort": 139.0,
+            "velocity": 20.0
+          },
+          {
+            "name": "left_hip_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -2.7576,
+            "upper": 2.7576,
+            "effort": 88.0,
+            "velocity": 32.0
+          },
+          {
+            "name": "right_wrist_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -1.614429558,
+            "upper": 1.614429558,
+            "effort": 5.0,
+            "velocity": 22.0
+          },
+          {
+            "name": "right_wrist_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -1.614429558,
+            "upper": 1.614429558,
+            "effort": 5.0,
+            "velocity": 22.0
+          }
+        ],
+        "mass_total_kg": 36.73000002,
+        "format": "URDF",
+        "independent_movable_dof": 29,
+        "actuation_evidence": "12 leg + 3 waist + 14 arm joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root pelvis has no parent joint. If imported with a free base: 35 physical generalized velocity DOF and 36 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 157ff950351e5f535e03c5d85a16b7d594b3dbcc; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 f25e1814fecf01c3ff266bdb11465b3833d23b15de0b3a9cf84c36036d5cd696. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 3 waist + 14 arm joints"
+      }
+    },
+    {
+      "id": "hw_go2",
+      "en": "Unitree Go2 — 12-DoF quadruped",
+      "title": "Unitree Go2 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 12 revolute + 29 fixed joints; 42 links; XML mass sum 16.087 kg.",
+      "definition": "This record describes the official Unitree Go2 12-DoF quadruped URDF at one pinned repository revision. Parsing finds 12 independent revolute joints, 29 fixed joints and 42 links. The body layout is 4 legs with 3 joints per leg. Its declared link masses sum to 16.087 kg; this is a simulation-model sum, not a measured product weight. The root frame is base, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint FL_hip_joint has axis 1 0 0, position bounds -1.0472 to 1.0472 rad, effort limit 23.7 N m and velocity limit 30.1 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface. IMU and radar links have zero mass and zero inertia; treat them as massless fixed frames rather than ordinary massive bodies. Some decorative fixed links have tiny artificial masses.",
+      "latex": "n_{\\rm body}=12,\\quad n_{q,\\rm free}=19,\\quad n_{v,\\rm free}=18,\\quad m_{\\rm XML}=16.087\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/go2_description/urdf/go2_description.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/unitreerobotics/unitree_ros/blob/157ff950351e5f535e03c5d85a16b7d594b3dbcc/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Unitree",
+        "model": "Go2",
+        "variant": "12-DoF quadruped",
+        "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+        "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+        "path": "robots/go2_description/urdf/go2_description.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/go2_description/urdf/go2_description.urdf",
+        "joint_counts_by_type": {
+          "fixed": 29,
+          "revolute": 12
+        },
+        "independent_actuated_dof": 12,
+        "links_count": 42,
+        "limits_examples": [
+          {
+            "name": "FL_hip_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -1.0472,
+            "upper": 1.0472,
+            "effort": 23.7,
+            "velocity": 30.1
+          },
+          {
+            "name": "FL_thigh_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -1.5708,
+            "upper": 3.4907,
+            "effort": 23.7,
+            "velocity": 30.1
+          },
+          {
+            "name": "FL_calf_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -2.7227,
+            "upper": -0.83776,
+            "effort": 45.43,
+            "velocity": 15.7
+          },
+          {
+            "name": "RR_thigh_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.5236,
+            "upper": 4.5379,
+            "effort": 23.7,
+            "velocity": 30.1
+          },
+          {
+            "name": "RR_calf_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -2.7227,
+            "upper": -0.83776,
+            "effort": 45.43,
+            "velocity": 15.7
+          }
+        ],
+        "mass_total_kg": 16.087,
+        "format": "URDF",
+        "independent_movable_dof": 12,
+        "actuation_evidence": "4 legs with 3 joints per leg; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root base has no parent joint. If imported with a free base: 18 physical generalized velocity DOF and 19 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 157ff950351e5f535e03c5d85a16b7d594b3dbcc; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 7d19fe48e2e689ee1a032ab99f2a4a8b671d87e73de48d3e65811682a5b48b9e. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface. IMU and radar links have zero mass and zero inertia; treat them as massless fixed frames rather than ordinary massive bodies. Some decorative fixed links have tiny artificial masses.",
+        "layout": "4 legs with 3 joints per leg"
+      }
+    },
+    {
+      "id": "hw_t1_23",
+      "en": "Booster Robotics T1 — 23-DoF full-body",
+      "title": "Booster Robotics T1 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 23 revolute + 1 fixed joints; 25 links; XML mass sum 31.738357 kg.",
+      "definition": "This record describes the official Booster Robotics T1 23-DoF full-body URDF at one pinned repository revision. Parsing finds 23 independent revolute joints, 1 fixed joints and 25 links. The body layout is 12 leg + 1 waist + 8 arm + 2 head joints. Its declared link masses sum to 31.738357 kg; this is a simulation-model sum, not a measured product weight. The root frame is trunk, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint aahead_yaw_joint has axis 0 0 1, position bounds -1.309 to 1.309 rad, effort limit 7.0 N m and velocity limit 41.89 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=23,\\quad n_{q,\\rm free}=30,\\quad n_{v,\\rm free}=29,\\quad m_{\\rm XML}=31.738357\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_23dof.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Booster Robotics",
+        "model": "T1",
+        "variant": "23-DoF full-body",
+        "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+        "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+        "path": "robots/T1/T1_23dof.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_23dof.urdf",
+        "joint_counts_by_type": {
+          "revolute": 23,
+          "fixed": 1
+        },
+        "independent_actuated_dof": 23,
+        "links_count": 25,
+        "limits_examples": [
+          {
+            "name": "aahead_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -1.309,
+            "upper": 1.309,
+            "effort": 7.0,
+            "velocity": 41.89
+          },
+          {
+            "name": "aahead_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.35,
+            "upper": 0.96,
+            "effort": 7.0,
+            "velocity": 41.89
+          },
+          {
+            "name": "left_shoulder_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -3.276,
+            "upper": 1.196,
+            "effort": 38.3,
+            "velocity": 17.59
+          },
+          {
+            "name": "right_ankle_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.87,
+            "upper": 0.35,
+            "effort": 73.1,
+            "velocity": 12.57
+          },
+          {
+            "name": "right_ankle_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.44,
+            "upper": 0.44,
+            "effort": 17.2,
+            "velocity": 12.57
+          }
+        ],
+        "mass_total_kg": 31.738357,
+        "format": "URDF",
+        "independent_movable_dof": 23,
+        "actuation_evidence": "12 leg + 1 waist + 8 arm + 2 head joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root trunk has no parent joint. If imported with a free base: 29 physical generalized velocity DOF and 30 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 12a97516f57469078707afb587a5f84c1cb110d1; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 757337c2c8f402970088703f929ddc4f153ce2bdfee2372e2edad2271887deae. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 1 waist + 8 arm + 2 head joints"
+      }
+    },
+    {
+      "id": "hw_t1_29",
+      "en": "Booster Robotics T1 — 29-DoF full-body",
+      "title": "Booster Robotics T1 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 29 revolute + 1 fixed joints; 31 links; XML mass sum 34.632469 kg.",
+      "definition": "This record describes the official Booster Robotics T1 29-DoF full-body URDF at one pinned repository revision. Parsing finds 29 independent revolute joints, 1 fixed joints and 31 links. The body layout is 12 leg + 1 waist + 14 arm + 2 head joints. Its declared link masses sum to 34.632469 kg; this is a simulation-model sum, not a measured product weight. The root frame is trunk, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint aahead_yaw_joint has axis 0 0 1, position bounds -1.309 to 1.309 rad, effort limit 7.0 N m and velocity limit 41.89 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=29,\\quad n_{q,\\rm free}=36,\\quad n_{v,\\rm free}=35,\\quad m_{\\rm XML}=34.632469\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_29dof.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Booster Robotics",
+        "model": "T1",
+        "variant": "29-DoF full-body",
+        "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+        "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+        "path": "robots/T1/T1_29dof.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_29dof.urdf",
+        "joint_counts_by_type": {
+          "revolute": 29,
+          "fixed": 1
+        },
+        "independent_actuated_dof": 29,
+        "links_count": 31,
+        "limits_examples": [
+          {
+            "name": "aahead_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -1.309,
+            "upper": 1.309,
+            "effort": 7.0,
+            "velocity": 41.89
+          },
+          {
+            "name": "aahead_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.35,
+            "upper": 0.96,
+            "effort": 7.0,
+            "velocity": 41.89
+          },
+          {
+            "name": "left_shoulder_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -3.276,
+            "upper": 1.196,
+            "effort": 38.3,
+            "velocity": 17.59
+          },
+          {
+            "name": "right_ankle_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.87,
+            "upper": 0.35,
+            "effort": 73.1,
+            "velocity": 12.57
+          },
+          {
+            "name": "right_ankle_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.44,
+            "upper": 0.44,
+            "effort": 17.2,
+            "velocity": 12.57
+          }
+        ],
+        "mass_total_kg": 34.632469,
+        "format": "URDF",
+        "independent_movable_dof": 29,
+        "actuation_evidence": "12 leg + 1 waist + 14 arm + 2 head joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root trunk has no parent joint. If imported with a free base: 35 physical generalized velocity DOF and 36 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 12a97516f57469078707afb587a5f84c1cb110d1; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 e2bb70467a5b7685a47fe79d406a396cb06a4551623e5e24f97e031206e938ea. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 1 waist + 14 arm + 2 head joints"
+      }
+    },
+    {
+      "id": "hw_t2_31",
+      "en": "Booster Robotics T2 — 31-DoF full-body",
+      "title": "Booster Robotics T2 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 31 revolute + 3 fixed joints; 35 links; XML mass sum 41.99383 kg.",
+      "definition": "This record describes the official Booster Robotics T2 31-DoF full-body URDF at one pinned repository revision. Parsing finds 31 independent revolute joints, 3 fixed joints and 35 links. The body layout is 12 leg + 3 waist + 14 arm + 2 head joints. Its declared link masses sum to 41.99383 kg; this is a simulation-model sum, not a measured product weight. The root frame is trunk, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint aa_head_yaw_joint has axis 0 0 1, position bounds -1.099557429 to 1.099557429 rad, effort limit 22.0 N m and velocity limit 18.53539666 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=31,\\quad n_{q,\\rm free}=38,\\quad n_{v,\\rm free}=37,\\quad m_{\\rm XML}=41.99383\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/robots/T2/T2_31dof/T2_31dof.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Booster Robotics",
+        "model": "T2",
+        "variant": "31-DoF full-body",
+        "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+        "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+        "path": "robots/T2/T2_31dof/T2_31dof.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T2/T2_31dof/T2_31dof.urdf",
+        "joint_counts_by_type": {
+          "revolute": 31,
+          "fixed": 3
+        },
+        "independent_actuated_dof": 31,
+        "links_count": 35,
+        "limits_examples": [
+          {
+            "name": "aa_head_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -1.099557429,
+            "upper": 1.099557429,
+            "effort": 22.0,
+            "velocity": 18.53539666
+          },
+          {
+            "name": "head_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.314159265,
+            "upper": 0.401425728,
+            "effort": 22.0,
+            "velocity": 18.53539666
+          },
+          {
+            "name": "left_shoulder_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -3.019419606,
+            "upper": 1.710422667,
+            "effort": 74.0,
+            "velocity": 23.45722515
+          },
+          {
+            "name": "right_ankle_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.645771823,
+            "upper": 0.331612558,
+            "effort": 132.0,
+            "velocity": 16.63996909
+          },
+          {
+            "name": "right_ankle_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.314159265,
+            "upper": 0.314159265,
+            "effort": 72.0,
+            "velocity": 23.77138441
+          }
+        ],
+        "mass_total_kg": 41.99383,
+        "format": "URDF",
+        "independent_movable_dof": 31,
+        "actuation_evidence": "12 leg + 3 waist + 14 arm + 2 head joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root trunk has no parent joint. If imported with a free base: 37 physical generalized velocity DOF and 38 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 12a97516f57469078707afb587a5f84c1cb110d1; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 1833e3e82f23fa22bfd78e1218a52766334c8196949cc17bcc99651f585b4a1b. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 3 waist + 14 arm + 2 head joints"
+      }
+    },
+    {
+      "id": "hw_k1_22",
+      "en": "Booster Robotics K1 — 22-DoF full-body",
+      "title": "Booster Robotics K1 机器人模型",
+      "group": "robot_hardware",
+      "kind": "robot_model",
+      "summary": "Audited official URDF: 22 revolute + 2 fixed joints; 25 links; XML mass sum 19.666 kg.",
+      "definition": "This record describes the official Booster Robotics K1 22-DoF full-body URDF at one pinned repository revision. Parsing finds 22 independent revolute joints, 2 fixed joints and 25 links. The body layout is 12 leg + 8 arm + 2 head joints. Its declared link masses sum to 19.666 kg; this is a simulation-model sum, not a measured product weight. The root frame is trunk, with no explicit free-root joint. A simulator must decide whether the base is fixed or floating. Check this file's joint names, limits and variant before using retargeted motions or a policy checkpoint.",
+      "example": "The joint aahead_yaw_joint has axis 0 0 1, position bounds -1.012 to 1.012 rad, effort limit 6.0 N m and velocity limit 7.85 rad/s in this file. These are source-model parameters. They do not specify PD gains, measured tracking accuracy or motor thermal capability. Open the pinned URDF to inspect all joints.",
+      "role_en": "Use this concrete model to connect robot-description concepts to kinematic dimensions, retargeting mappings, simulation assets and hardware-specific controller configurations. Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+      "latex": "n_{\\rm body}=22,\\quad n_{q,\\rm free}=29,\\quad n_{v,\\rm free}=28,\\quad m_{\\rm XML}=19.666\\,\\mathrm{kg}",
+      "notation": [
+        {
+          "symbol": "n_{\\rm body}",
+          "meaning": "Independent scalar body-joint coordinates, matching the official layout."
+        },
+        {
+          "symbol": "n_{q,\\rm free},n_{v,\\rm free}",
+          "meaning": "Position storage and velocity dimensions only when the importer adds a quaternion free base."
+        },
+        {
+          "symbol": "m_{\\rm XML}",
+          "meaning": "Sum of declared link masses at this pinned revision."
+        }
+      ],
+      "prereqs": [
+        "desc_variant",
+        "desc_floating_base",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Pinned official URDF — exact audited XML",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/robots/K1/K1_22dof.urdf"
+        },
+        {
+          "title": "Official variant and body-joint layout",
+          "url": "https://github.com/BoosterRobotics/booster_assets/blob/12a97516f57469078707afb587a5f84c1cb110d1/README.md"
+        }
+      ],
+      "hardware": {
+        "manufacturer": "Booster Robotics",
+        "model": "K1",
+        "variant": "22-DoF full-body",
+        "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+        "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+        "path": "robots/K1/K1_22dof.urdf",
+        "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/K1/K1_22dof.urdf",
+        "joint_counts_by_type": {
+          "revolute": 22,
+          "fixed": 2
+        },
+        "independent_actuated_dof": 22,
+        "links_count": 25,
+        "limits_examples": [
+          {
+            "name": "aahead_yaw_joint",
+            "type": "revolute",
+            "axis": "0 0 1",
+            "lower": -1.012,
+            "upper": 1.012,
+            "effort": 6.0,
+            "velocity": 7.85
+          },
+          {
+            "name": "aahead_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.314,
+            "upper": 0.794,
+            "effort": 6.0,
+            "velocity": 7.85
+          },
+          {
+            "name": "aaleft_shoulder_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -2.932,
+            "upper": 1.196,
+            "effort": 14.0,
+            "velocity": 33.51
+          },
+          {
+            "name": "right_ankle_pitch_joint",
+            "type": "revolute",
+            "axis": "0 1 0",
+            "lower": -0.87,
+            "upper": 0.345,
+            "effort": 38.3,
+            "velocity": 17.59
+          },
+          {
+            "name": "right_ankle_roll_joint",
+            "type": "revolute",
+            "axis": "1 0 0",
+            "lower": -0.345,
+            "upper": 0.345,
+            "effort": 38.3,
+            "velocity": 17.59
+          }
+        ],
+        "mass_total_kg": 19.666,
+        "format": "URDF",
+        "independent_movable_dof": 22,
+        "actuation_evidence": "12 leg + 8 arm + 2 head joints; official README and parsed independent revolute joints agree. No motor driver was executed.",
+        "floating_base_dof_note": "URDF root trunk has no parent joint. If imported with a free base: 28 physical generalized velocity DOF and 29 quaternion position entries; the additional six base DOF are unactuated.",
+        "provenance": "Fetched official raw URDF at commit 12a97516f57469078707afb587a5f84c1cb110d1; parsed with Python xml.etree.ElementTree on 2026-11-16. XML SHA-256 834e17faf4681e5fcae116130a9da6d81b696c7f8278b95f281cec0551ca6124. Counts include all XML links/joints; total mass sums only explicit link inertial masses.",
+        "limitations": "Counts and mass are for the exact pinned URDF, not every physical product configuration. Root mobility is configured externally; no explicit floating joint appears. No mimic, transmission or ros2_control elements appear. Mesh assets are linked, not redistributed. Actuation count is inferred from the official named body layout together with independent revolute joint counts; the URDF alone does not certify an operational motor interface.",
+        "layout": "12 leg + 8 arm + 2 head joints"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "to": "desc_urdf",
+      "type": "prereq",
+      "why_en": "Unified Robot Description Format (URDF) uses physical units and coordinate conventions to specify and validate the robot model.",
+      "from": "ph_units"
+    },
+    {
+      "to": "desc_urdf",
+      "type": "prereq",
+      "why_en": "Unified Robot Description Format (URDF) uses r frames to specify and validate the robot model.",
+      "from": "r_frames"
+    },
+    {
+      "to": "desc_link",
+      "type": "prereq",
+      "why_en": "Rigid Links and Attached Frames uses urdf to specify and validate the robot model.",
+      "from": "desc_urdf"
+    },
+    {
+      "to": "desc_link",
+      "type": "prereq",
+      "why_en": "Rigid Links and Attached Frames uses r frames to specify and validate the robot model.",
+      "from": "r_frames"
+    },
+    {
+      "to": "desc_joint",
+      "type": "prereq",
+      "why_en": "Joint Types and Allowed Motion uses link to specify and validate the robot model.",
+      "from": "desc_link"
+    },
+    {
+      "to": "desc_tree",
+      "type": "prereq",
+      "why_en": "Kinematic Trees and Closed Loops uses joint to specify and validate the robot model.",
+      "from": "desc_joint"
+    },
+    {
+      "to": "desc_tree",
+      "type": "prereq",
+      "why_en": "Kinematic Trees and Closed Loops uses rigid transformations to specify and validate the robot model.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "desc_origin",
+      "type": "prereq",
+      "why_en": "Origins, XYZ and Roll-Pitch-Yaw uses joint to specify and validate the robot model.",
+      "from": "desc_joint"
+    },
+    {
+      "to": "desc_origin",
+      "type": "prereq",
+      "why_en": "Origins, XYZ and Roll-Pitch-Yaw uses rigid transformations to specify and validate the robot model.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "desc_origin",
+      "type": "prereq",
+      "why_en": "Origins, XYZ and Roll-Pitch-Yaw uses m trig to specify and validate the robot model.",
+      "from": "m_trig"
+    },
+    {
+      "to": "desc_joint_axis",
+      "type": "prereq",
+      "why_en": "Joint Axes and Sign Conventions uses origin to specify and validate the robot model.",
+      "from": "desc_origin"
+    },
+    {
+      "to": "desc_joint_axis",
+      "type": "prereq",
+      "why_en": "Joint Axes and Sign Conventions uses forward kinematics to specify and validate the robot model.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "desc_limits",
+      "type": "prereq",
+      "why_en": "Joint Limits and Physical Units uses joint to specify and validate the robot model.",
+      "from": "desc_joint"
+    },
+    {
+      "to": "desc_limits",
+      "type": "prereq",
+      "why_en": "Joint Limits and Physical Units uses physical units and coordinate conventions to specify and validate the robot model.",
+      "from": "ph_units"
+    },
+    {
+      "to": "desc_limits",
+      "type": "prereq",
+      "why_en": "Joint Limits and Physical Units uses ph torque to specify and validate the robot model.",
+      "from": "ph_torque"
+    },
+    {
+      "to": "desc_inertial",
+      "type": "prereq",
+      "why_en": "Mass, Center of Mass and Inertia Tensor uses link to specify and validate the robot model.",
+      "from": "desc_link"
+    },
+    {
+      "to": "desc_inertial",
+      "type": "prereq",
+      "why_en": "Mass, Center of Mass and Inertia Tensor uses origin to specify and validate the robot model.",
+      "from": "desc_origin"
+    },
+    {
+      "to": "desc_inertial",
+      "type": "prereq",
+      "why_en": "Mass, Center of Mass and Inertia Tensor uses rigid-body inertia to specify and validate the robot model.",
+      "from": "ph_inertia"
+    },
+    {
+      "to": "desc_inertial",
+      "type": "prereq",
+      "why_en": "Mass, Center of Mass and Inertia Tensor uses m eigen to specify and validate the robot model.",
+      "from": "m_eigen"
+    },
+    {
+      "to": "desc_geometry",
+      "type": "prereq",
+      "why_en": "Visual Geometry and Collision Geometry uses link to specify and validate the robot model.",
+      "from": "desc_link"
+    },
+    {
+      "to": "desc_geometry",
+      "type": "prereq",
+      "why_en": "Visual Geometry and Collision Geometry uses origin to specify and validate the robot model.",
+      "from": "desc_origin"
+    },
+    {
+      "to": "desc_dof",
+      "type": "prereq",
+      "why_en": "Degrees of Freedom and Actuation Counts uses joint to specify and validate the robot model.",
+      "from": "desc_joint"
+    },
+    {
+      "to": "desc_dof",
+      "type": "prereq",
+      "why_en": "Degrees of Freedom and Actuation Counts uses tree to specify and validate the robot model.",
+      "from": "desc_tree"
+    },
+    {
+      "to": "desc_floating_base",
+      "type": "prereq",
+      "why_en": "Floating Bases and Quaternion Dimensions uses dof to specify and validate the robot model.",
+      "from": "desc_dof"
+    },
+    {
+      "to": "desc_floating_base",
+      "type": "prereq",
+      "why_en": "Floating Bases and Quaternion Dimensions uses orientation coordinates to specify and validate the robot model.",
+      "from": "geo_quaternion"
+    },
+    {
+      "to": "desc_mimic",
+      "type": "prereq",
+      "why_en": "Mimic Joints and Passive Joints uses dof to specify and validate the robot model.",
+      "from": "desc_dof"
+    },
+    {
+      "to": "desc_transmission",
+      "type": "prereq",
+      "why_en": "Transmissions and Motor-to-Joint Mapping uses joint to specify and validate the robot model.",
+      "from": "desc_joint"
+    },
+    {
+      "to": "desc_transmission",
+      "type": "prereq",
+      "why_en": "Transmissions and Motor-to-Joint Mapping uses ph torque to specify and validate the robot model.",
+      "from": "ph_torque"
+    },
+    {
+      "to": "desc_transmission",
+      "type": "prereq",
+      "why_en": "Transmissions and Motor-to-Joint Mapping uses ph energy to specify and validate the robot model.",
+      "from": "ph_energy"
+    },
+    {
+      "to": "desc_ros2control",
+      "type": "prereq",
+      "why_en": "ros2_control and Command Interfaces uses limits to specify and validate the robot model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "desc_ros2control",
+      "type": "prereq",
+      "why_en": "ros2_control and Command Interfaces uses transmission to specify and validate the robot model.",
+      "from": "desc_transmission"
+    },
+    {
+      "to": "desc_xacro",
+      "type": "prereq",
+      "why_en": "Xacro Parameters and Model Generation uses urdf to specify and validate the robot model.",
+      "from": "desc_urdf"
+    },
+    {
+      "to": "desc_xacro",
+      "type": "prereq",
+      "why_en": "Xacro Parameters and Model Generation uses tree to specify and validate the robot model.",
+      "from": "desc_tree"
+    },
+    {
+      "to": "desc_srdf",
+      "type": "prereq",
+      "why_en": "SRDF, Planning Groups and Collision Filters uses tree to specify and validate the robot model.",
+      "from": "desc_tree"
+    },
+    {
+      "to": "desc_srdf",
+      "type": "prereq",
+      "why_en": "SRDF, Planning Groups and Collision Filters uses mimic to specify and validate the robot model.",
+      "from": "desc_mimic"
+    },
+    {
+      "to": "desc_srdf",
+      "type": "prereq",
+      "why_en": "SRDF, Planning Groups and Collision Filters uses geometry to specify and validate the robot model.",
+      "from": "desc_geometry"
+    },
+    {
+      "to": "desc_import",
+      "type": "prereq",
+      "why_en": "URDF Import and Simulator Semantics uses urdf to specify and validate the robot model.",
+      "from": "desc_urdf"
+    },
+    {
+      "to": "desc_import",
+      "type": "prereq",
+      "why_en": "URDF Import and Simulator Semantics uses floating base to specify and validate the robot model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "desc_import",
+      "type": "prereq",
+      "why_en": "URDF Import and Simulator Semantics uses inertial to specify and validate the robot model.",
+      "from": "desc_inertial"
+    },
+    {
+      "to": "desc_import",
+      "type": "prereq",
+      "why_en": "URDF Import and Simulator Semantics uses geometry to specify and validate the robot model.",
+      "from": "desc_geometry"
+    },
+    {
+      "to": "desc_variant",
+      "type": "prereq",
+      "why_en": "Robot Variants and Reproducible Parameter Audits uses dof to specify and validate the robot model.",
+      "from": "desc_dof"
+    },
+    {
+      "to": "desc_variant",
+      "type": "prereq",
+      "why_en": "Robot Variants and Reproducible Parameter Audits uses limits to specify and validate the robot model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "desc_variant",
+      "type": "prereq",
+      "why_en": "Robot Variants and Reproducible Parameter Audits uses inertial to specify and validate the robot model.",
+      "from": "desc_inertial"
+    },
+    {
+      "to": "desc_variant",
+      "type": "prereq",
+      "why_en": "Robot Variants and Reproducible Parameter Audits uses xacro to specify and validate the robot model.",
+      "from": "desc_xacro"
+    },
+    {
+      "to": "desc_variant",
+      "type": "prereq",
+      "why_en": "Robot Variants and Reproducible Parameter Audits uses import to specify and validate the robot model.",
+      "from": "desc_import"
+    },
+    {
+      "to": "hw_g1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_g1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_g1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_g1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_g1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_g1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_go2",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_go2",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_go2",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_t1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_t1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_t1_23",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_t1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_t1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_t1_29",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_t2_31",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_t2_31",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_t2_31",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "hw_k1_22",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_variant"
+    },
+    {
+      "to": "hw_k1_22",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_floating_base"
+    },
+    {
+      "to": "hw_k1_22",
+      "type": "prereq",
+      "why_en": "Read the exact file identity, joint units and root convention before interpreting this hardware model.",
+      "from": "desc_limits"
+    },
+    {
+      "to": "rb_fk",
+      "type": "application",
+      "why_en": "A unique parent path gives the transform product used by forward kinematics.",
+      "from": "desc_tree"
+    },
+    {
+      "to": "rb_jacobian",
+      "type": "application",
+      "why_en": "Joint axes expressed in a common frame determine Jacobian columns.",
+      "from": "desc_joint_axis"
+    },
+    {
+      "to": "rb_inverse_dynamics",
+      "type": "application",
+      "why_en": "Link mass, center of mass and inertia populate rigid-body inverse dynamics.",
+      "from": "desc_inertial"
+    },
+    {
+      "to": "sim_mujoco",
+      "type": "application",
+      "why_en": "MuJoCo compiles URDF with its importer semantics and a separately configured root.",
+      "from": "desc_import"
+    },
+    {
+      "to": "sim_isaacsim",
+      "type": "application",
+      "why_en": "Isaac Sim import settings determine fixed-link merging, contact shapes and root mobility.",
+      "from": "desc_import"
+    },
+    {
+      "to": "rb_ik",
+      "type": "application",
+      "why_en": "Planning groups select the joints solved by an inverse-kinematics plugin.",
+      "from": "desc_srdf"
+    },
+    {
+      "to": "sim_contactsensors",
+      "type": "application",
+      "why_en": "Collision shapes define the surfaces at which contacts can be detected.",
+      "from": "desc_geometry"
+    }
+  ],
+  "research": [
+    {
+      "topic": "Official model audit",
+      "method": "Downloaded seven URDF XML files from manufacturer-owned GitHub repositories at pinned tree commits; parsed joint types, mimic/transmission/control tags, roots, link masses, limit samples and inertia eigenvalues. No meshes were copied.",
+      "checked_at": "2026-11-16",
+      "sources": [
+        {
+          "title": "Unitree official robot descriptions",
+          "url": "https://github.com/unitreerobotics/unitree_ros/tree/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots"
+        },
+        {
+          "title": "Booster official assets",
+          "url": "https://github.com/BoosterRobotics/booster_assets/tree/12a97516f57469078707afb587a5f84c1cb110d1"
+        }
+      ]
+    },
+    {
+      "topic": "URDF semantics",
+      "method": "Read official URDF parser source, ROS REP-103, MoveIt URDF/SRDF, ros2_control documentation and MuJoCo modeling/computation documentation. ROS hosted tutorial pages returned an access challenge; official source and alternate primary docs were used.",
+      "sources": [
+        {
+          "title": "Official URDF parser: joints and transforms",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/joint.cpp"
+        },
+        {
+          "title": "Official URDF parser: links, geometry and inertia",
+          "url": "https://github.com/ros/urdfdom/blob/master/urdf_parser/src/link.cpp"
+        },
+        {
+          "title": "ROS REP-103: SI units and coordinate conventions",
+          "url": "https://www.ros.org/reps/rep-0103.html"
+        },
+        {
+          "title": "Official Xacro documentation and source",
+          "url": "https://github.com/ros/xacro"
+        },
+        {
+          "title": "MoveIt: URDF and SRDF, virtual and passive joints",
+          "url": "https://moveit.picknik.ai/main/doc/examples/urdf_srdf/urdf_srdf_tutorial.html"
+        },
+        {
+          "title": "ros2_control hardware interfaces and URDF tags",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html"
+        },
+        {
+          "title": "ros2_control transmission interfaces",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/transmission_interface/doc/index.html"
+        },
+        {
+          "title": "MuJoCo model computation: free-joint positions and velocities",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/index.html"
+        },
+        {
+          "title": "MuJoCo modeling: URDF import, compilation and model differences",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        }
+      ]
+    }
+  ],
+  "unresolved_terms": [
+    {
+      "term": "Unitree dog",
+      "resolution": "Interpreted as Unitree Go2, a currently official 12-DoF quadruped model. Unitree also has Go1, A1, B2 and other dogs; the user did not identify an exact product.",
+      "status": "model-family ambiguity retained",
+      "candidate_node": "hw_go2"
+    },
+    {
+      "term": "Booster T2",
+      "resolution": "Exact official T2_31dof.urdf found and audited; not substituted with T1. Hand-equipped T2 variants exist but were not counted in this body-only record.",
+      "status": "resolved",
+      "candidate_node": "hw_t2_31"
+    }
+  ],
+  "hardware_audits": [
+    {
+      "id": "hw_g1_23",
+      "manufacturer": "Unitree",
+      "model": "G1",
+      "variant": "23-DoF body, mode 10",
+      "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+      "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+      "path": "robots/g1_description/g1_23dof_mode_10.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_23dof_mode_10.urdf",
+      "joint_counts_by_type": {
+        "revolute": 23,
+        "fixed": 6
+      },
+      "independent_actuated_dof": 23,
+      "links_count": 30,
+      "mass_total_kg": 32.10585728,
+      "limits_examples": [
+        {
+          "name": "left_hip_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -2.5307,
+          "upper": 2.8798,
+          "effort": 139.0,
+          "velocity": 20.0
+        },
+        {
+          "name": "left_hip_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.5236,
+          "upper": 2.9671,
+          "effort": 139.0,
+          "velocity": 20.0
+        },
+        {
+          "name": "left_hip_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -2.7576,
+          "upper": 2.7576,
+          "effort": 88.0,
+          "velocity": 32.0
+        },
+        {
+          "name": "right_elbow_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -1.0472,
+          "upper": 2.0944,
+          "effort": 25.0,
+          "velocity": 37.0
+        },
+        {
+          "name": "right_wrist_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -1.972222054,
+          "upper": 1.972222054,
+          "effort": 25.0,
+          "velocity": 37.0
+        }
+      ],
+      "root_links": [
+        "pelvis"
+      ],
+      "joint_names": [
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint",
+        "waist_yaw_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_shoulder_yaw_joint",
+        "left_elbow_joint",
+        "left_wrist_roll_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_shoulder_yaw_joint",
+        "right_elbow_joint",
+        "right_wrist_roll_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "imu_in_torso",
+        "imu_in_pelvis",
+        "d435_link",
+        "mid360_link"
+      ],
+      "small_mass_links": [
+        {
+          "link": "logo_link",
+          "mass_kg": 0.001
+        }
+      ],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 1e-07,
+      "xml_sha256": "9333e89c51614c92b416c2c22a28f1614284d02321548e10479cce73552bcf43",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_g1_29",
+      "manufacturer": "Unitree",
+      "model": "G1",
+      "variant": "29-DoF body, mode 11",
+      "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+      "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+      "path": "robots/g1_description/g1_29dof_mode_11.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/g1_description/g1_29dof_mode_11.urdf",
+      "joint_counts_by_type": {
+        "revolute": 29,
+        "fixed": 8
+      },
+      "independent_actuated_dof": 29,
+      "links_count": 38,
+      "mass_total_kg": 36.73000002,
+      "limits_examples": [
+        {
+          "name": "left_hip_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -2.5307,
+          "upper": 2.8798,
+          "effort": 139.0,
+          "velocity": 20.0
+        },
+        {
+          "name": "left_hip_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.5236,
+          "upper": 2.9671,
+          "effort": 139.0,
+          "velocity": 20.0
+        },
+        {
+          "name": "left_hip_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -2.7576,
+          "upper": 2.7576,
+          "effort": 88.0,
+          "velocity": 32.0
+        },
+        {
+          "name": "right_wrist_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -1.614429558,
+          "upper": 1.614429558,
+          "effort": 5.0,
+          "velocity": 22.0
+        },
+        {
+          "name": "right_wrist_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -1.614429558,
+          "upper": 1.614429558,
+          "effort": 5.0,
+          "velocity": 22.0
+        }
+      ],
+      "root_links": [
+        "pelvis"
+      ],
+      "joint_names": [
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint",
+        "waist_yaw_joint",
+        "waist_roll_joint",
+        "waist_pitch_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_shoulder_yaw_joint",
+        "left_elbow_joint",
+        "left_wrist_roll_joint",
+        "left_wrist_pitch_joint",
+        "left_wrist_yaw_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_shoulder_yaw_joint",
+        "right_elbow_joint",
+        "right_wrist_roll_joint",
+        "right_wrist_pitch_joint",
+        "right_wrist_yaw_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "imu_in_torso",
+        "imu_in_pelvis",
+        "d435_link",
+        "mid360_link"
+      ],
+      "small_mass_links": [
+        {
+          "link": "logo_link",
+          "mass_kg": 0.001
+        }
+      ],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 1e-07,
+      "xml_sha256": "f25e1814fecf01c3ff266bdb11465b3833d23b15de0b3a9cf84c36036d5cd696",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_go2",
+      "manufacturer": "Unitree",
+      "model": "Go2",
+      "variant": "12-DoF quadruped",
+      "source_repository": "https://github.com/unitreerobotics/unitree_ros",
+      "commit": "157ff950351e5f535e03c5d85a16b7d594b3dbcc",
+      "path": "robots/go2_description/urdf/go2_description.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/unitreerobotics/unitree_ros/157ff950351e5f535e03c5d85a16b7d594b3dbcc/robots/go2_description/urdf/go2_description.urdf",
+      "joint_counts_by_type": {
+        "fixed": 29,
+        "revolute": 12
+      },
+      "independent_actuated_dof": 12,
+      "links_count": 42,
+      "mass_total_kg": 16.087,
+      "limits_examples": [
+        {
+          "name": "FL_hip_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -1.0472,
+          "upper": 1.0472,
+          "effort": 23.7,
+          "velocity": 30.1
+        },
+        {
+          "name": "FL_thigh_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -1.5708,
+          "upper": 3.4907,
+          "effort": 23.7,
+          "velocity": 30.1
+        },
+        {
+          "name": "FL_calf_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -2.7227,
+          "upper": -0.83776,
+          "effort": 45.43,
+          "velocity": 15.7
+        },
+        {
+          "name": "RR_thigh_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.5236,
+          "upper": 4.5379,
+          "effort": 23.7,
+          "velocity": 30.1
+        },
+        {
+          "name": "RR_calf_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -2.7227,
+          "upper": -0.83776,
+          "effort": 45.43,
+          "velocity": 15.7
+        }
+      ],
+      "root_links": [
+        "base"
+      ],
+      "joint_names": [
+        "FL_hip_joint",
+        "FL_thigh_joint",
+        "FL_calf_joint",
+        "FR_hip_joint",
+        "FR_thigh_joint",
+        "FR_calf_joint",
+        "RL_hip_joint",
+        "RL_thigh_joint",
+        "RL_calf_joint",
+        "RR_hip_joint",
+        "RR_thigh_joint",
+        "RR_calf_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "FL_calflower",
+        "FL_calflower1",
+        "FR_calflower",
+        "FR_calflower1",
+        "RL_calflower",
+        "RL_calflower1",
+        "RR_calflower",
+        "RR_calflower1",
+        "front_camera"
+      ],
+      "small_mass_links": [
+        {
+          "link": "Head_upper",
+          "mass_kg": 0.001
+        },
+        {
+          "link": "Head_lower",
+          "mass_kg": 0.001
+        },
+        {
+          "link": "imu",
+          "mass_kg": 0.0
+        },
+        {
+          "link": "radar",
+          "mass_kg": 0.0
+        }
+      ],
+      "nonpositive_inertia_links": [
+        {
+          "link": "imu",
+          "eigenvalues": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "link": "radar",
+          "eigenvalues": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "minimum_inertia_eigenvalue": 0.0,
+      "xml_sha256": "7d19fe48e2e689ee1a032ab99f2a4a8b671d87e73de48d3e65811682a5b48b9e",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_t1_23",
+      "manufacturer": "Booster Robotics",
+      "model": "T1",
+      "variant": "23-DoF full-body",
+      "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+      "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+      "path": "robots/T1/T1_23dof.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_23dof.urdf",
+      "joint_counts_by_type": {
+        "revolute": 23,
+        "fixed": 1
+      },
+      "independent_actuated_dof": 23,
+      "links_count": 25,
+      "mass_total_kg": 31.738357,
+      "limits_examples": [
+        {
+          "name": "aahead_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -1.309,
+          "upper": 1.309,
+          "effort": 7.0,
+          "velocity": 41.89
+        },
+        {
+          "name": "aahead_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.35,
+          "upper": 0.96,
+          "effort": 7.0,
+          "velocity": 41.89
+        },
+        {
+          "name": "left_shoulder_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -3.276,
+          "upper": 1.196,
+          "effort": 38.3,
+          "velocity": 17.59
+        },
+        {
+          "name": "right_ankle_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.87,
+          "upper": 0.35,
+          "effort": 73.1,
+          "velocity": 12.57
+        },
+        {
+          "name": "right_ankle_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.44,
+          "upper": 0.44,
+          "effort": 17.2,
+          "velocity": 12.57
+        }
+      ],
+      "root_links": [
+        "trunk"
+      ],
+      "joint_names": [
+        "aahead_yaw_joint",
+        "aahead_pitch_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_elbow_pitch_joint",
+        "left_elbow_yaw_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_elbow_pitch_joint",
+        "right_elbow_yaw_joint",
+        "waist_yaw_joint",
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_pitch_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_pitch_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "head_realsense_rgb_link"
+      ],
+      "small_mass_links": [],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 1.1341089468361824e-05,
+      "xml_sha256": "757337c2c8f402970088703f929ddc4f153ce2bdfee2372e2edad2271887deae",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_t1_29",
+      "manufacturer": "Booster Robotics",
+      "model": "T1",
+      "variant": "29-DoF full-body",
+      "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+      "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+      "path": "robots/T1/T1_29dof.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T1/T1_29dof.urdf",
+      "joint_counts_by_type": {
+        "revolute": 29,
+        "fixed": 1
+      },
+      "independent_actuated_dof": 29,
+      "links_count": 31,
+      "mass_total_kg": 34.632469,
+      "limits_examples": [
+        {
+          "name": "aahead_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -1.309,
+          "upper": 1.309,
+          "effort": 7.0,
+          "velocity": 41.89
+        },
+        {
+          "name": "aahead_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.35,
+          "upper": 0.96,
+          "effort": 7.0,
+          "velocity": 41.89
+        },
+        {
+          "name": "left_shoulder_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -3.276,
+          "upper": 1.196,
+          "effort": 38.3,
+          "velocity": 17.59
+        },
+        {
+          "name": "right_ankle_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.87,
+          "upper": 0.35,
+          "effort": 73.1,
+          "velocity": 12.57
+        },
+        {
+          "name": "right_ankle_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.44,
+          "upper": 0.44,
+          "effort": 17.2,
+          "velocity": 12.57
+        }
+      ],
+      "root_links": [
+        "trunk"
+      ],
+      "joint_names": [
+        "aahead_yaw_joint",
+        "aahead_pitch_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_elbow_pitch_joint",
+        "left_elbow_yaw_joint",
+        "left_wrist_pitch_joint",
+        "left_wrist_yaw_joint",
+        "left_wrist_roll_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_elbow_pitch_joint",
+        "right_elbow_yaw_joint",
+        "right_wrist_pitch_joint",
+        "right_wrist_yaw_joint",
+        "right_wrist_roll_joint",
+        "waist_yaw_joint",
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_pitch_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_pitch_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "head_realsense_rgb_link"
+      ],
+      "small_mass_links": [],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 1.1341089468361824e-05,
+      "xml_sha256": "e2bb70467a5b7685a47fe79d406a396cb06a4551623e5e24f97e031206e938ea",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_t2_31",
+      "manufacturer": "Booster Robotics",
+      "model": "T2",
+      "variant": "31-DoF full-body",
+      "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+      "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+      "path": "robots/T2/T2_31dof/T2_31dof.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/T2/T2_31dof/T2_31dof.urdf",
+      "joint_counts_by_type": {
+        "revolute": 31,
+        "fixed": 3
+      },
+      "independent_actuated_dof": 31,
+      "links_count": 35,
+      "mass_total_kg": 41.99383,
+      "limits_examples": [
+        {
+          "name": "aa_head_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -1.099557429,
+          "upper": 1.099557429,
+          "effort": 22.0,
+          "velocity": 18.53539666
+        },
+        {
+          "name": "head_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.314159265,
+          "upper": 0.401425728,
+          "effort": 22.0,
+          "velocity": 18.53539666
+        },
+        {
+          "name": "left_shoulder_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -3.019419606,
+          "upper": 1.710422667,
+          "effort": 74.0,
+          "velocity": 23.45722515
+        },
+        {
+          "name": "right_ankle_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.645771823,
+          "upper": 0.331612558,
+          "effort": 132.0,
+          "velocity": 16.63996909
+        },
+        {
+          "name": "right_ankle_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.314159265,
+          "upper": 0.314159265,
+          "effort": 72.0,
+          "velocity": 23.77138441
+        }
+      ],
+      "root_links": [
+        "trunk"
+      ],
+      "joint_names": [
+        "aa_head_yaw_joint",
+        "head_pitch_joint",
+        "left_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_elbow_pitch_joint",
+        "left_elbow_yaw_joint",
+        "left_wrist_pitch_joint",
+        "left_wrist_yaw_joint",
+        "left_wrist_roll_joint",
+        "right_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_elbow_pitch_joint",
+        "right_elbow_yaw_joint",
+        "right_wrist_pitch_joint",
+        "right_wrist_yaw_joint",
+        "right_wrist_roll_joint",
+        "waist_pitch_joint",
+        "waist_roll_joint",
+        "waist_yaw_joint",
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_pitch_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_pitch_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "head_booster_stereo_rgb_link",
+        "waist_booster_stereo_rgb_link"
+      ],
+      "small_mass_links": [
+        {
+          "link": "logo",
+          "mass_kg": 0.001
+        }
+      ],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 1e-06,
+      "xml_sha256": "1833e3e82f23fa22bfd78e1218a52766334c8196949cc17bcc99651f585b4a1b",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    },
+    {
+      "id": "hw_k1_22",
+      "manufacturer": "Booster Robotics",
+      "model": "K1",
+      "variant": "22-DoF full-body",
+      "source_repository": "https://github.com/BoosterRobotics/booster_assets",
+      "commit": "12a97516f57469078707afb587a5f84c1cb110d1",
+      "path": "robots/K1/K1_22dof.urdf",
+      "urdf_url": "https://raw.githubusercontent.com/BoosterRobotics/booster_assets/12a97516f57469078707afb587a5f84c1cb110d1/robots/K1/K1_22dof.urdf",
+      "joint_counts_by_type": {
+        "revolute": 22,
+        "fixed": 2
+      },
+      "independent_actuated_dof": 22,
+      "links_count": 25,
+      "mass_total_kg": 19.666,
+      "limits_examples": [
+        {
+          "name": "aahead_yaw_joint",
+          "type": "revolute",
+          "axis": "0 0 1",
+          "lower": -1.012,
+          "upper": 1.012,
+          "effort": 6.0,
+          "velocity": 7.85
+        },
+        {
+          "name": "aahead_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.314,
+          "upper": 0.794,
+          "effort": 6.0,
+          "velocity": 7.85
+        },
+        {
+          "name": "aaleft_shoulder_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -2.932,
+          "upper": 1.196,
+          "effort": 14.0,
+          "velocity": 33.51
+        },
+        {
+          "name": "right_ankle_pitch_joint",
+          "type": "revolute",
+          "axis": "0 1 0",
+          "lower": -0.87,
+          "upper": 0.345,
+          "effort": 38.3,
+          "velocity": 17.59
+        },
+        {
+          "name": "right_ankle_roll_joint",
+          "type": "revolute",
+          "axis": "1 0 0",
+          "lower": -0.345,
+          "upper": 0.345,
+          "effort": 38.3,
+          "velocity": 17.59
+        }
+      ],
+      "root_links": [
+        "trunk"
+      ],
+      "joint_names": [
+        "aahead_yaw_joint",
+        "aahead_pitch_joint",
+        "aaleft_shoulder_pitch_joint",
+        "left_shoulder_roll_joint",
+        "left_elbow_pitch_joint",
+        "left_elbow_yaw_joint",
+        "aaright_shoulder_pitch_joint",
+        "right_shoulder_roll_joint",
+        "right_elbow_pitch_joint",
+        "right_elbow_yaw_joint",
+        "left_hip_pitch_joint",
+        "left_hip_roll_joint",
+        "left_hip_yaw_joint",
+        "left_knee_pitch_joint",
+        "left_ankle_pitch_joint",
+        "left_ankle_roll_joint",
+        "right_hip_pitch_joint",
+        "right_hip_roll_joint",
+        "right_hip_yaw_joint",
+        "right_knee_pitch_joint",
+        "right_ankle_pitch_joint",
+        "right_ankle_roll_joint"
+      ],
+      "mimic_joint_names": [],
+      "transmission_count": 0,
+      "ros2_control_count": 0,
+      "links_without_inertial": [
+        "head_realsense_rgb_link",
+        "head_booster_stereo_rgb_link"
+      ],
+      "small_mass_links": [],
+      "nonpositive_inertia_links": [],
+      "minimum_inertia_eigenvalue": 2e-06,
+      "xml_sha256": "834e17faf4681e5fcae116130a9da6d81b696c7f8278b95f281cec0551ca6124",
+      "audit_date": "2026-11-16",
+      "format": "URDF",
+      "actuation_evidence": "Official body-layout description plus count of independent revolute joints. No mimic joints present. The audit does not execute hardware or prove command availability.",
+      "mass_semantics": "Sum of explicit inertial/mass values; absent inertial links contribute no declared mass, not a measured zero physical mass.",
+      "validation_scope": "XML structural audit and numerical inertia-eigenvalue screen; no mesh loading, simulator execution, hardware test or full physical-identification validation.",
+      "floating_joint_count": 0
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Live website:** https://Leo-Haochen-Liu.github.io/robotics-atlas/
 
-An interactive, source-linked robotics learning atlas. The current version contains 254 topics, 67 papers or official releases, and 722 typed connections. World models remain one part of the wider robotics map.
+An interactive, source-linked robotics learning atlas. The current version contains 347 topics, 94 papers or official releases, and 1037 typed connections. World models remain one part of the wider robotics map.
 
 ## Use
 Expand a category and then a branch, or search the Knowledge Library. Each concept includes LaTeX formulas, notation, definition, example, references and prerequisite/downstream networks. Each paper is one record with internal framework, training, evaluation, scale and limitations. The fixed arrow pad supports mobile panning without browser swipe gestures.

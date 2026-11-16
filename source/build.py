@@ -122,7 +122,7 @@ from expansion_build import expand_atlas
 nodes,edges,expansion=expand_atlas(P,nodes,edges)
 import base64
 figures={f.name:'data:image/png;base64,'+base64.b64encode(f.read_bytes()).decode() for f in (P/'paper_assets').glob('*.png')}
-data=dict(**expansion,paperFigures=figures,nodes=nodes,edges=edges,references=[dict(title=t,url=u) for t,u in refs],version='4.0',date='2026-11-14')
+data=dict(**expansion,paperFigures=figures,nodes=nodes,edges=edges,references=[dict(title=t,url=u) for t,u in refs],version='4.1',date='2026-11-16')
 (P/'dist').mkdir(exist_ok=True)
 (P/'atlas.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
 css=(P/'vendor/katex/dist/katex.min.css').read_text()

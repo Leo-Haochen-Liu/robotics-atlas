@@ -1,0 +1,359 @@
+{
+  "nodes": [
+    {
+      "id": "la_cross",
+      "en": "Cross Product and Three-Dimensional Moments",
+      "title": "叉积与三维力矩",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "The cross product maps two three-dimensional vectors to a vector perpendicular to both.",
+      "definition": "The cross product maps two three-dimensional vectors to a vector perpendicular to both. Its sign follows the right-hand convention. In mechanics, multiplying a displacement from the reference point by a force gives the moment about that point; all coordinates must use the same frame.",
+      "latex": [
+        "a\\times b=\\begin{bmatrix}a_2b_3-a_3b_2\\\\a_3b_1-a_1b_3\\\\a_1b_2-a_2b_1\\end{bmatrix}",
+        "\\tau=r\\times f"
+      ],
+      "notation": [
+        {
+          "symbol": "a,b,r,f\\in\\mathbb R^3",
+          "meaning": "Input vectors; r is the lever arm in meters and f is force in newtons."
+        },
+        {
+          "symbol": "\\tau\\in\\mathbb R^3",
+          "meaning": "Moment about the reference point, in N·m."
+        }
+      ],
+      "prereqs": [
+        "m_vector"
+      ],
+      "example": "A 10 N upward force applied 0.2 m forward gives a 2 N·m moment; the axis and sign follow the selected frame.",
+      "role_en": "Used in contact wrenches, rigid-body dynamics and momentum balance.",
+      "sources": [
+        {
+          "title": "Modern Robotics §3.4: Wrenches",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/3-4-wrenches/"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_centroidal",
+      "en": "Centroidal Momentum and Contact-Force Dynamics",
+      "title": "质心动量与接触力动力学",
+      "group": "dynamics",
+      "kind": "concept",
+      "summary": "Centroidal dynamics describe the total linear and angular momentum of an articulated robot about its center of mass.",
+      "definition": "Centroidal dynamics describe the total linear and angular momentum of an articulated robot about its center of mass. Internal joint forces cancel in the total balance. External gravity and contact wrenches remain. This reduced description helps plan balance, but does not alone determine feasible joint configurations.",
+      "latex": [
+        "h_G=\\begin{bmatrix}m\\dot c\\\\L_G\\end{bmatrix}=A_G(q)v",
+        "\\dot h_G=\\begin{bmatrix}mg+\\sum_i f_i\\\\\\sum_i((r_i-c)\\times f_i+\\tau_i)\\end{bmatrix}"
+      ],
+      "notation": [
+        {
+          "symbol": "c,r_i\\in\\mathbb R^3",
+          "meaning": "Center of mass and contact positions in the world frame."
+        },
+        {
+          "symbol": "m,g",
+          "meaning": "Total mass and gravitational acceleration vector."
+        },
+        {
+          "symbol": "L_G,h_G",
+          "meaning": "Angular momentum about the center of mass; stacked linear/angular momentum."
+        },
+        {
+          "symbol": "A_G(q),v",
+          "meaning": "Centroidal momentum matrix and generalized velocity."
+        },
+        {
+          "symbol": "f_i,\\tau_i",
+          "meaning": "Contact force and free moment, expressed in the same frame."
+        }
+      ],
+      "prereqs": [
+        "ph_newton",
+        "ph_torque",
+        "la_cross",
+        "rb_fk"
+      ],
+      "example": "Two feet can redistribute contact forces while preserving the same total upward force. Their moment balance can still change the body’s rotation.",
+      "role_en": "Links multibody physics to balance planning and whole-body control. A momentum trajectory still needs a feasible whole-body realization.",
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: Highly-articulated Legged Robots",
+          "url": "https://underactuated.csail.mit.edu/humanoids.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_lipm_zmp",
+      "en": "Linear Inverted Pendulum and Zero-Moment Point",
+      "title": "线性倒立摆与零力矩点",
+      "group": "control",
+      "kind": "concept",
+      "summary": "The linear inverted pendulum assumes a constant center-of-mass height, planar support and negligible centroidal angular-momentum rate.",
+      "definition": "The linear inverted pendulum assumes a constant center-of-mass height, planar support and negligible centroidal angular-momentum rate. Under these assumptions, horizontal acceleration depends linearly on the displacement between the center of mass and the zero-moment point. Support-polygon constraints apply within this contact model, not to arbitrary dynamic motion.",
+      "latex": [
+        "\\ddot x=\\omega^2(x-p),\\qquad\\omega=\\sqrt{g/z_c}",
+        "p=x-\\frac{z_c}{g}\\ddot x"
+      ],
+      "notation": [
+        {
+          "symbol": "x,p",
+          "meaning": "Horizontal center-of-mass and zero-moment-point positions, in m."
+        },
+        {
+          "symbol": "z_c,g",
+          "meaning": "Constant center-of-mass height and positive gravity magnitude."
+        },
+        {
+          "symbol": "\\omega",
+          "meaning": "Inverted-pendulum frequency, in inverse seconds."
+        }
+      ],
+      "prereqs": [
+        "ctrl_centroidal",
+        "c_ode"
+      ],
+      "example": "For z_c=1 m and forward acceleration 0.5 m/s², the zero-moment point is approximately 0.051 m behind the center of mass.",
+      "role_en": "Supplies a tractable walking model. Fast kicks, substantial upper-body angular momentum and nonplanar contacts require checking its assumptions.",
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: ZMP and simplified walking models",
+          "url": "https://underactuated.csail.mit.edu/humanoids.html"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_capturepoint",
+      "en": "Capture Point and Divergent Component of Motion",
+      "title": "捕获点与发散运动分量",
+      "group": "control",
+      "kind": "concept",
+      "summary": "For the constant-height inverted-pendulum model, the capture point combines horizontal position and velocity into the unstable component of motion.",
+      "definition": "For the constant-height inverted-pendulum model, the capture point combines horizontal position and velocity into the unstable component of motion. Holding the support point at that value makes velocity decay toward zero under the ideal model. Reachability, finite feet and actuator limits still constrain a real stopping step.",
+      "latex": [
+        "\\xi=x+\\frac{\\dot x}{\\omega},\\qquad\\dot\\xi=\\omega(\\xi-p)"
+      ],
+      "notation": [
+        {
+          "symbol": "\\xi",
+          "meaning": "Capture point or divergent component in one horizontal direction."
+        },
+        {
+          "symbol": "x,\\dot x",
+          "meaning": "Center-of-mass position and velocity."
+        },
+        {
+          "symbol": "\\omega,p",
+          "meaning": "Inverted-pendulum frequency and support point."
+        }
+      ],
+      "prereqs": [
+        "ctrl_lipm_zmp"
+      ],
+      "example": "With height 1 m, x=0.04 m and forward velocity 0.2 m/s, the ideal capture location is about 0.104 m.",
+      "role_en": "Connects estimated body velocity to balance recovery and foot placement. This formula is not a full humanoid controller.",
+      "sources": [
+        {
+          "title": "Koolen: Balance control and locomotion planning using nonlinear centroidal models",
+          "url": "https://groups.csail.mit.edu/robotics-center/public_papers/Koolen19.pdf"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_wbc_qp",
+      "en": "Whole-Body Inverse Dynamics as a Quadratic Program",
+      "title": "全身逆动力学二次规划",
+      "group": "control",
+      "kind": "concept",
+      "summary": "A whole-body controller can optimize generalized accelerations, joint torques and contact forces at each control step.",
+      "definition": "A whole-body controller can optimize generalized accelerations, joint torques and contact forces at each control step. With a fixed contact mode, evaluated robot state and linear friction approximations, quadratic tracking costs and affine constraints form a QP. Dynamics, stationary contacts and torque limits restrict which requested motions are simultaneously feasible.",
+      "latex": [
+        "\\min_{\\dot v,\\tau,f}\\ \\|J_t\\dot v+\\dot J_t v-a_t^*\\|_W^2+\\lambda\\|\\tau\\|^2",
+        "M(q)\\dot v+h(q,v)=S^\\top\\tau+J_c^\\top f",
+        "J_c\\dot v+\\dot J_c v=0,\\quad A_f f\\le b_f,\\quad\\tau_{\\min}\\le\\tau\\le\\tau_{\\max}"
+      ],
+      "notation": [
+        {
+          "symbol": "q,v,\\dot v",
+          "meaning": "Robot configuration, generalized velocity and acceleration."
+        },
+        {
+          "symbol": "M,h,S",
+          "meaning": "Mass matrix, bias forces and actuator selection matrix."
+        },
+        {
+          "symbol": "J_t,J_c",
+          "meaning": "Task Jacobian and active-contact Jacobian."
+        },
+        {
+          "symbol": "a_t^*,W,\\lambda",
+          "meaning": "Desired task acceleration, positive-semidefinite tracking weights and torque regularization."
+        },
+        {
+          "symbol": "f,A_f,b_f",
+          "meaning": "Contact forces and linearized contact/friction inequalities."
+        },
+        {
+          "symbol": "\\tau",
+          "meaning": "Actuated joint torques."
+        }
+      ],
+      "prereqs": [
+        "ph_manipulator",
+        "rb_jacobian",
+        "c_constraints",
+        "ph_friction"
+      ],
+      "example": "A foot-position task and torso-orientation task may conflict near a torque limit. The constrained solution trades tracking errors according to weights or explicit task priorities.",
+      "role_en": "Converts high-level references into physically constrained commands. Solver timing, model errors and command interfaces remain part of implementation.",
+      "sources": [
+        {
+          "title": "Feng et al.: Optimization-based Full Body Control for the DARPA Robotics Challenge",
+          "url": "https://www.cs.cmu.edu/~cga/papers/feng-jfr15.pdf"
+        }
+      ]
+    },
+    {
+      "id": "ctrl_impedance",
+      "en": "Cartesian Stiffness and Impedance Control",
+      "title": "笛卡尔刚度与阻抗控制",
+      "group": "control",
+      "kind": "concept",
+      "summary": "Cartesian stiffness control converts endpoint position and velocity errors into a desired force.",
+      "definition": "Cartesian stiffness control converts endpoint position and velocity errors into a desired force. A Jacobian transpose maps that force into joint torques. This stiffness-and-damping law is a subset of impedance control; general impedance also specifies inertial behavior. Gains affect both tracking response and interaction forces.",
+      "latex": [
+        "f_{cmd}=K(x_d-x)+D(\\dot x_d-\\dot x)+f_{ff}",
+        "\\tau=J(q)^\\top f_{cmd}"
+      ],
+      "notation": [
+        {
+          "symbol": "x,x_d",
+          "meaning": "Actual and desired endpoint position in a common frame."
+        },
+        {
+          "symbol": "K,D",
+          "meaning": "Stiffness (N/m) and damping (N·s/m) matrices for translational motion."
+        },
+        {
+          "symbol": "f_{ff},f_{cmd}",
+          "meaning": "Feedforward and commanded endpoint forces."
+        },
+        {
+          "symbol": "J(q),\\tau",
+          "meaning": "Endpoint linear-velocity Jacobian and commanded joint torque."
+        }
+      ],
+      "prereqs": [
+        "ctrl_pd",
+        "rb_jacobian",
+        "ph_torque"
+      ],
+      "example": "A 1 cm position error with stiffness 1000 N/m produces a 10 N proportional force before damping and feedforward terms.",
+      "role_en": "Connects motion commands to compliant contact behavior. Saturation, delays, contact stability and hardware torque capability must be considered.",
+      "sources": [
+        {
+          "title": "MIT Robotic Manipulation: Manipulator Control",
+          "url": "https://manipulation.mit.edu/force.html"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "m_vector",
+      "to": "la_cross",
+      "type": "prereq",
+      "why_en": "Ordered vector coordinates define the inputs and outputs of this operation."
+    },
+    {
+      "from": "ph_newton",
+      "to": "ctrl_centroidal",
+      "type": "prereq",
+      "why_en": "Newton’s force balance supplies the total linear-momentum equation."
+    },
+    {
+      "from": "ph_torque",
+      "to": "ctrl_centroidal",
+      "type": "prereq",
+      "why_en": "Moments about the center of mass determine angular-momentum change."
+    },
+    {
+      "from": "la_cross",
+      "to": "ctrl_centroidal",
+      "type": "prereq",
+      "why_en": "The cross product converts a contact lever arm and force into its moment."
+    },
+    {
+      "from": "rb_fk",
+      "to": "ctrl_centroidal",
+      "type": "prereq",
+      "why_en": "Forward kinematics locates body centers and contacts in a common frame."
+    },
+    {
+      "from": "ctrl_centroidal",
+      "to": "ctrl_lipm_zmp",
+      "type": "prereq",
+      "why_en": "Whole-body momentum balance provides the reduced dynamics and contact-force relation."
+    },
+    {
+      "from": "c_ode",
+      "to": "ctrl_lipm_zmp",
+      "type": "prereq",
+      "why_en": "A differential equation describes time evolution under the stated assumptions."
+    },
+    {
+      "from": "ctrl_lipm_zmp",
+      "to": "ctrl_capturepoint",
+      "type": "prereq",
+      "why_en": "The constant-height inverted-pendulum dynamics define the capture-point decomposition."
+    },
+    {
+      "from": "ph_manipulator",
+      "to": "ctrl_wbc_qp",
+      "type": "prereq",
+      "why_en": "The floating-base equation constrains the accelerations, torques and contact forces optimized by the controller."
+    },
+    {
+      "from": "rb_jacobian",
+      "to": "ctrl_wbc_qp",
+      "type": "prereq",
+      "why_en": "Task and contact Jacobians relate generalized motion to end-effector motion."
+    },
+    {
+      "from": "c_constraints",
+      "to": "ctrl_wbc_qp",
+      "type": "prereq",
+      "why_en": "Equality and inequality constraints define feasible solutions of the optimization problem."
+    },
+    {
+      "from": "ph_friction",
+      "to": "ctrl_wbc_qp",
+      "type": "prereq",
+      "why_en": "A polyhedral approximation of friction constraints restricts feasible contact forces."
+    },
+    {
+      "from": "ctrl_pd",
+      "to": "ctrl_impedance",
+      "type": "prereq",
+      "why_en": "Position and velocity error feedback supplies stiffness and damping terms."
+    },
+    {
+      "from": "rb_jacobian",
+      "to": "ctrl_impedance",
+      "type": "prereq",
+      "why_en": "Task and contact Jacobians relate generalized motion to end-effector motion."
+    },
+    {
+      "from": "ph_torque",
+      "to": "ctrl_impedance",
+      "type": "prereq",
+      "why_en": "Moments about the center of mass determine angular-momentum change."
+    }
+  ],
+  "research": [
+    {
+      "checked_date": "2026-11-16",
+      "scope": "Classical humanoid control prerequisites; educational equations with stated assumptions."
+    }
+  ]
+}

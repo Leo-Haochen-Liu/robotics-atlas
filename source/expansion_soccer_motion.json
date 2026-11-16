@@ -1,0 +1,3536 @@
+{
+  "nodes": [
+    {
+      "id": "motion_smpl",
+      "en": "Parametric Human Bodies: SMPL and SMPL-X",
+      "title": "参数化人体：姿态、体型与全局轨迹",
+      "group": "motion",
+      "kind": "concept",
+      "summary": "参数化人体：姿态、体型与全局轨迹",
+      "definition": "A parametric human body model represents a body mesh using a compact set of pose and shape parameters. Pose describes articulated joint rotations; shape describes body proportions. A global translation and orientation place the person in a chosen world frame. This representation makes motion estimated from video or motion capture comparable across frames and subjects. Its skeleton and joint conventions are human conventions, so its parameters are not robot joint commands. Converting the sequence into a robot reference requires an explicit embodiment mapping and coordinate conversion.",
+      "example": "An estimated sequence may contain a global pelvis trajectory, rotations for human joints, and a fixed body-shape vector. To imitate it on a G1, first identify the coordinate frame and human joint convention; then solve for robot configurations matching selected body targets.",
+      "role_en": "Common interface between monocular human-motion recovery, motion datasets, and retargeting; the human representation can also be bypassed by newer direct video-to-robot methods.",
+      "latex": "V_t=\\mathcal{M}(\\beta,\\theta_t),\\qquad V_t^W=R_tV_t+\\mathbf{1}p_t^\\top",
+      "notation": [
+        {
+          "symbol": "V_t",
+          "meaning": "Human mesh vertices in the model frame."
+        },
+        {
+          "symbol": "\\beta",
+          "meaning": "Body-shape parameters."
+        },
+        {
+          "symbol": "\\theta_t",
+          "meaning": "Human articulated pose parameters."
+        },
+        {
+          "symbol": "R_t,p_t",
+          "meaning": "Global orientation and translation; convention must be specified."
+        }
+      ],
+      "prereqs": [
+        "geo_so3",
+        "geo_se3",
+        "rb_fk"
+      ],
+      "sources": [
+        {
+          "title": "SMPL official model and publication",
+          "url": "https://smpl.is.tue.mpg.de/"
+        }
+      ]
+    },
+    {
+      "id": "motion_retargeting",
+      "en": "Human-to-Robot Motion Retargeting",
+      "title": "人体到机器人动作重定向",
+      "group": "motion",
+      "kind": "concept",
+      "summary": "人体到机器人动作重定向",
+      "definition": "Motion retargeting computes robot configurations that reproduce selected properties of a source motion despite different limb lengths, joint axes, joint limits, and degrees of freedom. A typical formulation matches body positions or orientations subject to robot constraints. The source and target need consistent reference frames, scale, and anatomical correspondences. Retargeting is usually a kinematic computation: a pose can satisfy its objective while still violating balance or contact dynamics. Physical execution therefore needs motion refinement, a controller, and validation of contact and actuation feasibility.",
+      "example": "A human foot target can be reachable for the human but outside the robot leg workspace. A constrained inverse-kinematics solve trades off pelvis, foot, and hand errors while respecting joint limits. Inspect the resulting sequence before using it as an RL tracking reference.",
+      "role_en": "Connects human-motion recovery and datasets to robot imitation. It is the explicit conversion stage studied by GMR and an alternative to direct video-to-robot prediction.",
+      "latex": "q_t^*=\\arg\\min_{q\\in\\mathcal{Q}}\\sum_k w_k\\|f_k(q)-\\hat{x}_{t,k}\\|^2",
+      "notation": [
+        {
+          "symbol": "q",
+          "meaning": "Robot generalized configuration."
+        },
+        {
+          "symbol": "f_k(q)",
+          "meaning": "Forward kinematics for body target k."
+        },
+        {
+          "symbol": "\\hat{x}_{t,k}",
+          "meaning": "Scaled source target in a common frame."
+        },
+        {
+          "symbol": "\\mathcal Q",
+          "meaning": "Allowed configurations, including joint limits."
+        }
+      ],
+      "prereqs": [
+        "rb_ik",
+        "rb_fk",
+        "motion_smpl",
+        "c_constraints"
+      ],
+      "sources": [
+        {
+          "title": "GMR official code and documentation",
+          "url": "https://github.com/YanjieZe/GMR"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2510.02252"
+        }
+      ]
+    },
+    {
+      "id": "motion_tracking",
+      "en": "Whole-Body Reference Motion Tracking",
+      "title": "全身参考动作跟踪",
+      "group": "motion",
+      "kind": "concept",
+      "summary": "全身参考动作跟踪",
+      "definition": "A motion-tracking controller uses the current robot state and a reference trajectory to generate actions that follow the desired body motion. Tracking can include joint angles, body positions, orientations, velocities, and contact events. Reinforcement learning commonly combines tracking rewards with regularization and physical constraints in a simulator. The reference describes desired motion, while the policy determines actions under disturbances and actuation limits. Good tracking of a reference does not establish successful object interaction; ball contact and post-contact recovery need additional task measurements.",
+      "example": "For a kicking reference, a controller may track pelvis orientation and foot pose until the strike. A complete trial also checks whether the actual foot reaches the ball, whether the robot remains upright after impact, and whether the ball reaches its commanded destination.",
+      "role_en": "Provides the executable low-level controller used by BeyondMimic, motion-guided soccer, teleoperation, and human-video imitation.",
+      "latex": "r_t^{\\mathrm{track}}=\\exp\\!\\left(-\\sum_k w_k\\|x_{t,k}-x^{\\mathrm{ref}}_{t,k}\\|^2\\right)",
+      "notation": [
+        {
+          "symbol": "x_{t,k}",
+          "meaning": "Measured or simulated robot feature k."
+        },
+        {
+          "symbol": "x^{\\mathrm{ref}}_{t,k}",
+          "meaning": "Reference feature in the same frame and units."
+        },
+        {
+          "symbol": "w_k",
+          "meaning": "Nonnegative feature weights; scales require normalization."
+        }
+      ],
+      "prereqs": [
+        "motion_retargeting",
+        "rl_ppo",
+        "ctrl_pd",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/1804.02717"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2505.02833"
+        }
+      ]
+    },
+    {
+      "id": "motion_prior",
+      "en": "Motion Priors: Tracking, Adversarial and Latent",
+      "title": "动作先验：跟踪、对抗与潜空间",
+      "group": "motion",
+      "kind": "concept",
+      "summary": "动作先验：跟踪、对抗与潜空间",
+      "definition": "A motion prior restricts or rewards behavior according to demonstrations of plausible movement. Tracking priors reward agreement with a particular time-indexed reference. Adversarial priors learn to distinguish motion transitions from demonstrations and policy rollouts, then supply an imitation reward. Latent priors encode a reusable space of motions that a task policy can command. These approaches differ in how demonstrations constrain timing and behavior. A motion prior encourages properties present in its data; it does not by itself guarantee dynamic stability, object contact, or task success.",
+      "example": "A soccer controller can receive a task reward for moving the ball toward a goal and a motion-prior reward for human-like body transitions. Increasing the prior weight changes the tradeoff. Measure ball outcomes and falls rather than treating a natural-looking movement as sufficient evidence.",
+      "role_en": "Explains how DeepMimic, AMP, HumanX, humanoid goalkeeping, and soccerbot use human movement differently; these are parallel design choices rather than one mandatory sequence.",
+      "latex": "r_t=r_t^{\\mathrm{task}}+\\lambda r_t^{\\mathrm{prior}},\\qquad a_t=\\pi_{\\mathrm{low}}(s_t,z_t)",
+      "notation": [
+        {
+          "symbol": "\\lambda",
+          "meaning": "Relative weight of an imitation or style reward."
+        },
+        {
+          "symbol": "z_t",
+          "meaning": "Optional latent motion command."
+        },
+        {
+          "symbol": "\\pi_{\\mathrm{low}}",
+          "meaning": "Low-level controller; the latent form is a separate design option."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "g_latent",
+        "rl_actorcritic"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/1804.02717"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2104.02180"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2611.06564"
+        }
+      ]
+    },
+    {
+      "id": "motion_contact_quality",
+      "en": "Motion Quality and Physical Executability",
+      "title": "动作质量与物理可执行性",
+      "group": "motion",
+      "kind": "concept",
+      "summary": "动作质量与物理可执行性",
+      "definition": "Motion quality must be checked in several independent dimensions: source fidelity, geometric validity, temporal continuity, contact consistency, and performance under physical execution. A low inverse-kinematics error does not imply feasible torques or stable balance. Foot skating occurs when a supposed stance foot moves relative to the ground; penetration and abrupt joint changes can also enter a retargeted reference. Quantitative checks should accompany complete rendered sequences and closed-loop tests. Report kinematic validation, simulator success, and real-robot execution as separate evidence levels.",
+      "example": "For a ten-second motion, plot joint velocity and stance-foot speed, inspect a fixed-camera replay, and then run the controller for the complete duration. A clip that survives a tracking rollout may still have poor source fidelity or unacceptable post-contact sway.",
+      "role_en": "Connects GMR reference quality, motion tracking robustness, simulator contacts, and the distinction between reference generation and successful robot deployment.",
+      "latex": "\\mathcal L_{\\mathrm{stance}}=\\sum_{t,k}c_{t,k}\\|v^{W}_{t,k}\\|^2,\\qquad q_{\\min}\\le q_t\\le q_{\\max}",
+      "notation": [
+        {
+          "symbol": "c_{t,k}",
+          "meaning": "Indicator that foot k is expected to be in stationary ground contact."
+        },
+        {
+          "symbol": "v^W_{t,k}",
+          "meaning": "Foot velocity in the world frame."
+        },
+        {
+          "symbol": "q_{\\min},q_{\\max}",
+          "meaning": "Robot joint limits; other feasibility conditions are also needed."
+        }
+      ],
+      "prereqs": [
+        "motion_retargeting",
+        "ph_friction",
+        "ph_constraints",
+        "sim_mujoco"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2510.02252"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.29850"
+        }
+      ]
+    },
+    {
+      "id": "soccer_ball_state",
+      "en": "Ball State Estimation and Visibility",
+      "title": "球状态估计与可见性",
+      "group": "soccer",
+      "kind": "concept",
+      "summary": "球状态估计与可见性",
+      "definition": "A soccer controller needs the ball position and often its velocity in a specified frame, even when vision is delayed, noisy, or temporarily unavailable. Camera detections provide image coordinates rather than direct metric state; depth, geometry, or other sensors supply additional constraints. An estimator combines dynamics predictions with timestamped measurements and should expose uncertainty. The sensor setup matters: external motion capture, RGB, depth, infrared reflectance, and LiDAR provide different information. A successful controller under one setup is not evidence of the same autonomy under another.",
+      "example": "A ball disappears behind the robot foot for several frames. The estimator propagates its current velocity hypothesis, then corrects the estimate when a new observation arrives. A missed observation and a measured stationary ball must remain different cases in the controller input.",
+      "role_en": "Foundation for reactive kicking, interception, active vision, and simulator perception models. Each paper should state which sensors are available at deployment.",
+      "latex": "x_t=[p_t^\\top,v_t^\\top]^\\top,\\quad x_{t+1}=f(x_t)+w_t,\\quad y_t=h(x_t)+\\epsilon_t",
+      "notation": [
+        {
+          "symbol": "p_t,v_t",
+          "meaning": "Ball position and velocity in the declared frame."
+        },
+        {
+          "symbol": "y_t",
+          "meaning": "Sensor measurement with a timestamp."
+        },
+        {
+          "symbol": "w_t,\\epsilon_t",
+          "meaning": "Process and measurement uncertainty."
+        }
+      ],
+      "prereqs": [
+        "sim_camera",
+        "est_sensorfusion",
+        "est_ekf",
+        "r_frames"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2511.03996"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2304.01159"
+        },
+        {
+          "title": "RoboNaldo official project",
+          "url": "https://opendrivelab.com/RoboNaldo/"
+        }
+      ]
+    },
+    {
+      "id": "soccer_foot_ball_contact",
+      "en": "Foot–Ball Impact and Dribbling Dynamics",
+      "title": "脚球碰撞、踢球与运球动力学",
+      "group": "soccer",
+      "kind": "concept",
+      "summary": "脚球碰撞、踢球与运球动力学",
+      "definition": "Kicking transfers momentum through a short contact event, while dribbling repeatedly regulates ball motion through intermittent contacts. The outcome depends on relative foot velocity, contact point, foot orientation, ball properties, surface friction, and the robot support state. These interactions can be modeled by impulse and contact constraints or learned through simulation experience. High ball speed alone does not establish a useful kick: direction accuracy, recovery, and repeated execution matter. Simulator parameters and contact timing strongly affect the transfer of these skills to hardware.",
+      "example": "A faster swing may increase ball speed while reducing target accuracy or destabilizing the stance leg. Compare complete trials using the same target distance and initial ball distribution, and record shot placement, contact misses, robot falls, and the state after recovery.",
+      "role_en": "Physical basis for RoboNaldo, PAiD, dribbling, passing, and goalkeeper contact. Links task rewards to contact simulation and robot dynamics.",
+      "latex": "m_b(v_b^+-v_b^-)=J,\\qquad J=\\int_{t^-}^{t^+}F_{\\mathrm{contact}}(t)\\,dt",
+      "notation": [
+        {
+          "symbol": "m_b",
+          "meaning": "Ball mass."
+        },
+        {
+          "symbol": "v_b^-,v_b^+",
+          "meaning": "Ball velocity immediately before and after impact."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Net contact impulse; other impulses may need inclusion."
+        }
+      ],
+      "prereqs": [
+        "ph_constraints",
+        "ph_friction",
+        "ph_newton",
+        "c_integral",
+        "r_dynamics"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics: contact",
+          "url": "https://underactuated.mit.edu/contact.html"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2606.11092"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2505.12679"
+        }
+      ]
+    },
+    {
+      "id": "soccer_active_vision",
+      "en": "Active Vision for Legged Interaction",
+      "title": "腿式交互中的主动视觉",
+      "group": "soccer",
+      "kind": "concept",
+      "summary": "腿式交互中的主动视觉",
+      "definition": "Active vision makes sensing direction part of the control problem. A robot can turn its head, neck, torso, or body to retain useful observations while it approaches or interacts with the ball. Visibility depends on camera field of view, occlusion, body pose, and the scene. Training can model those effects or optimize sensor motion jointly with locomotion. This differs from simply attaching a camera to a policy: actions influence what can be observed next, so sensing and movement are coupled through time.",
+      "example": "During a sharp dribbling turn, pointing the camera only along the body heading may lose the ball. A policy can coordinate neck rotation and foot placement so that the ball stays observable while changing direction. Hardware actuator range and camera latency still constrain this behavior.",
+      "role_en": "Common comparison axis for Dribble Master, Joga, and DAVIS. Their sensor models and real hardware differ, so visibility-aware policies are related rather than identical.",
+      "latex": "o_t=h(s_t,q_t^{\\mathrm{camera}}),\\qquad (a_t,a_t^{\\mathrm{gaze}})=\\pi(o_{\\le t},g_t)",
+      "notation": [
+        {
+          "symbol": "q_t^{\\mathrm{camera}}",
+          "meaning": "Camera pose determined by robot and neck configuration."
+        },
+        {
+          "symbol": "a_t^{\\mathrm{gaze}}",
+          "meaning": "Optional explicit gaze action; body movement can also change the view."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task command."
+        }
+      ],
+      "prereqs": [
+        "soccer_ball_state",
+        "r_feedback",
+        "r_markov"
+      ],
+      "sources": [
+        {
+          "title": "Joga official project",
+          "url": "https://joga.csail.mit.edu/"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.28175"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2505.12679"
+        }
+      ]
+    },
+    {
+      "id": "soccer_skill_chaining",
+      "en": "Skill Interfaces and Distributional Handoffs",
+      "title": "技能接口与切换状态分布",
+      "group": "soccer",
+      "kind": "concept",
+      "summary": "技能接口与切换状态分布",
+      "definition": "A skill interface specifies the commands accepted by a low-level policy and the states in which that policy can start and stop reliably. Chaining dribbling, passing, shooting, and recovery requires compatibility between the terminal state distribution of one skill and the initial-state distribution of the next. A valid command format does not guarantee such compatibility. Policies can be trained on states visited by preceding skills, or share a common locomotion substrate. Timing and observation history also matter because the robot may switch while moving.",
+      "example": "A shooting policy trained only from stationary starts may fail when invoked mid-stride during dribbling. Collect handoff states from the dribbling controller, train or fine-tune the shot from those states, and evaluate the complete dribble-to-shot sequence.",
+      "role_en": "Connects hierarchical soccer planning to executable controllers. Joga uses distributional skill chaining; locomotion-grounded soccer uses a shared locomotion hub; RoboNaldo exposes locomotion and kick-trigger commands.",
+      "latex": "s_0^{B}\\sim d_{\\mathrm{handoff}}^{A},\\qquad a_t=\\pi_{k_t}(o_{\\le t},g_t)",
+      "notation": [
+        {
+          "symbol": "k_t",
+          "meaning": "Selected skill."
+        },
+        {
+          "symbol": "d_{\\mathrm{handoff}}^{A}",
+          "meaning": "States produced when preceding skill A hands control to B."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Skill command with declared units and frame."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "r_policy",
+        "ml_distribution_shift",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "Joga official project",
+          "url": "https://joga.csail.mit.edu/"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.38852"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2606.11092"
+        }
+      ]
+    },
+    {
+      "id": "soccer_multiagent",
+      "en": "Multi-Agent Soccer and Team Coordination",
+      "title": "多智能体足球与团队协作",
+      "group": "soccer",
+      "kind": "concept",
+      "summary": "多智能体足球与团队协作",
+      "definition": "Multi-agent soccer introduces other learning or scripted players into a physical control problem. Each agent acts from its own observations, while game outcomes depend on interactions among teammates, opponents, and the ball. Self-play provides changing opponents; population training can reduce overfitting to a single strategy. Team coordination requires more than stable locomotion or accurate kicking, because positioning, passing, and defending operate over longer horizons. Evaluation should separate individual motor skills, one-versus-one play, and cooperative team performance under specified observation and communication assumptions.",
+      "example": "Two robots with identical kicking controllers can behave differently when one pursues the ball continuously and the other preserves defensive positioning. Evaluate game outcomes across multiple opponents and seeds, while checking whether perception and communication are local or externally supplied.",
+      "role_en": "Links low-level control to the simulated football hierarchy and OP3 one-versus-one self-play. Provides a separate branch for tactics rather than treating tactics as a byproduct of every soccer skill paper.",
+      "latex": "\\max_{\\pi_i}\\mathbb E_{\\pi_i,\\pi_{-i}}\\left[\\sum_{t=0}^{T}\\gamma^t r_{i,t}\\right]",
+      "notation": [
+        {
+          "symbol": "\\pi_i,\\pi_{-i}",
+          "meaning": "Agent i and other agents’ policies."
+        },
+        {
+          "symbol": "r_{i,t}",
+          "meaning": "Individual or shared team reward."
+        },
+        {
+          "symbol": "\\gamma",
+          "meaning": "Discount factor."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "rl_actorcritic",
+        "soccer_skill_chaining"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2105.12196"
+        },
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2304.13653"
+        }
+      ]
+    },
+    {
+      "id": "paper_deepmimic",
+      "en": "DeepMimic",
+      "title": "DeepMimic：示例引导的物理动作控制",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "DeepMimic：示例引导的物理动作控制",
+      "definition": "DeepMimic trains simulated articulated characters to imitate reference motion while pursuing task goals. The policy observes the character state and reference phase, and reinforcement learning rewards agreement with the example as well as task performance. The method connects motion-capture specification to physical feedback control: disturbances change the actual rollout, and the policy supplies corrective actions. It demonstrates diverse characters and dynamic skills, including recovery. These experiments establish a simulation-based imitation method; a rendered Atlas-like character is not evidence of deployment on a physical humanoid robot.",
+      "example": "For a simulated kick, a motion clip specifies the desired style and a task reward specifies the target. Perturb the character during execution and compare its feedback response with direct playback of reference joint angles. Only the former can adapt actions to the altered state.",
+      "role_en": "Historical foundation for reference tracking, recovery, and motion-guided robot-soccer curricula. It is a predecessor conceptually, not an assertion that every later system reuses its exact implementation.",
+      "latex": "r_t=w_Ir_t^{I}+w_Gr_t^{G},\\qquad a_t=\\pi(s_t,\\phi_t,g)",
+      "notation": [
+        {
+          "symbol": "\\phi_t",
+          "meaning": "Reference motion phase."
+        },
+        {
+          "symbol": "r_t^I,r_t^G",
+          "meaning": "Imitation and task rewards."
+        },
+        {
+          "symbol": "g",
+          "meaning": "Task goal."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "rl_ppo"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/1804.02717"
+        },
+        {
+          "title": "DeepMimic official project",
+          "url": "https://xbpeng.github.io/projects/DeepMimic/index.html"
+        }
+      ],
+      "paper": {
+        "date": "2018-04-08 (arXiv v1); 2018-07-27 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Reference motion and phase",
+            "node_id": "motion_tracking",
+            "role": "Specify the target movement."
+          },
+          {
+            "label": "Physics-based feedback policy",
+            "node_id": "rl_ppo",
+            "role": "Learn actions from imitation and task rewards."
+          }
+        ],
+        "contribution": "Combines example motion, physical feedback, task objectives, and recoveries in a learned control policy.",
+        "training": "RL in physics simulation with motion-imitation and task rewards.",
+        "inference": "State, phase, and goal condition a feedback controller.",
+        "evaluation": "Multiple simulated characters and diverse dynamic motions.",
+        "scale": "Character control rather than video generation; architecture size is not inferred here.",
+        "limitations": "Simulation demonstrations do not establish G1 hardware execution; reference and task rewards need suitable scaling.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_amp",
+      "en": "AMP: Adversarial Motion Priors",
+      "title": "AMP：对抗动作先验",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "AMP：对抗动作先验",
+      "definition": "AMP learns a motion-style reward from demonstration transitions rather than requiring the controller to follow one predetermined clip and phase. A discriminator separates demonstration transitions from policy-generated transitions, and its output supplies an imitation signal during reinforcement learning. A task reward still specifies what the character should accomplish. This enables unstructured motion datasets to guide style without explicit clip selection. The original work evaluates physics-based simulated characters; later humanoid soccer methods adapt the adversarial-prior idea to robot embodiments and interaction tasks.",
+      "example": "A dataset contains running and turning transitions. A soccer policy receives a ball-progress task reward and an adversarial style reward. It can choose movement transitions according to the task rather than advancing through one fixed running clip.",
+      "role_en": "Explains the adversarial human-motion prior used in reactive soccer, DAVIS, and humanoid goalkeeping; it is distinct from time-indexed motion tracking.",
+      "latex": "\\max_D\\;\\mathbb E_{d_E}[\\log D(s,s^{\\prime})]+\\mathbb E_{d_\\pi}[\\log(1-D(s,s^{\\prime}))]",
+      "notation": [
+        {
+          "symbol": "D",
+          "meaning": "Discriminator; this equation illustrates the adversarial classification principle."
+        },
+        {
+          "symbol": "d_E,d_\\pi",
+          "meaning": "Demonstration and policy transition distributions."
+        }
+      ],
+      "prereqs": [
+        "motion_prior",
+        "ml_logistic",
+        "rl_actorcritic"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2104.02180"
+        },
+        {
+          "title": "AMP official project",
+          "url": "https://xbpeng.github.io/projects/AMP/"
+        }
+      ],
+      "paper": {
+        "date": "2021-04-05 (arXiv v1); 2022-05-12 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Demonstration transitions",
+            "node_id": "motion_prior",
+            "role": "Specify motion style without a fixed phase."
+          },
+          {
+            "label": "Adversarial discriminator",
+            "node_id": "ml_logistic",
+            "role": "Produces an imitation training signal."
+          },
+          {
+            "label": "Task policy",
+            "node_id": "rl_ppo",
+            "role": "Combines style and task rewards."
+          }
+        ],
+        "contribution": "Replaces explicit clip selection and tracking objectives with learned adversarial motion-style rewards.",
+        "training": "Alternating discriminator fitting and task-policy RL in simulation.",
+        "inference": "Only the trained control policy is needed to produce actions; the discriminator is a training component.",
+        "evaluation": "Stylized motor-control tasks across multiple simulated characters.",
+        "scale": "No verified parameter count entered.",
+        "limitations": "Human-like transition statistics do not independently guarantee safety or successful contact.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_phc",
+      "en": "PHC: Perpetual Humanoid Control",
+      "title": "PHC：持续动作跟踪与跌倒恢复",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "PHC：持续动作跟踪与跌倒恢复",
+      "definition": "PHC addresses continuous reference-driven control of simulated humanoid avatars when reference poses are noisy and unexpected falls occur. Its progressive multiplicative control policy adds capacity to learn harder motions and recovery without discarding previously acquired skills. The controller can continue following references rather than requiring a reset after every failure. This is especially relevant when motion originates from video estimation or generated motion instead of a clean capture sequence. The system concerns physical simulation of avatars; robust simulated recovery does not establish the same behavior on a real G1.",
+      "example": "Feed a noisy video-estimated pose sequence into the simulated controller, disturb the avatar, and observe whether it recovers and resumes tracking. Evaluate both recovery and reference error over the uninterrupted sequence rather than terminating at the first fall.",
+      "role_en": "Reusable foundation for large motion libraries, recovery policies, and noisy human-motion interfaces; PHC is also one retargeting baseline considered by GMR.",
+      "latex": "a_t=\\pi_{\\mathrm{PMCP}}(s_t,\\hat{m}_{t:t+H})",
+      "notation": [
+        {
+          "symbol": "\\hat m",
+          "meaning": "Potentially noisy reference motion."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Available reference horizon; application-specific."
+        },
+        {
+          "symbol": "\\pi_{\\mathrm{PMCP}}",
+          "meaning": "Progressive multiplicative control policy."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "motion_contact_quality",
+        "rl_ppo"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2305.06456"
+        },
+        {
+          "title": "PHC official code",
+          "url": "https://github.com/ZhengyiLuo/PHC"
+        }
+      ],
+      "paper": {
+        "date": "2023-05-10 (arXiv v1); 2023-09-11 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Progressive motion controller",
+            "node_id": "motion_tracking",
+            "role": "Expands capacity for harder reference sequences."
+          },
+          {
+            "label": "Fail-state recovery",
+            "node_id": "r_feedback",
+            "role": "Allows continued simulated control after falls."
+          }
+        ],
+        "contribution": "Large-scale reference tracking with fault tolerance and recovery through progressive policy learning.",
+        "training": "Learns motion tracking and recovery with progressive capacity allocation.",
+        "inference": "Consumes reference motion and current simulated state continuously.",
+        "evaluation": "Noisy pose inputs, recovery, and a motion corpus described as ten thousand clips.",
+        "scale": "Scale refers to motion coverage, not a verified neural parameter count.",
+        "limitations": "Avatar experiments and robot-hardware experiments require separate evidence.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_gvhmr",
+      "en": "GVHMR: World-Grounded Human Motion Recovery",
+      "title": "GVHMR：重力视角坐标下的人体动作恢复",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "GVHMR：重力视角坐标下的人体动作恢复",
+      "definition": "GVHMR recovers human motion in a world coordinate system from monocular video. It predicts poses in a gravity-view coordinate system defined by gravity and the camera viewing direction, reducing ambiguity associated with arbitrary world orientations. Camera rotations then transform the estimates into world-grounded motion. Per-frame pose estimation avoids the same autoregressive accumulation mechanism as methods that repeatedly predict relative pose updates. The output is human motion suitable for downstream processing, not an executable robot controller; camera and motion-estimation errors can propagate into retargeting.",
+      "example": "A moving-camera soccer video contains both camera motion and a person’s kick. Recover a world-grounded human sequence, inspect its ground alignment and global trajectory, and then retarget it. A plausible camera-view overlay alone does not verify the world trajectory or robot balance.",
+      "role_en": "Upstream video-to-human-motion component for demonstration preparation; connects camera geometry and human body models to GMR-style retargeting.",
+      "latex": "X_t^{W}=R_{W\\leftarrow GV,t}X_t^{GV}+p_t^{W}",
+      "notation": [
+        {
+          "symbol": "X_t^{GV}",
+          "meaning": "Human points in the gravity-view frame."
+        },
+        {
+          "symbol": "R_{W\\leftarrow GV,t}",
+          "meaning": "Rotation from gravity-view coordinates to the world frame."
+        },
+        {
+          "symbol": "p_t^W",
+          "meaning": "Global translation estimate."
+        }
+      ],
+      "prereqs": [
+        "motion_smpl",
+        "geo_so3",
+        "sim_camera",
+        "est_slam"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2409.06662"
+        },
+        {
+          "title": "GVHMR official project",
+          "url": "https://zju3dv.github.io/gvhmr/"
+        },
+        {
+          "title": "GVHMR official code",
+          "url": "https://github.com/zju3dv/GVHMR"
+        }
+      ],
+      "paper": {
+        "date": "2024-09-10 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Video and camera geometry",
+            "node_id": "sim_camera",
+            "role": "Provide image observations and camera-frame information."
+          },
+          {
+            "label": "Gravity-view representation",
+            "node_id": "geo_so3",
+            "role": "Reduces coordinate ambiguity."
+          },
+          {
+            "label": "Human motion output",
+            "node_id": "motion_smpl",
+            "role": "Supplies a human reference for later retargeting."
+          }
+        ],
+        "contribution": "Gravity-view coordinates for world-grounded monocular human-motion recovery.",
+        "training": "Learned human pose and motion estimation from video.",
+        "inference": "Video is processed into human pose and global motion estimates.",
+        "evaluation": "In-the-wild human-motion benchmarks, including camera-space and global measures.",
+        "scale": "This is a perception model, not a robot dynamics world model.",
+        "limitations": "Monocular ambiguity and camera errors remain relevant; physical robot execution requires subsequent stages.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_gmr",
+      "en": "GMR: Retargeting Matters",
+      "title": "GMR：通用动作重定向与参考质量",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "GMR：通用动作重定向与参考质量",
+      "definition": "Retargeting Matters systematically studies how the quality of human-to-robot reference motions affects downstream humanoid tracking. Its General Motion Retargeting method maps multiple human motion formats to diverse robot embodiments with inverse-kinematics-based processing. The evaluation holds the BeyondMimic tracking setup comparatively fixed to isolate retargeting effects instead of allowing extensive reward tuning to hide reference defects. Foot sliding, penetration, and infeasible movement can reduce robustness even when many frames appear plausible. The retargeter produces references; the tracking policy supplies physical feedback actions.",
+      "example": "Retarget the same LAFAN1 sequence with different methods and train trackers under matched settings. Compare source fidelity, contacts, complete sequence success, and recovery. An accurate-looking isolated frame cannot establish that a long dynamic reference is executable.",
+      "role_en": "The requested General Motion Retargeting branch; separates kinematic reference conversion from policy tracking and links directly to BeyondMimic and TWIST.",
+      "latex": "q_t^*=\\arg\\min_{q\\in\\mathcal Q}\\sum_k w_k\\|f_k(q)-x_{t,k}^{\\mathrm{human}}\\|^2",
+      "notation": [
+        {
+          "symbol": "q_t^*",
+          "meaning": "Retargeted robot configuration."
+        },
+        {
+          "symbol": "f_k",
+          "meaning": "Robot forward-kinematic target."
+        },
+        {
+          "symbol": "x_{t,k}^{\\mathrm{human}}",
+          "meaning": "Corresponding scaled human target."
+        }
+      ],
+      "prereqs": [
+        "motion_retargeting",
+        "motion_contact_quality",
+        "paper_beyondmimic"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2510.02252"
+        },
+        {
+          "title": "GMR official code and documentation",
+          "url": "https://github.com/YanjieZe/GMR"
+        },
+        {
+          "title": "Retargeting Matters official project",
+          "url": "https://jaraujo98.github.io/retargeting_matters"
+        }
+      ],
+      "paper": {
+        "date": "2025-10-02 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Human-format conversion",
+            "node_id": "motion_smpl",
+            "role": "Normalizes supported source motion formats."
+          },
+          {
+            "label": "Constrained retargeting",
+            "node_id": "motion_retargeting",
+            "role": "Maps human movement onto robot bodies."
+          },
+          {
+            "label": "Fixed downstream tracking comparison",
+            "node_id": "paper_beyondmimic",
+            "role": "Tests how reference quality affects control."
+          }
+        ],
+        "contribution": "A general retargeter and controlled evidence that retargeting artifacts change policy quality.",
+        "training": "The retargeting stage is not RL; the study trains BeyondMimic trackers on alternative references.",
+        "inference": "CPU retargeting produces robot reference trajectories for offline training or online teleoperation.",
+        "evaluation": "LAFAN1 motion subsets and multiple retargeters, with fidelity and downstream tracking comparisons.",
+        "scale": "Official repository supports many embodiments; CPU speed depends on model and hardware.",
+        "limitations": "Real-time kinematic conversion is not a guarantee of dynamic executability; configurations may need adjustment.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_twist",
+      "en": "TWIST: Teleoperated Whole-Body Imitation System",
+      "title": "TWIST：全身动作模仿遥操作",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "TWIST：全身动作模仿遥操作",
+      "definition": "TWIST builds whole-body humanoid teleoperation around human motion imitation. It first retargets motion-capture sequences into robot references and then learns a unified whole-body controller with reinforcement learning and behavior cloning. Its analysis distinguishes privileged future reference information available during training from the signals usable by a responsive deployed controller. The resulting system covers locomotion, legged manipulation, whole-body manipulation, and expressive motion. Teleoperation supplies the intended movement; robust reference execution is not the same problem as autonomous task planning or language-conditioned decision making.",
+      "example": "A human operator changes from walking to a whole-body reaching movement. The retargeting interface converts the human pose into a robot reference, and the controller tracks it while maintaining physical feedback. Check reference latency and whether the deployed policy uses future frames.",
+      "role_en": "Concrete path from GMR and imitation learning to real humanoid control; useful for collecting robot demonstrations for later autonomy.",
+      "latex": "a_t=\\pi_{\\mathrm{student}}(o_{\\le t},m_{\\le t}),\\quad \\mathcal L_{BC}=\\mathbb E\\|a_t-a_t^{\\mathrm{teacher}}\\|^2",
+      "notation": [
+        {
+          "symbol": "m_{\\le t}",
+          "meaning": "Reference information available at deployment."
+        },
+        {
+          "symbol": "a_t^{\\mathrm{teacher}}",
+          "meaning": "Teacher action used for distillation."
+        },
+        {
+          "symbol": "\\mathcal L_{BC}",
+          "meaning": "Illustrative behavior-cloning loss."
+        }
+      ],
+      "prereqs": [
+        "motion_retargeting",
+        "motion_tracking",
+        "vla_behavior_cloning"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2505.02833"
+        },
+        {
+          "title": "TWIST official project",
+          "url": "https://humanoid-teleop.github.io"
+        },
+        {
+          "title": "GMR official code and documentation",
+          "url": "https://github.com/YanjieZe/GMR"
+        }
+      ],
+      "paper": {
+        "date": "2025-05-05 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Retargeted demonstrations",
+            "node_id": "motion_retargeting",
+            "role": "Create robot reference motions."
+          },
+          {
+            "label": "RL teacher",
+            "node_id": "rl_ppo",
+            "role": "Learns robust whole-body tracking."
+          },
+          {
+            "label": "RL and behavior-cloning student",
+            "node_id": "vla_behavior_cloning",
+            "role": "Provides responsive deployed reference control."
+          }
+        ],
+        "contribution": "Unified real-robot whole-body teleoperation using motion imitation and RL plus behavior cloning.",
+        "training": "Retargeted MoCap, RL, and BC; future reference access is analyzed.",
+        "inference": "A single trained controller follows human-derived reference commands.",
+        "evaluation": "Real humanoid whole-body manipulation, locomotion, and expressive movement demonstrations.",
+        "scale": "One controller spans diverse whole-body movements; parameter count is not asserted.",
+        "limitations": "Teleoperation observations and latency constrain operation; autonomous scene reasoning is a separate layer.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_humanx",
+      "en": "HumanX",
+      "title": "HumanX：从人类视频学习交互技能",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "HumanX：从人类视频学习交互技能",
+      "definition": "HumanX converts short human videos into robot interaction skills through two coordinated components. XGen builds anchor-centric interaction data and augments it to expand plausible robot-object configurations. XMimic emphasizes interaction-critical parts of imitation when learning the controller. The framework targets anchorable interactions rather than assuming any arbitrary video can directly become an executable policy. The October 2026 abstract reports nine skills across basketball, football, badminton, cargo pickup, and reactive fighting with zero-shot G1 transfer. Task-specific external sensing assumptions must still be read for each demonstration.",
+      "example": "For a demonstrated ball interaction, preserve the relation between the striking body part and the ball while varying admissible starting configurations. Evaluate the learned controller on new interaction states and complete exchanges. A successful open-loop shot and a perception-conditioned passing exchange are different tests.",
+      "role_en": "Connects recovered human motion, contact-preserving augmentation, and humanoid soccer interaction. The current v2 reports nine skills; counts in older project material may differ.",
+      "latex": "\\mathcal D_{\\mathrm{robot}}=\\operatorname{XGen}(V,\\mathcal A),\\qquad \\pi=\\operatorname{XMimic}(\\mathcal D_{\\mathrm{robot}})",
+      "notation": [
+        {
+          "symbol": "V",
+          "meaning": "Input human video."
+        },
+        {
+          "symbol": "\\mathcal A",
+          "meaning": "Interaction anchors and augmentation rules."
+        },
+        {
+          "symbol": "\\mathcal D_{\\mathrm{robot}}",
+          "meaning": "Generated robot interaction references."
+        }
+      ],
+      "prereqs": [
+        "motion_retargeting",
+        "motion_tracking",
+        "motion_contact_quality",
+        "soccer_foot_ball_contact"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2602.02473"
+        },
+        {
+          "title": "HumanX official project",
+          "url": "https://wyhuai.github.io/human-x/"
+        },
+        {
+          "title": "HumanX official code",
+          "url": "https://github.com/wyhuai/HumanX"
+        }
+      ],
+      "paper": {
+        "date": "2026-02-02 (arXiv v1); 2026-10-09 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "XGen interaction data",
+            "node_id": "motion_retargeting",
+            "role": "Builds and augments anchor-centric robot demonstrations."
+          },
+          {
+            "label": "XMimic interaction learning",
+            "node_id": "motion_tracking",
+            "role": "Prioritizes interaction-critical imitation."
+          },
+          {
+            "label": "Object interaction",
+            "node_id": "soccer_foot_ball_contact",
+            "role": "Tests transferred contact behavior."
+          }
+        ],
+        "contribution": "Co-designed demonstration generation and interaction-prioritized learning from short human videos.",
+        "training": "Generated and augmented interaction data train a controller without a separately designed reward for every task.",
+        "inference": "Robot executes learned interaction skills; perception requirements differ by skill.",
+        "evaluation": "Five domains and nine skills in the current v2 abstract; real Unitree G1 demonstrations.",
+        "scale": "Skill/data coverage, not a claimed universal robot foundation model.",
+        "limitations": "Scope is anchorable interactions; sensing and task generalization should not be generalized from one skill video.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_beyondretarget",
+      "en": "BeyondRetarget",
+      "title": "BeyondRetarget：直接从视频生成可执行机器人动作",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "BeyondRetarget：直接从视频生成可执行机器人动作",
+      "definition": "BeyondRetarget studies a direct route from monocular RGB video to robot motion. Instead of requiring an explicit estimated human body sequence followed by a separate retargeter, it learns robot-oriented implicit representations and applies contact-aware motion optimization. This design aims to reduce errors that become fixed when human-motion estimation and retargeting are separate stages. The paper reports simulation and real humanoid execution comparisons. Its generated motion still needs a controller and physical evaluation; bypassing a human representation does not eliminate monocular ambiguity or robot constraints.",
+      "example": "Compare two pipelines on the same video: human recovery followed by GMR, and direct robot-motion prediction. Check contact continuity, reference accuracy, latency, and complete controller execution. A lower prediction loss does not by itself establish better balance or safer impact behavior.",
+      "role_en": "Alternative branch to the GVHMR-to-GMR pipeline. It changes the representation and optimization boundary rather than replacing the need for robot physics or tracking.",
+      "latex": "\\hat q_{1:T}=F_\\theta(V_{1:T}),\\qquad q^*=\\arg\\min_q\\mathcal L_{\\mathrm{motion}}+\\lambda\\mathcal L_{\\mathrm{contact}}",
+      "notation": [
+        {
+          "symbol": "F_\\theta",
+          "meaning": "Direct video-to-robot motion predictor."
+        },
+        {
+          "symbol": "\\mathcal L_{\\mathrm{contact}}",
+          "meaning": "Contact-aware refinement objective."
+        },
+        {
+          "symbol": "q^*",
+          "meaning": "Refined robot reference, not actuator torques."
+        }
+      ],
+      "prereqs": [
+        "motion_contact_quality",
+        "motion_tracking",
+        "sim_camera",
+        "g_latent"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.29850"
+        }
+      ],
+      "paper": {
+        "date": "2026-09-24 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Robot-oriented video representation",
+            "node_id": "g_latent",
+            "role": "Bypasses an explicit human-body intermediate."
+          },
+          {
+            "label": "Contact-aware optimization",
+            "node_id": "motion_contact_quality",
+            "role": "Refines continuity and physical plausibility."
+          },
+          {
+            "label": "Execution evaluation",
+            "node_id": "motion_tracking",
+            "role": "Tests generated references with robot control."
+          }
+        ],
+        "contribution": "Direct video-to-robot motion prediction with contact-aware refinement.",
+        "training": "Learns robot-oriented representations and performs motion optimization.",
+        "inference": "Predicts and refines a robot motion sequence from monocular video.",
+        "evaluation": "Reported simulation and real humanoid execution comparisons.",
+        "scale": "No architecture or latency number inferred from the abstract.",
+        "limitations": "Contact-aware plausibility is not a formal dynamic feasibility guarantee; detailed execution conditions matter.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_football_team",
+      "en": "From Motor Control to Team Play in Simulated Humanoid Football",
+      "title": "分层学习：从运动控制到模拟团队足球",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "分层学习：从运动控制到模拟团队足球",
+      "definition": "This work integrates imitation learning, individual reinforcement learning, multi-agent reinforcement learning, and population-based training into physically simulated humanoid football. Learning proceeds across temporal scales: low-level natural movement supports intermediate ball skills, which support team behavior over longer horizons. Transferable behavioral representations connect these stages. The contribution is the integration of motor control and coordinated decisions rather than a new camera-based ball detector or physical humanoid deployment. Its avatars operate in a simulated multi-agent setting; hardware and egocentric perception claims should not be imported from later robot soccer systems.",
+      "example": "Compare a policy trained only to move naturally with one trained to dribble and then play with teammates. Running quality, ball skill, and team decisions need separate measurements. A goal can depend on teammate positioning even when the individual motor controller is unchanged.",
+      "role_en": "Soccer research branch: Integrated learning at movement, skill, and team-decision timescales.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_multiagent",
+        "motion_prior",
+        "soccer_skill_chaining"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2105.12196"
+        }
+      ],
+      "paper": {
+        "date": "2021-05-25 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Human-like movement",
+            "node_id": "motion_prior",
+            "role": "Learns reusable low-level motor representations."
+          },
+          {
+            "label": "Football skills",
+            "node_id": "soccer_foot_ball_contact",
+            "role": "Adds dribbling and shooting."
+          },
+          {
+            "label": "Team play",
+            "node_id": "soccer_multiagent",
+            "role": "Uses multi-agent learning and population training."
+          }
+        ],
+        "contribution": "Integrated learning at movement, skill, and team-decision timescales.",
+        "training": "Imitation, single-agent RL, multi-agent RL, and population-based training.",
+        "inference": "Hierarchical policies control physically simulated avatars in football games.",
+        "evaluation": "Simulated teams and analyses of emergent skills and coordination.",
+        "scale": "Simulation avatars; not a G1 hardware or perception result.",
+        "limitations": "Requires separate evidence for real robot dynamics, onboard sensing, and communication limits.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_op3_soccer",
+      "en": "Learning Agile Soccer Skills for a Bipedal Robot",
+      "title": "OP3：深度强化学习的一对一足球",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "OP3：深度强化学习的一对一足球",
+      "definition": "This work trains a miniature humanoid with twenty actuated joints to play a simplified one-versus-one soccer game. Reinforcement learning produces locomotion, turning, kicking, fall recovery, and basic game-dependent behavior that transfer from simulation to physical OP3 robots. Skill reuse and multi-agent learning connect robust movement to longer-horizon game objectives. The setup is important: the original real-game state information includes an external motion-capture system, so it should not be described as fully onboard vision-only soccer. Robot size, control rate, and task definition also differ from full-size G1 systems.",
+      "example": "Observe a robot fall, recover, pursue the ball, and block an opponent within one game. Evaluate both recovery and scoring against matched opponents. The result does not imply that the same network can run unchanged on a G1 or perceive the ball from its own camera.",
+      "role_en": "Soccer research branch: Real miniature-humanoid soccer with learned agile skills, recovery, and basic tactical behavior.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_multiagent",
+        "rl_ppo",
+        "sim_domainrand",
+        "soccer_skill_chaining"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2304.13653"
+        }
+      ],
+      "paper": {
+        "date": "2023-04-26 (arXiv v1); 2024-04-11 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Motor skill learning",
+            "node_id": "rl_ppo",
+            "role": "Learns agile low-level movement and recovery."
+          },
+          {
+            "label": "Self-play game learning",
+            "node_id": "soccer_multiagent",
+            "role": "Composes skills for one-versus-one outcomes."
+          },
+          {
+            "label": "Transfer measures",
+            "node_id": "sim_sim2real",
+            "role": "Uses control rate, randomization, perturbation, and regularization."
+          }
+        ],
+        "contribution": "Real miniature-humanoid soccer with learned agile skills, recovery, and basic tactical behavior.",
+        "training": "Simulation skill learning and multi-agent game training with targeted transfer measures.",
+        "inference": "Physical OP3 feedback control using the game-state observation setup reported by the authors.",
+        "evaluation": "Real one-versus-one games and individual skill comparisons with scripted baselines.",
+        "scale": "Twenty actuated joints; not a learned 3D video world model.",
+        "limitations": "External motion-capture game-state information and simplified games limit claims of onboard autonomous football.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_dribblebot",
+      "en": "DribbleBot",
+      "title": "DribbleBot：自然地形中的四足运球",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "DribbleBot：自然地形中的四足运球",
+      "definition": "DribbleBot learns dynamic ball manipulation while a quadruped walks over varied natural terrain. Policies train in simulation and transfer to a real robot with body-mounted cameras and onboard computation. The task couples locomotion to ball dynamics, so varying ground interaction and sensing conditions are central rather than incidental disturbances. It provides a useful predecessor for active sensing and robust dribbling in humanoid systems, while its four-legged support geometry changes balance and contact possibilities. Its demonstrations do not establish that an identical policy or reward design transfers directly to a biped.",
+      "example": "Train the same commanded ball-velocity objective over different surface parameters. A controller must adapt both body movement and contact timing as the ball slows differently on grass and sand. Evaluate actual ball motion rather than only the robot’s walking velocity.",
+      "role_en": "Soccer research branch: In-the-wild quadrupedal dribbling with onboard sensing and computation.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_ball_state",
+        "soccer_foot_ball_contact",
+        "sim_domainrand",
+        "rl_ppo"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2304.01159"
+        },
+        {
+          "title": "DribbleBot official code",
+          "url": "https://github.com/Improbable-AI/dribblebot"
+        }
+      ],
+      "paper": {
+        "date": "2023-04-03 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Onboard ball sensing",
+            "node_id": "soccer_ball_state",
+            "role": "Observes the ball under computation limits."
+          },
+          {
+            "label": "Dynamic locomotion and manipulation",
+            "node_id": "soccer_foot_ball_contact",
+            "role": "Learns foot contacts while moving."
+          },
+          {
+            "label": "Terrain variation",
+            "node_id": "sim_domainrand",
+            "role": "Varies ball-ground and robot-ground behavior."
+          }
+        ],
+        "contribution": "In-the-wild quadrupedal dribbling with onboard sensing and computation.",
+        "training": "RL in randomized simulation, including variable ball dynamics.",
+        "inference": "Onboard observations condition a deployed legged-manipulation policy.",
+        "evaluation": "Real terrain demonstrations, including natural outdoor surfaces.",
+        "scale": "Quadrupedal platform, with support constraints different from humanoids.",
+        "limitations": "Unmapped terrain success does not imply general obstacle avoidance or biped transfer.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_quad_goalkeeper",
+      "en": "Dynamic Quadrupedal Robotic Goalkeeper",
+      "title": "四足守门员：分层技能与拦截规划",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "四足守门员：分层技能与拦截规划",
+      "definition": "This quadrupedal goalkeeping framework separates rapid ball interception into low-level agile locomotion skills and a high-level motion-planning policy. Different skills cover different parts of the goal, while the planner selects a skill and its movement parameters according to the incoming ball. The task tests fast nonprehensile interaction rather than ordinary velocity-command locomotion. Real Mini Cheetah experiments support the approach under the authors’ sensing and field setup. The work is a useful predecessor for humanoid goalkeeping, whose biped support and human-motion objectives introduce different constraints.",
+      "example": "An incoming trajectory reaches the left side of the goal. The planner chooses an appropriate saving skill and target, and the low-level controller executes it within the available time. Evaluate interception and recovery rather than only whether the robot reaches a target pose.",
+      "role_en": "Soccer research branch: Hierarchical RL for real quadruped goalkeeping using agile skills and learned planning.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_ball_state",
+        "soccer_skill_chaining",
+        "soccer_foot_ball_contact",
+        "rl_ppo"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2210.04435"
+        },
+        {
+          "title": "Original author-hosted goalkeeper paper",
+          "url": "https://hybrid-robotics.berkeley.edu/publications/IROS2023_Dynamic_Goalkeeper_RL.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2022-10-10 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Agile save skills",
+            "node_id": "motion_tracking",
+            "role": "Provides low-level dynamic maneuvers."
+          },
+          {
+            "label": "Ball-conditioned planner",
+            "node_id": "r_policy",
+            "role": "Chooses skill and motion parameters."
+          },
+          {
+            "label": "Interception",
+            "node_id": "soccer_foot_ball_contact",
+            "role": "Tests moving-ball contact under short reaction time."
+          }
+        ],
+        "contribution": "Hierarchical RL for real quadruped goalkeeping using agile skills and learned planning.",
+        "training": "Model-free RL for low-level skills and high-level planning.",
+        "inference": "A ball-conditioned planner selects and parameterizes a low-level save.",
+        "evaluation": "Real Mini Cheetah moving-ball interceptions.",
+        "scale": "Quadrupedal goalkeeper; sensor and trial protocols must be read from the paper.",
+        "limitations": "Separate hardware, sensing, and coverage assumptions from humanoid results.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_soccerdiffusion",
+      "en": "SoccerDiffusion",
+      "title": "SoccerDiffusion：从比赛记录学习端到端动作",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "SoccerDiffusion：从比赛记录学习端到端动作",
+      "definition": "SoccerDiffusion learns humanoid soccer control from recordings of real RoboCup gameplay. A Transformer-based diffusion model predicts joint-command trajectories from multimodal observations that include vision, proprioception, and game state. Distillation reduces the iterative diffusion process to a single inference step for embedded execution. The reported system imitates behaviors such as walking, kicking, and recovery in simulation and on robots. Its learned tactical ability remains limited, so reproducing low-level recorded behavior should be distinguished from learning a complete competitive game strategy.",
+      "example": "A recorded observation window contains camera input, joint state, and game context. The model generates a short action trajectory, and a distilled student executes a faster approximation. Compare rollout stability and response latency, then separately test whether the policy chooses appropriate game behavior.",
+      "role_en": "Soccer research branch: Gameplay imitation with a diffusion controller and single-step distillation.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "g_diffusion",
+        "d_transformer",
+        "vla_action_chunk",
+        "vla_behavior_cloning"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2504.20808"
+        },
+        {
+          "title": "SoccerDiffusion official project",
+          "url": "https://bit-bots.github.io/SoccerDiffusion"
+        }
+      ],
+      "paper": {
+        "date": "2025-04-29 (arXiv v1); 2025-07-03 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Multimodal observation tokens",
+            "node_id": "d_transformer",
+            "role": "Encodes vision, proprioception, and game state."
+          },
+          {
+            "label": "Diffusion action model",
+            "node_id": "g_diffusion",
+            "role": "Predicts joint-command trajectories."
+          },
+          {
+            "label": "Single-step distillation",
+            "node_id": "vla_behavior_cloning",
+            "role": "Enables embedded real-time inference."
+          }
+        ],
+        "contribution": "Gameplay imitation with a diffusion controller and single-step distillation.",
+        "training": "Learns from RoboCup recordings; distills multi-step generation.",
+        "inference": "Multimodal observations produce joint-command trajectories.",
+        "evaluation": "Simulation and physical walking, kicking, and recovery; tactics remain limited.",
+        "scale": "Embedded execution is supported through distillation; parameter count is not inferred.",
+        "limitations": "Imitation coverage and limited strategic behavior restrict autonomous-game claims.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_dribble_master",
+      "en": "Dribble Master",
+      "title": "Dribble Master：从步行到主动感知运球",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "Dribble Master：从步行到主动感知运球",
+      "definition": "Dribble Master uses a two-stage curriculum to learn humanoid dribbling. The robot first learns locomotion and then adapts the policy for ball manipulation. A virtual camera model exposes training to field-of-view and perception restrictions, while rewards encourage sensing behavior that retains the ball in view. This connects dynamic leg control with the need to observe an intermittently contacted object. The paper reports transfer to a real humanoid in multiple environments. It does not require an explicit learned forward dynamics model or a predefined dribbling trajectory.",
+      "example": "Begin with a locomotion policy and add a ball-velocity objective. Limit simulated observations to what the virtual camera can see. Check whether the resulting body and head behavior keeps the ball observable during a turn and whether the real ball follows the command.",
+      "role_en": "Soccer research branch: Locomotion-first curriculum with virtual perception constraints for agile humanoid dribbling.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_active_vision",
+        "soccer_foot_ball_contact",
+        "rl_ppo",
+        "sim_sim2real"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2505.12679"
+        },
+        {
+          "title": "Dribble Master official project",
+          "url": "https://zhuoheng0910.github.io/dribble-master/"
+        }
+      ],
+      "paper": {
+        "date": "2025-05-19 (arXiv v1); 2026-03-14 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Locomotion curriculum",
+            "node_id": "rl_ppo",
+            "role": "Establishes a walking substrate."
+          },
+          {
+            "label": "Virtual camera",
+            "node_id": "soccer_ball_state",
+            "role": "Models perception limits during training."
+          },
+          {
+            "label": "Active dribbling adaptation",
+            "node_id": "soccer_active_vision",
+            "role": "Combines ball manipulation and visibility rewards."
+          }
+        ],
+        "contribution": "Locomotion-first curriculum with virtual perception constraints for agile humanoid dribbling.",
+        "training": "Locomotion RL followed by task-specific fine-tuning with active-sensing rewards.",
+        "inference": "Policy controls dribbling from deployable robot and ball observations.",
+        "evaluation": "Real humanoid dribbling across multiple environments.",
+        "scale": "No exact model size entered; it is a control policy, not a video world model.",
+        "limitations": "Virtual perception realism and task-specific rewards influence transfer; demonstrated environments are finite.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_reactive_soccer",
+      "en": "Vision-Driven Reactive Soccer Skills",
+      "title": "视觉驱动的反应式足球技能",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "视觉驱动的反应式足球技能",
+      "definition": "This paper learns a unified humanoid soccer controller that couples perception with locomotion and kicking. An encoder-decoder architecture and virtual perception system expose training to detection noise and failures. Adversarial motion priors guide natural body movement while the controller learns to search for, chase, and kick the ball. The important contribution is closed-loop behavior under imperfect onboard sensing, rather than assuming an exact ball state at every step. The paper reports real scenarios and RoboCup use; this is a distinct work from the three-stage PAiD paper.",
+      "example": "When a ball detection disappears, the policy must continue moving and searching under uncertain state rather than repeatedly restarting a scripted approach. Test varying target locations, occlusions, and moving balls while recording both state-estimation error and actual kick outcomes.",
+      "role_en": "Soccer research branch: Unified reactive perception-action control with simulated observation imperfections.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_ball_state",
+        "soccer_active_vision",
+        "paper_amp",
+        "rl_ppo"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2511.03996"
+        },
+        {
+          "title": "Reactive soccer official project",
+          "url": "https://humanoid-kick.github.io"
+        }
+      ],
+      "paper": {
+        "date": "2025-11-06 (arXiv v1); 2026-08-20 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Virtual perception",
+            "node_id": "soccer_ball_state",
+            "role": "Models noise and missed detections."
+          },
+          {
+            "label": "Encoder-decoder state processing",
+            "node_id": "d_mlp",
+            "role": "Integrates imperfect observations."
+          },
+          {
+            "label": "Adversarial motion prior",
+            "node_id": "paper_amp",
+            "role": "Regularizes whole-body movement."
+          },
+          {
+            "label": "Reactive controller",
+            "node_id": "r_feedback",
+            "role": "Coordinates search, approach, and multidirectional kicks."
+          }
+        ],
+        "contribution": "Unified reactive perception-action control with simulated observation imperfections.",
+        "training": "RL with a virtual perception model and adversarial motion priors.",
+        "inference": "Uses onboard visual information for reactive soccer behavior.",
+        "evaluation": "Real environments, dynamic scenarios, and RoboCup competition evidence reported by the authors.",
+        "scale": "Perception and control system; exact network dimensions are not inferred.",
+        "limitations": "Sensor modeling is task-specific; do not conflate this method with PAiD or claim raw-image end-to-end input without checking the implementation.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_paid",
+      "en": "PAiD: Progressive Perception–Action Soccer",
+      "title": "PAiD：渐进式感知动作集成",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "PAiD：渐进式感知动作集成",
+      "definition": "PAiD decomposes humanoid soccer learning into motion-skill acquisition, perception-action integration, and physics-aware sim-to-real transfer. The first stage learns stable human-like movement; the second adapts that foundation to different observed ball positions; the third addresses transfer to the physical robot. This staged design aims to avoid instability between separately designed modules and conflicting objectives in a monolithic end-to-end approach. The paper reports Unitree G1 kicking under varied ball conditions. It is not the similarly themed November 2025 vision-driven reactive soccer paper.",
+      "example": "A kick learned for one reference ball position must adjust to a ball farther left without losing balance. PAiD separates learning the basic motion from learning positional adjustment. Evaluate static and rolling balls, disturbances, and complete recovery under the reported perception setup.",
+      "role_en": "Soccer research branch: Three-stage perception-action integration for robust humanoid soccer skills.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "soccer_ball_state",
+        "soccer_foot_ball_contact",
+        "sim_sim2real"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2602.05310"
+        }
+      ],
+      "paper": {
+        "date": "2026-02-05 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Motion-skill acquisition",
+            "node_id": "motion_tracking",
+            "role": "Builds a stable human-like kick."
+          },
+          {
+            "label": "Perception-action integration",
+            "node_id": "soccer_ball_state",
+            "role": "Generalizes to ball positions."
+          },
+          {
+            "label": "Physics-aware transfer",
+            "node_id": "sim_sim2real",
+            "role": "Addresses hardware discrepancies."
+          }
+        ],
+        "contribution": "Three-stage perception-action integration for robust humanoid soccer skills.",
+        "training": "Human-motion skill learning, lightweight perception integration, and transfer adaptation.",
+        "inference": "A learned controller adjusts kick execution from the permitted perception signals.",
+        "evaluation": "Real G1 static/rolling balls, spatial changes, disturbances, and indoor/outdoor trials.",
+        "scale": "Task policy and perception integration, not a general video world model.",
+        "limitations": "Do not infer full-game autonomy from kicking trials; sensing assumptions and task coverage remain specific. The project URL linked by the paper returned 404 on 2026-11-16; use the arXiv paper source.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_humanoid_goalkeeper",
+      "en": "Humanoid Goalkeeper",
+      "title": "人形守门员：位置条件的任务动作约束",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "人形守门员：位置条件的任务动作约束",
+      "definition": "Humanoid Goalkeeper learns a single policy for rapid whole-body interaction with incoming balls. It conditions motion priors on perceptual information and incorporates multiple human-motion sources through adversarial learning. This allows dynamic, human-like saves without selecting among separately teleoperated or fixed tracking routines at runtime. The work focuses on guarding range and response under biped constraints, and reports real autonomous interceptions plus related interaction tasks. These results should be interpreted under the paper’s ball perception and experimental geometry, not as universal full-field goalkeeper performance.",
+      "example": "A predicted ball arrival position changes which whole-body motion is appropriate. The policy conditions its movement on that target and its current state, rather than playing the same save for every shot. Measure the guarded region and reaction time together with successful ball interception.",
+      "role_en": "Soccer research branch: Perception-conditioned adversarial motion learning for autonomous humanoid goalkeeping.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "paper_amp",
+        "soccer_ball_state",
+        "soccer_foot_ball_contact",
+        "motion_prior"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2510.18002"
+        },
+        {
+          "title": "Humanoid Goalkeeper official project",
+          "url": "https://humanoid-goalkeeper.github.io/Goalkeeper/"
+        }
+      ],
+      "paper": {
+        "date": "2025-10-20 (arXiv v1); 2026-03-14 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Position-conditioned motion constraints",
+            "node_id": "motion_prior",
+            "role": "Relates prior movement to the incoming ball."
+          },
+          {
+            "label": "Adversarial imitation",
+            "node_id": "paper_amp",
+            "role": "Combines human-motion priors."
+          },
+          {
+            "label": "Single interaction policy",
+            "node_id": "rl_ppo",
+            "role": "Generates dynamic saves without separate runtime skill selection."
+          }
+        ],
+        "contribution": "Perception-conditioned adversarial motion learning for autonomous humanoid goalkeeping.",
+        "training": "RL integrates multiple human-motion priors conditioned on perceptual inputs.",
+        "inference": "One policy controls whole-body interaction with an incoming ball.",
+        "evaluation": "Real goalkeeping plus ball escaping and grabbing demonstrations.",
+        "scale": "Single end-to-end controller; exact parameter count is not entered.",
+        "limitations": "Coverage, ball trajectory distribution, and perception setup limit generalization claims.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_robonaldo",
+      "en": "RoboNaldo",
+      "title": "RoboNaldo：稳定、准确且有力的人形射门",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "RoboNaldo：稳定、准确且有力的人形射门",
+      "definition": "RoboNaldo uses a single human-kick reference as an initial scaffold and progressively shifts reinforcement learning toward shot outcomes. Its curriculum learns a stable kicking prior, adapts to stationary balls at varied positions, and extends to moving-ball shooting through locomotion commands and a kick trigger. A heuristic planner supplies those commands during training; other high-level controllers can use the same interface. Real G1 experiments use onboard perception, including LiDAR and infrared reflectance for a retroreflective ball, so the demonstrated setup must not be relabeled ordinary-ball RGB-only soccer.",
+      "example": "The high-level controller approaches a moving ball and triggers a learned strike when the relative state is suitable. Compare complete approach-strike-recovery trials using matched targets, and state the ball’s reflective treatment and sensors when interpreting perception reliability.",
+      "role_en": "Soccer research branch: Motion-guided curriculum for high-impulse accurate shots with a reusable high-level command interface.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "motion_tracking",
+        "soccer_skill_chaining",
+        "soccer_foot_ball_contact",
+        "soccer_ball_state"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2606.11092"
+        },
+        {
+          "title": "RoboNaldo official project",
+          "url": "https://opendrivelab.com/RoboNaldo/"
+        }
+      ],
+      "paper": {
+        "date": "2026-06-09 (arXiv v1); 2026-06-11 (latest revision verified)",
+        "architecture": [
+          {
+            "label": "Human kick scaffold",
+            "node_id": "motion_tracking",
+            "role": "Initializes coordinated whole-body movement."
+          },
+          {
+            "label": "Three-stage task curriculum",
+            "node_id": "rl_ppo",
+            "role": "Moves from reference stability to accurate free and moving-ball shots."
+          },
+          {
+            "label": "Locomotion/trigger interface",
+            "node_id": "soccer_skill_chaining",
+            "role": "Separates high-level approach decisions from low-level striking."
+          },
+          {
+            "label": "Onboard ball perception",
+            "node_id": "soccer_ball_state",
+            "role": "Uses the reported LiDAR/IR reflective-ball setup."
+          }
+        ],
+        "contribution": "Motion-guided curriculum for high-impulse accurate shots with a reusable high-level command interface.",
+        "training": "Stable kick prior, randomized stationary-ball shots, then moving-ball shots under a training planner.",
+        "inference": "A high-level controller sends locomotion commands and kick triggers to the learned policy.",
+        "evaluation": "Simulation baselines and real G1 shot placement, speed, and stability trials.",
+        "scale": "Control policy with a single reference scaffold; no giant video generator is required.",
+        "limitations": "Reflective-ball perception and the task protocol constrain comparisons; do not infer universal natural-ball vision or a full team strategy.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_joga",
+      "en": "Joga: Joint Optimization of Gaze and Action",
+      "title": "Joga：视觉与动作协同的足球技能",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "Joga：视觉与动作协同的足球技能",
+      "definition": "Joga is a full-stack G1 soccer system for dribbling, shooting, passing, and receiving. A custom two-degree-of-freedom torso-mounted neck lets the policy coordinate gaze with body movement. A learned perception alignment model reproduces detector errors, while a whole-body unsupervised actuator network corrects simulator joint-target behavior using short hardware recordings. Skill policies train with aligned perception; dribbling is further refined with actuator corrections. Distributional skill chaining prepares passing and shooting for the states actually encountered during dribbling, enabling transitions while the robot is moving.",
+      "example": "During a dribble-to-shot transition, the body and neck policy maintains ball visibility and the shot begins from a state produced by dribbling. Compare the nominal simulator with perception-aligned and actuator-aligned versions using the same commanded turns and complete hardware trials.",
+      "role_en": "Soccer research branch: Data-driven perception and dynamics alignment plus active vision and skill chaining.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_active_vision",
+        "est_sysid",
+        "soccer_skill_chaining",
+        "soccer_foot_ball_contact"
+      ],
+      "sources": [
+        {
+          "title": "Joga official project",
+          "url": "https://joga.csail.mit.edu/"
+        },
+        {
+          "title": "Joga original paper PDF",
+          "url": "https://joga.csail.mit.edu/static/joga.pdf"
+        }
+      ],
+      "paper": {
+        "date": "2026 (official project verified 2026-11-16; first release date not established)",
+        "architecture": [
+          {
+            "label": "Active neck and whole-body control",
+            "node_id": "soccer_active_vision",
+            "role": "Jointly controls gaze and locomotion."
+          },
+          {
+            "label": "Perception alignment model",
+            "node_id": "soccer_ball_state",
+            "role": "Fits detector bias, noise, and dropout from paired data."
+          },
+          {
+            "label": "Whole-body actuator network",
+            "node_id": "est_sysid",
+            "role": "Fits residual command corrections from hardware."
+          },
+          {
+            "label": "Distributional handoffs",
+            "node_id": "soccer_skill_chaining",
+            "role": "Fine-tunes strikes from dribbling states."
+          }
+        ],
+        "contribution": "Data-driven perception and dynamics alignment plus active vision and skill chaining.",
+        "training": "RL uses modeled detector errors; dribbling fine-tunes in residual-corrected simulation; handoffs use dribbling states.",
+        "inference": "Onboard camera and proprioception drive the whole body plus custom neck; an operator can provide ball-direction commands.",
+        "evaluation": "Real G1 dribbling, sharp turns, receiving, passing, shooting, and continuous skill transitions.",
+        "scale": "Official project describes 31 controlled actuators including the custom 2-DoF neck; this is not a stock 31-DoF G1 claim.",
+        "limitations": "Hardware calibration data, neck hardware, and small trial counts matter; active-vision results do not establish autonomous game tactics.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_davis",
+      "en": "DAVIS: Depth-Only Active-Vision Soccer",
+      "title": "DAVIS：深度图端到端主动视觉足球",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "DAVIS：深度图端到端主动视觉足球",
+      "definition": "DAVIS asks whether humanoid soccer contact skills can run from a head-mounted depth image, proprioceptive history, and an optional low-dimensional command while directly producing joint PD targets. Its training includes visibility-aware auxiliary geometry, annealing from ground-truth geometry toward predictions, task curricula, and AMP-style motion priors. The runtime design avoids an extra explicit perception or planning module. The paper reports shooting and directional dribbling on a Noetix E1 platform. This differs from systems that consume an externally estimated ball position or explicitly plan an approach trajectory.",
+      "example": "As supervision shifts from exact simulated geometry to predicted geometry, check whether a depth-conditioned policy still observes and reaches the ball. Compare shooting and dribbling under occlusion and viewpoint change, and confirm which auxiliary signals are removed at deployment.",
+      "role_en": "Soccer research branch: Depth-only end-to-end active-vision soccer with privileged-to-predicted geometry training.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_active_vision",
+        "paper_amp",
+        "sim_camera",
+        "ctrl_pd"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.28175"
+        },
+        {
+          "title": "DAVIS official project",
+          "url": "https://thusi-lab.github.io/DAVIS/"
+        }
+      ],
+      "paper": {
+        "date": "2026-09-23 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Depth and proprioceptive history",
+            "node_id": "soccer_ball_state",
+            "role": "Provides deployable observations."
+          },
+          {
+            "label": "Visibility-aware geometry",
+            "node_id": "soccer_active_vision",
+            "role": "Supplies auxiliary learning targets."
+          },
+          {
+            "label": "Ground-truth-to-prediction annealing",
+            "node_id": "ml_distribution_shift",
+            "role": "Reduces dependence on privileged supervision."
+          },
+          {
+            "label": "Direct PD-target policy",
+            "node_id": "ctrl_pd",
+            "role": "Outputs 25-DoF commands."
+          }
+        ],
+        "contribution": "Depth-only end-to-end active-vision soccer with privileged-to-predicted geometry training.",
+        "training": "Curricula, auxiliary geometry, GT-to-prediction annealing, and adversarial motion priors.",
+        "inference": "Depth image and proprioceptive history map to 25-DoF joint PD targets without extra runtime planning modules.",
+        "evaluation": "Simulation, Noetix E1 hardware, shooting/dribbling examples, and ablations.",
+        "scale": "25 controlled DoF in the reported platform; not a model parameter count.",
+        "limitations": "Depth sensor characteristics, visibility, and platform dynamics limit transfer to other robots.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_locomotion_soccer",
+      "en": "Locomotion-Grounded Humanoid Soccer",
+      "title": "步行作为基底的多方向踢球技能库",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "步行作为基底的多方向踢球技能库",
+      "definition": "This method begins with a general command-conditioned locomotion controller and adds motion-guided kicking skills as task-gated layers. Each skill starts from and returns to the same commandable locomotion state, making locomotion a shared hub for composition and recovery. It explicitly evaluates gait capability alongside shooting rather than assuming locomotion is adequate because an approach succeeds. The reported G1 library contains seven kicks with varied directions, including lateral and rearward strikes. This is a modular alternative to deriving all movement from a single tracked kick reference.",
+      "example": "A controller walks sideways, invokes a lateral kick, and returns to commanded locomotion. Test command tracking, terrain response, push recovery, and shot placement with the full library enabled. The common return state reduces the number of pairwise transitions that must be specially trained.",
+      "role_en": "Soccer research branch: Locomotion-first composition with a multidirectional kick library and explicit gait evaluation.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "soccer_skill_chaining",
+        "motion_tracking",
+        "rl_ppo",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2609.38852"
+        }
+      ],
+      "paper": {
+        "date": "2026-09-30 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Command-conditioned locomotion",
+            "node_id": "r_policy",
+            "role": "Defines the shared substrate and recovery behavior."
+          },
+          {
+            "label": "Task-gated kicks",
+            "node_id": "motion_tracking",
+            "role": "Adds motion-guided skill layers."
+          },
+          {
+            "label": "Common locomotion hub",
+            "node_id": "soccer_skill_chaining",
+            "role": "Provides shared entry and return states."
+          }
+        ],
+        "contribution": "Locomotion-first composition with a multidirectional kick library and explicit gait evaluation.",
+        "training": "Train commandable locomotion, then motion-guided task-gated kicking layers.",
+        "inference": "Select a kick while preserving a commandable locomotion interface.",
+        "evaluation": "Reported 29-DoF G1 hardware library plus command tracking, terrain, recovery, and shooting.",
+        "scale": "Seven skills spanning multiple directions; skill count is not network depth.",
+        "limitations": "Composition claims depend on returning to the common hub; performance under arbitrary unseen interactions is not established.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_soccerbot",
+      "en": "soccerbot: Soccer via Latent Motion Priors",
+      "title": "soccerbot：潜空间动作先验的统一足球技能",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "soccerbot：潜空间动作先验的统一足球技能",
+      "definition": "soccerbot learns a structured latent motion prior from human soccer motion capture and uses it in hierarchical reinforcement learning. A single skill-conditioned task policy commands movement, dribbling, trapping, and kicking within the learned motion space. This differs from selecting entirely independent controllers for each skill or relying on one fixed reference kick. Robustness-oriented simulation supports zero-shot transfer to a G1. The work targets a repertoire of soccer motor skills with natural transitions; full competitive team intelligence and unrestricted perception are separate questions.",
+      "example": "Change a skill command from dribbling to trapping and then kicking while leaving the low-level motion representation shared. Evaluate the transition states and ball outcomes, not only isolated clips. Natural-looking movements can still miss the ball or fail under an unexpected perception delay.",
+      "role_en": "Soccer research branch: Unified skill-conditioned soccer within a structured human-motion latent prior.",
+      "latex": "a_t=\\pi_{k}(o_{\\le t},g_t),\\qquad J=\\mathbb E\\!\\left[\\sum_t\\gamma^t r_t\\right]",
+      "notation": [
+        {
+          "symbol": "o_{\\le t}",
+          "meaning": "Available observation history; sensing differs by paper."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Task or skill command."
+        },
+        {
+          "symbol": "k",
+          "meaning": "Skill or controller selection; may be fixed for a single policy."
+        },
+        {
+          "symbol": "J",
+          "meaning": "Generic discounted control objective, not the paper’s exact reward."
+        }
+      ],
+      "prereqs": [
+        "motion_prior",
+        "g_latent",
+        "soccer_skill_chaining",
+        "sim_sim2real"
+      ],
+      "sources": [
+        {
+          "title": "Original paper on arXiv",
+          "url": "https://arxiv.org/abs/2611.06564"
+        }
+      ],
+      "paper": {
+        "date": "2026-11-04 (arXiv v1)",
+        "architecture": [
+          {
+            "label": "Human soccer motion prior",
+            "node_id": "motion_prior",
+            "role": "Builds a structured latent movement space."
+          },
+          {
+            "label": "Skill-conditioned hierarchy",
+            "node_id": "g_latent",
+            "role": "Commands multiple skills through the prior."
+          },
+          {
+            "label": "Robust transfer",
+            "node_id": "sim_sim2real",
+            "role": "Addresses execution on the physical G1."
+          }
+        ],
+        "contribution": "Unified skill-conditioned soccer within a structured human-motion latent prior.",
+        "training": "Motion-prior learning followed by hierarchical RL and robustness-oriented simulation.",
+        "inference": "A single skill-conditioned controller composes moving, dribbling, trapping, and kicking.",
+        "evaluation": "Reported zero-shot Unitree G1 skill execution and transitions.",
+        "scale": "Large-scale soccer MoCap is reported; no dataset size or parameter number inferred.",
+        "limitations": "Recent preprint; motor repertoire does not establish full-game autonomy or sensor generalization.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_bhuman2025",
+      "en": "B-Human 2025 Soccer System",
+      "title": "B-Human 2025：模块化机器人足球系统",
+      "group": "soccer_papers",
+      "kind": "paper",
+      "summary": "B-Human 2025：模块化机器人足球系统",
+      "definition": "The B-Human 2025 code release provides a complete competition soccer system rather than an isolated learned skill. Its documentation connects camera perception, localization, world modeling, behavior decisions, communication, and motion control. The release includes a MuJoCo-based simulator and early Booster T1/K1 support in addition to the established NAO competition stack. Studying this system shows how traditional state estimation and behavior modules interact with learned components. It should be identified as an official software and documentation release, not mislabeled as a new end-to-end RL paper.",
+      "example": "Follow a ball observation from image processing through the local world model into a positioning or kicking decision. Compare this explicit modular interface with a reactive learned controller. A module may be reusable while robot-specific walking and calibration still require adaptation.",
+      "role_en": "Provides a concrete traditional robot-soccer branch linking estimation, planning, communication, and control; preserve alongside learned approaches.",
+      "latex": "I_t\\rightarrow\\hat{s}_t\\rightarrow b_t\\rightarrow u_t",
+      "notation": [
+        {
+          "symbol": "I_t",
+          "meaning": "Camera image and other sensor observations."
+        },
+        {
+          "symbol": "\\hat s_t",
+          "meaning": "Estimated local or team state."
+        },
+        {
+          "symbol": "b_t",
+          "meaning": "Behavior decision."
+        },
+        {
+          "symbol": "u_t",
+          "meaning": "Motion request or actuator control."
+        }
+      ],
+      "prereqs": [
+        "est_sensorfusion",
+        "est_kalman",
+        "soccer_ball_state",
+        "soccer_multiagent",
+        "r_feedback"
+      ],
+      "sources": [
+        {
+          "title": "B-Human official 2025 documentation",
+          "url": "https://docs.b-human.de/coderelease2025/"
+        },
+        {
+          "title": "B-Human official code",
+          "url": "https://github.com/bhuman/BHumanCodeRelease"
+        },
+        {
+          "title": "Official team release announcement",
+          "url": "https://lists.robocup.org/archives/list/robocup-nao%40lists.robocup.org/thread/FCERESMMYSAE2Q6LXFGLJ3Y6VIHQELFM/"
+        }
+      ],
+      "paper": {
+        "date": "2025-10-16 (official release announcement)",
+        "architecture": [
+          {
+            "label": "Perception and state estimation",
+            "node_id": "soccer_ball_state",
+            "role": "Builds explicit field and object estimates."
+          },
+          {
+            "label": "Behavior and cooperation",
+            "node_id": "soccer_multiagent",
+            "role": "Chooses soccer actions and team roles."
+          },
+          {
+            "label": "Motion execution",
+            "node_id": "r_feedback",
+            "role": "Turns decisions into robot movements."
+          },
+          {
+            "label": "Simulation and robot adaptation",
+            "node_id": "sim_mujoco",
+            "role": "Supports testing and platform-specific integration."
+          }
+        ],
+        "contribution": "Complete documented competition software stack with modular interfaces and simulator integration.",
+        "training": "Mixed engineered and learned components; not one monolithic training objective.",
+        "inference": "A continuous perception-estimation-behavior-motion pipeline runs the soccer robot.",
+        "evaluation": "Official code from the 2025 competition system; Booster support described as early or incomplete in parts.",
+        "scale": "Whole software stack, not a parameter-count comparison.",
+        "limitations": "NAO maturity must not be assumed for early Booster ports; a code release is not an independent replication.",
+        "evidence_level": "Primary paper or official project verified on 2026-11-16; reported experiments are author evidence, not independently reproduced here.",
+        "formula_scope": "Teaching schematic of the stated mechanism; not an assertion that this exact equation or notation appears in the paper."
+      }
+    },
+    {
+      "id": "paper_videomimic",
+      "en": "VideoMimic: Visual Imitation Enables Contextual Humanoid Control",
+      "title": "VideoMimic：利用环境上下文的视觉模仿",
+      "group": "motion_papers",
+      "kind": "paper",
+      "summary": "从单目视频重建人体与环境，再学习环境条件的全身控制。",
+      "definition": "VideoMimic is a real-to-sim-to-real pipeline for learning environment-dependent humanoid skills from everyday monocular videos. It jointly reconstructs the human movement and the surrounding scene, converts that reconstruction into simulator-ready context and robot references, and learns a whole-body policy. The policy is conditioned on the environment and global root commands, allowing movement to depend on stairs, seats, and other relevant geometry. Its real-robot demonstrations include stair ascent and descent and sitting or standing. Human reconstruction, environmental reconstruction, retargeting, and feedback execution remain distinct stages with different error sources.",
+      "example": "A video of a person sitting on a bench contains both a body trajectory and the bench geometry. Recover their relative arrangement, retarget the movement, and train in the reconstructed scene. At deployment, evaluate complete sitting and standing sequences, including contact and final balance.",
+      "role_en": "Adds environment-aware visual imitation to the motion branch. This is the verified VideoMimic paper, not an inferred expansion of the unresolved name BioMimic.",
+      "latex": "(\\hat M,\\hat E)=F(V),\\qquad a_t=\\pi(o_t,\\hat E,g_t)",
+      "notation": [
+        {
+          "symbol": "V",
+          "meaning": "Monocular demonstration video."
+        },
+        {
+          "symbol": "\\hat M,\\hat E",
+          "meaning": "Reconstructed human motion and environment geometry."
+        },
+        {
+          "symbol": "g_t",
+          "meaning": "Global root command supplied to the policy."
+        }
+      ],
+      "prereqs": [
+        "motion_smpl",
+        "motion_retargeting",
+        "motion_tracking",
+        "sim_assets",
+        "est_slam"
+      ],
+      "sources": [
+        {
+          "title": "VideoMimic original paper",
+          "url": "https://arxiv.org/abs/2505.03729"
+        },
+        {
+          "title": "VideoMimic official project",
+          "url": "https://videomimic.github.io/"
+        },
+        {
+          "title": "VideoMimic official code",
+          "url": "https://github.com/hongsukchoi/VideoMimic"
+        },
+        {
+          "title": "CoRL 2025 proceedings",
+          "url": "https://proceedings.mlr.press/v305/allshire25a.html"
+        }
+      ],
+      "paper": {
+        "date": "2025-05-06 (arXiv v1); 2025-08-29 (v5)",
+        "architecture": [
+          {
+            "label": "Joint human and environment reconstruction",
+            "node_id": "est_slam",
+            "role": "Recovers motion and scene geometry in a consistent spatial context."
+          },
+          {
+            "label": "Robot reference conversion",
+            "node_id": "motion_retargeting",
+            "role": "Produces robot-compatible motion targets."
+          },
+          {
+            "label": "Environment-conditioned whole-body control",
+            "node_id": "motion_tracking",
+            "role": "Learns and executes skills using scene context and root commands."
+          }
+        ],
+        "contribution": "Environment-aware real-to-sim-to-real imitation from everyday monocular video.",
+        "training": "Reconstructed human motion and scene context support simulator-based whole-body policy learning.",
+        "inference": "A single policy conditions control on environmental context and global root commands.",
+        "evaluation": "Real humanoid staircase ascent/descent, sitting/standing from chairs and benches, and other dynamic skills.",
+        "scale": "Single policy across contextual whole-body skills; no parameter-count estimate entered.",
+        "limitations": "Reconstruction and reference quality affect downstream control; reported contextual tasks do not establish arbitrary-scene autonomy.",
+        "evidence_level": "Original arXiv paper, official project/code and CoRL proceedings verified 2026-11-16; author-reported results, not independently reproduced.",
+        "formula_scope": "Teaching schematic of reconstruction and environment-conditioned control, not the exact paper objective."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "to": "motion_smpl",
+      "type": "prereq",
+      "why_en": "Provides geo so3 needed to understand Parametric Human Bodies: SMPL and SMPL-X.",
+      "from": "geo_so3"
+    },
+    {
+      "to": "motion_smpl",
+      "type": "prereq",
+      "why_en": "Provides geo se3 needed to understand Parametric Human Bodies: SMPL and SMPL-X.",
+      "from": "geo_se3"
+    },
+    {
+      "to": "motion_smpl",
+      "type": "prereq",
+      "why_en": "Computes body poses from robot joint configurations.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "motion_retargeting",
+      "type": "prereq",
+      "why_en": "Finds robot configurations meeting body-pose constraints.",
+      "from": "rb_ik"
+    },
+    {
+      "to": "motion_retargeting",
+      "type": "prereq",
+      "why_en": "Computes body poses from robot joint configurations.",
+      "from": "rb_fk"
+    },
+    {
+      "to": "motion_retargeting",
+      "type": "prereq",
+      "why_en": "Defines human pose, shape, and global motion separately from robot joint commands.",
+      "from": "motion_smpl"
+    },
+    {
+      "to": "motion_retargeting",
+      "type": "prereq",
+      "why_en": "Provides c constraints needed to understand Human-to-Robot Motion Retargeting.",
+      "from": "c_constraints"
+    },
+    {
+      "to": "motion_tracking",
+      "type": "prereq",
+      "why_en": "Converts human motion targets into constrained robot reference configurations.",
+      "from": "motion_retargeting"
+    },
+    {
+      "to": "motion_tracking",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "motion_tracking",
+      "type": "prereq",
+      "why_en": "Converts target joint angles into local torque feedback under stated gains.",
+      "from": "ctrl_pd"
+    },
+    {
+      "to": "motion_tracking",
+      "type": "prereq",
+      "why_en": "Explains correction from current observations rather than fixed motion playback.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "motion_prior",
+      "type": "prereq",
+      "why_en": "Explains how a feedback controller turns a reference into dynamically responsive actions.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "motion_prior",
+      "type": "prereq",
+      "why_en": "Defines the representation commanded by the hierarchical or implicit motion model.",
+      "from": "g_latent"
+    },
+    {
+      "to": "motion_prior",
+      "type": "prereq",
+      "why_en": "Provides rl actorcritic needed to understand Motion Priors: Tracking, Adversarial and Latent.",
+      "from": "rl_actorcritic"
+    },
+    {
+      "to": "motion_contact_quality",
+      "type": "prereq",
+      "why_en": "Converts human motion targets into constrained robot reference configurations.",
+      "from": "motion_retargeting"
+    },
+    {
+      "to": "motion_contact_quality",
+      "type": "prereq",
+      "why_en": "Provides ph friction needed to understand Motion Quality and Physical Executability.",
+      "from": "ph_friction"
+    },
+    {
+      "to": "motion_contact_quality",
+      "type": "prereq",
+      "why_en": "Provides ph constraints needed to understand Motion Quality and Physical Executability.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "motion_contact_quality",
+      "type": "prereq",
+      "why_en": "Provides sim mujoco needed to understand Motion Quality and Physical Executability.",
+      "from": "sim_mujoco"
+    },
+    {
+      "to": "soccer_ball_state",
+      "type": "prereq",
+      "why_en": "Relates image/depth observations to geometry and visibility.",
+      "from": "sim_camera"
+    },
+    {
+      "to": "soccer_ball_state",
+      "type": "prereq",
+      "why_en": "Provides est sensorfusion needed to understand Ball State Estimation and Visibility.",
+      "from": "est_sensorfusion"
+    },
+    {
+      "to": "soccer_ball_state",
+      "type": "prereq",
+      "why_en": "Provides est ekf needed to understand Ball State Estimation and Visibility.",
+      "from": "est_ekf"
+    },
+    {
+      "to": "soccer_ball_state",
+      "type": "prereq",
+      "why_en": "Provides r frames needed to understand Ball State Estimation and Visibility.",
+      "from": "r_frames"
+    },
+    {
+      "to": "soccer_foot_ball_contact",
+      "type": "prereq",
+      "why_en": "Provides ph constraints needed to understand Foot–Ball Impact and Dribbling Dynamics.",
+      "from": "ph_constraints"
+    },
+    {
+      "to": "soccer_foot_ball_contact",
+      "type": "prereq",
+      "why_en": "Provides ph friction needed to understand Foot–Ball Impact and Dribbling Dynamics.",
+      "from": "ph_friction"
+    },
+    {
+      "to": "soccer_foot_ball_contact",
+      "type": "prereq",
+      "why_en": "Provides ph newton needed to understand Foot–Ball Impact and Dribbling Dynamics.",
+      "from": "ph_newton"
+    },
+    {
+      "to": "soccer_foot_ball_contact",
+      "type": "prereq",
+      "why_en": "Provides c integral needed to understand Foot–Ball Impact and Dribbling Dynamics.",
+      "from": "c_integral"
+    },
+    {
+      "to": "soccer_foot_ball_contact",
+      "type": "prereq",
+      "why_en": "Provides r dynamics needed to understand Foot–Ball Impact and Dribbling Dynamics.",
+      "from": "r_dynamics"
+    },
+    {
+      "to": "soccer_active_vision",
+      "type": "prereq",
+      "why_en": "Specifies ball state, sensor availability, missing observations, uncertainty, and coordinate frames.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "soccer_active_vision",
+      "type": "prereq",
+      "why_en": "Explains correction from current observations rather than fixed motion playback.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "soccer_active_vision",
+      "type": "prereq",
+      "why_en": "Provides r markov needed to understand Active Vision for Legged Interaction.",
+      "from": "r_markov"
+    },
+    {
+      "to": "soccer_skill_chaining",
+      "type": "prereq",
+      "why_en": "Explains how a feedback controller turns a reference into dynamically responsive actions.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "soccer_skill_chaining",
+      "type": "prereq",
+      "why_en": "Provides r policy needed to understand Skill Interfaces and Distributional Handoffs.",
+      "from": "r_policy"
+    },
+    {
+      "to": "soccer_skill_chaining",
+      "type": "prereq",
+      "why_en": "Provides ml distribution shift needed to understand Skill Interfaces and Distributional Handoffs.",
+      "from": "ml_distribution_shift"
+    },
+    {
+      "to": "soccer_skill_chaining",
+      "type": "prereq",
+      "why_en": "Explains correction from current observations rather than fixed motion playback.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "soccer_multiagent",
+      "type": "prereq",
+      "why_en": "Provides rl mdp needed to understand Multi-Agent Soccer and Team Coordination.",
+      "from": "rl_mdp"
+    },
+    {
+      "to": "soccer_multiagent",
+      "type": "prereq",
+      "why_en": "Provides rl actorcritic needed to understand Multi-Agent Soccer and Team Coordination.",
+      "from": "rl_actorcritic"
+    },
+    {
+      "to": "soccer_multiagent",
+      "type": "prereq",
+      "why_en": "Defines command interfaces and compatibility of entry/exit state distributions.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_deepmimic",
+      "type": "prereq",
+      "why_en": "Specify the target movement.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_deepmimic",
+      "type": "prereq",
+      "why_en": "Learn actions from imitation and task rewards.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_amp",
+      "type": "prereq",
+      "why_en": "Specify motion style without a fixed phase.",
+      "from": "motion_prior"
+    },
+    {
+      "to": "paper_amp",
+      "type": "prereq",
+      "why_en": "Produces an imitation training signal.",
+      "from": "ml_logistic"
+    },
+    {
+      "to": "paper_amp",
+      "type": "prereq",
+      "why_en": "Provides rl actorcritic needed to understand AMP: Adversarial Motion Priors.",
+      "from": "rl_actorcritic"
+    },
+    {
+      "to": "paper_phc",
+      "type": "prereq",
+      "why_en": "Expands capacity for harder reference sequences.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_phc",
+      "type": "prereq",
+      "why_en": "Separates geometric fidelity, contact continuity, and physical execution evidence.",
+      "from": "motion_contact_quality"
+    },
+    {
+      "to": "paper_phc",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_gvhmr",
+      "type": "prereq",
+      "why_en": "Supplies a human reference for later retargeting.",
+      "from": "motion_smpl"
+    },
+    {
+      "to": "paper_gvhmr",
+      "type": "prereq",
+      "why_en": "Reduces coordinate ambiguity.",
+      "from": "geo_so3"
+    },
+    {
+      "to": "paper_gvhmr",
+      "type": "prereq",
+      "why_en": "Provide image observations and camera-frame information.",
+      "from": "sim_camera"
+    },
+    {
+      "to": "paper_gvhmr",
+      "type": "prereq",
+      "why_en": "Provides coordinate-consistent camera/scene estimation; full SLAM is not required for every local skill.",
+      "from": "est_slam"
+    },
+    {
+      "to": "paper_gmr",
+      "type": "prereq",
+      "why_en": "Maps human movement onto robot bodies.",
+      "from": "motion_retargeting"
+    },
+    {
+      "to": "paper_gmr",
+      "type": "prereq",
+      "why_en": "Separates geometric fidelity, contact continuity, and physical execution evidence.",
+      "from": "motion_contact_quality"
+    },
+    {
+      "to": "paper_gmr",
+      "type": "prereq",
+      "why_en": "Tests how reference quality affects control.",
+      "from": "paper_beyondmimic"
+    },
+    {
+      "to": "paper_twist",
+      "type": "prereq",
+      "why_en": "Create robot reference motions.",
+      "from": "motion_retargeting"
+    },
+    {
+      "to": "paper_twist",
+      "type": "prereq",
+      "why_en": "Explains how a feedback controller turns a reference into dynamically responsive actions.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_twist",
+      "type": "prereq",
+      "why_en": "Provides responsive deployed reference control.",
+      "from": "vla_behavior_cloning"
+    },
+    {
+      "to": "paper_humanx",
+      "type": "prereq",
+      "why_en": "Builds and augments anchor-centric robot demonstrations.",
+      "from": "motion_retargeting"
+    },
+    {
+      "to": "paper_humanx",
+      "type": "prereq",
+      "why_en": "Prioritizes interaction-critical imitation.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_humanx",
+      "type": "prereq",
+      "why_en": "Separates geometric fidelity, contact continuity, and physical execution evidence.",
+      "from": "motion_contact_quality"
+    },
+    {
+      "to": "paper_humanx",
+      "type": "prereq",
+      "why_en": "Tests transferred contact behavior.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_beyondretarget",
+      "type": "prereq",
+      "why_en": "Refines continuity and physical plausibility.",
+      "from": "motion_contact_quality"
+    },
+    {
+      "to": "paper_beyondretarget",
+      "type": "prereq",
+      "why_en": "Tests generated references with robot control.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_beyondretarget",
+      "type": "prereq",
+      "why_en": "Relates image/depth observations to geometry and visibility.",
+      "from": "sim_camera"
+    },
+    {
+      "to": "paper_beyondretarget",
+      "type": "prereq",
+      "why_en": "Bypasses an explicit human-body intermediate.",
+      "from": "g_latent"
+    },
+    {
+      "to": "paper_football_team",
+      "type": "prereq",
+      "why_en": "Uses multi-agent learning and population training.",
+      "from": "soccer_multiagent"
+    },
+    {
+      "to": "paper_football_team",
+      "type": "prereq",
+      "why_en": "Learns reusable low-level motor representations.",
+      "from": "motion_prior"
+    },
+    {
+      "to": "paper_football_team",
+      "type": "prereq",
+      "why_en": "Defines command interfaces and compatibility of entry/exit state distributions.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_op3_soccer",
+      "type": "prereq",
+      "why_en": "Composes skills for one-versus-one outcomes.",
+      "from": "soccer_multiagent"
+    },
+    {
+      "to": "paper_op3_soccer",
+      "type": "prereq",
+      "why_en": "Learns agile low-level movement and recovery.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_op3_soccer",
+      "type": "prereq",
+      "why_en": "Explains variation of training physics and sensing for transfer.",
+      "from": "sim_domainrand"
+    },
+    {
+      "to": "paper_op3_soccer",
+      "type": "prereq",
+      "why_en": "Defines command interfaces and compatibility of entry/exit state distributions.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_dribblebot",
+      "type": "prereq",
+      "why_en": "Observes the ball under computation limits.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_dribblebot",
+      "type": "prereq",
+      "why_en": "Learns foot contacts while moving.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_dribblebot",
+      "type": "prereq",
+      "why_en": "Varies ball-ground and robot-ground behavior.",
+      "from": "sim_domainrand"
+    },
+    {
+      "to": "paper_dribblebot",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_quad_goalkeeper",
+      "type": "prereq",
+      "why_en": "Specifies ball state, sensor availability, missing observations, uncertainty, and coordinate frames.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_quad_goalkeeper",
+      "type": "prereq",
+      "why_en": "Defines command interfaces and compatibility of entry/exit state distributions.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_quad_goalkeeper",
+      "type": "prereq",
+      "why_en": "Tests moving-ball contact under short reaction time.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_quad_goalkeeper",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_soccerdiffusion",
+      "type": "prereq",
+      "why_en": "Predicts joint-command trajectories.",
+      "from": "g_diffusion"
+    },
+    {
+      "to": "paper_soccerdiffusion",
+      "type": "prereq",
+      "why_en": "Encodes vision, proprioception, and game state.",
+      "from": "d_transformer"
+    },
+    {
+      "to": "paper_soccerdiffusion",
+      "type": "prereq",
+      "why_en": "Provides vla action chunk needed to understand SoccerDiffusion.",
+      "from": "vla_action_chunk"
+    },
+    {
+      "to": "paper_soccerdiffusion",
+      "type": "prereq",
+      "why_en": "Enables embedded real-time inference.",
+      "from": "vla_behavior_cloning"
+    },
+    {
+      "to": "paper_dribble_master",
+      "type": "prereq",
+      "why_en": "Combines ball manipulation and visibility rewards.",
+      "from": "soccer_active_vision"
+    },
+    {
+      "to": "paper_dribble_master",
+      "type": "prereq",
+      "why_en": "Supplies impulse, friction, and support constraints needed to interpret ball outcomes.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_dribble_master",
+      "type": "prereq",
+      "why_en": "Establishes a walking substrate.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_dribble_master",
+      "type": "prereq",
+      "why_en": "Defines the difference between simulation learning and physical deployment validation.",
+      "from": "sim_sim2real"
+    },
+    {
+      "to": "paper_reactive_soccer",
+      "type": "prereq",
+      "why_en": "Models noise and missed detections.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_reactive_soccer",
+      "type": "prereq",
+      "why_en": "Explains how body or neck actions change subsequent ball observations.",
+      "from": "soccer_active_vision"
+    },
+    {
+      "to": "paper_reactive_soccer",
+      "type": "prereq",
+      "why_en": "Regularizes whole-body movement.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_reactive_soccer",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_paid",
+      "type": "prereq",
+      "why_en": "Builds a stable human-like kick.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_paid",
+      "type": "prereq",
+      "why_en": "Generalizes to ball positions.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_paid",
+      "type": "prereq",
+      "why_en": "Supplies impulse, friction, and support constraints needed to interpret ball outcomes.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_paid",
+      "type": "prereq",
+      "why_en": "Addresses hardware discrepancies.",
+      "from": "sim_sim2real"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "prereq",
+      "why_en": "Combines human-motion priors.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "prereq",
+      "why_en": "Specifies ball state, sensor availability, missing observations, uncertainty, and coordinate frames.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "prereq",
+      "why_en": "Supplies impulse, friction, and support constraints needed to interpret ball outcomes.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "prereq",
+      "why_en": "Relates prior movement to the incoming ball.",
+      "from": "motion_prior"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "prereq",
+      "why_en": "Initializes coordinated whole-body movement.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "prereq",
+      "why_en": "Separates high-level approach decisions from low-level striking.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "prereq",
+      "why_en": "Supplies impulse, friction, and support constraints needed to interpret ball outcomes.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "prereq",
+      "why_en": "Uses the reported LiDAR/IR reflective-ball setup.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_joga",
+      "type": "prereq",
+      "why_en": "Jointly controls gaze and locomotion.",
+      "from": "soccer_active_vision"
+    },
+    {
+      "to": "paper_joga",
+      "type": "prereq",
+      "why_en": "Fits residual command corrections from hardware.",
+      "from": "est_sysid"
+    },
+    {
+      "to": "paper_joga",
+      "type": "prereq",
+      "why_en": "Fine-tunes strikes from dribbling states.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_joga",
+      "type": "prereq",
+      "why_en": "Supplies impulse, friction, and support constraints needed to interpret ball outcomes.",
+      "from": "soccer_foot_ball_contact"
+    },
+    {
+      "to": "paper_davis",
+      "type": "prereq",
+      "why_en": "Supplies auxiliary learning targets.",
+      "from": "soccer_active_vision"
+    },
+    {
+      "to": "paper_davis",
+      "type": "prereq",
+      "why_en": "Provides AMP: Adversarial Motion Priors needed to understand DAVIS: Depth-Only Active-Vision Soccer.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_davis",
+      "type": "prereq",
+      "why_en": "Relates image/depth observations to geometry and visibility.",
+      "from": "sim_camera"
+    },
+    {
+      "to": "paper_davis",
+      "type": "prereq",
+      "why_en": "Outputs 25-DoF commands.",
+      "from": "ctrl_pd"
+    },
+    {
+      "to": "paper_locomotion_soccer",
+      "type": "prereq",
+      "why_en": "Provides shared entry and return states.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_locomotion_soccer",
+      "type": "prereq",
+      "why_en": "Adds motion-guided skill layers.",
+      "from": "motion_tracking"
+    },
+    {
+      "to": "paper_locomotion_soccer",
+      "type": "prereq",
+      "why_en": "Provides the policy-optimization mechanism for learning feedback actions from simulated returns.",
+      "from": "rl_ppo"
+    },
+    {
+      "to": "paper_locomotion_soccer",
+      "type": "prereq",
+      "why_en": "Explains correction from current observations rather than fixed motion playback.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "paper_soccerbot",
+      "type": "prereq",
+      "why_en": "Builds a structured latent movement space.",
+      "from": "motion_prior"
+    },
+    {
+      "to": "paper_soccerbot",
+      "type": "prereq",
+      "why_en": "Commands multiple skills through the prior.",
+      "from": "g_latent"
+    },
+    {
+      "to": "paper_soccerbot",
+      "type": "prereq",
+      "why_en": "Defines command interfaces and compatibility of entry/exit state distributions.",
+      "from": "soccer_skill_chaining"
+    },
+    {
+      "to": "paper_soccerbot",
+      "type": "prereq",
+      "why_en": "Addresses execution on the physical G1.",
+      "from": "sim_sim2real"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "prereq",
+      "why_en": "Provides est sensorfusion needed to understand B-Human 2025 Soccer System.",
+      "from": "est_sensorfusion"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "prereq",
+      "why_en": "Provides est kalman needed to understand B-Human 2025 Soccer System.",
+      "from": "est_kalman"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "prereq",
+      "why_en": "Builds explicit field and object estimates.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "prereq",
+      "why_en": "Chooses soccer actions and team roles.",
+      "from": "soccer_multiagent"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "prereq",
+      "why_en": "Turns decisions into robot movements.",
+      "from": "r_feedback"
+    },
+    {
+      "to": "paper_amp",
+      "type": "evolution",
+      "why_en": "Changes the imitation interface from phase-aligned reference tracking to learned transition-style rewards.",
+      "from": "paper_deepmimic"
+    },
+    {
+      "to": "paper_gmr",
+      "type": "application",
+      "why_en": "Recovered human motion can become a retargeting input after checking frame, scale, and supported format; this is a compatible pipeline, not a claim that GMR always runs GVHMR.",
+      "from": "paper_gvhmr"
+    },
+    {
+      "to": "paper_twist",
+      "type": "application",
+      "why_en": "GMR supplies human-to-robot references for whole-body teleoperation.",
+      "from": "paper_gmr"
+    },
+    {
+      "to": "paper_beyondmimic",
+      "type": "application",
+      "why_en": "Retargeted references are evaluated through BeyondMimic trackers; reference generation and controller execution remain distinct.",
+      "from": "paper_gmr"
+    },
+    {
+      "to": "paper_beyondretarget",
+      "type": "parallel",
+      "why_en": "Explicit human recovery plus retargeting and direct robot-oriented prediction are alternative video-to-robot pipelines.",
+      "from": "paper_gvhmr"
+    },
+    {
+      "to": "paper_supermimic",
+      "type": "parallel",
+      "why_en": "Both support humanoid motion control, while SuperMimic uses differentiable learned dynamics; this does not mean it differentiates the physics engine.",
+      "from": "paper_beyondmimic"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "evolution",
+      "why_en": "The reference-tracking idea becomes a scaffold that the curriculum progressively adapts toward ball outcomes.",
+      "from": "paper_deepmimic"
+    },
+    {
+      "to": "paper_reactive_soccer",
+      "type": "application",
+      "why_en": "Adversarial motion priors guide natural movement while the policy handles noisy perception.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "application",
+      "why_en": "Perception-conditioned priors extend adversarial imitation to dynamic ball interception.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_davis",
+      "type": "application",
+      "why_en": "AMP-style motion priors regularize depth-conditioned soccer skill learning.",
+      "from": "paper_amp"
+    },
+    {
+      "to": "paper_dribble_master",
+      "type": "parallel",
+      "why_en": "Both couple legged locomotion with onboard ball sensing; quadrupedal and humanoid support mechanics differ.",
+      "from": "paper_dribblebot"
+    },
+    {
+      "to": "paper_joga",
+      "type": "parallel",
+      "why_en": "Both treat ball visibility as part of movement; Joga adds an actuated neck and learned real-data model alignment.",
+      "from": "paper_dribble_master"
+    },
+    {
+      "to": "paper_davis",
+      "type": "parallel",
+      "why_en": "Both coordinate sensing and action, but camera modality, runtime interfaces, and robots differ.",
+      "from": "paper_joga"
+    },
+    {
+      "to": "paper_paid",
+      "type": "parallel",
+      "why_en": "Both use motion-guided learning and staged adaptation; their curricula and perception setups are distinct.",
+      "from": "paper_robonaldo"
+    },
+    {
+      "to": "paper_locomotion_soccer",
+      "type": "parallel",
+      "why_en": "A kick-first scaffold contrasts with a commandable locomotion substrate carrying a multidirectional library.",
+      "from": "paper_robonaldo"
+    },
+    {
+      "to": "paper_soccerbot",
+      "type": "parallel",
+      "why_en": "Task-gated skill libraries and a shared latent prior provide different ways to compose soccer motor skills.",
+      "from": "paper_locomotion_soccer"
+    },
+    {
+      "to": "paper_humanoid_goalkeeper",
+      "type": "evolution",
+      "why_en": "Dynamic interception moves from hierarchical quadruped skills to a humanoid single-policy motion-prior formulation; support mechanics change.",
+      "from": "paper_quad_goalkeeper"
+    },
+    {
+      "to": "paper_op3_soccer",
+      "type": "parallel",
+      "why_en": "Both integrate motor and game behavior; one studies simulated teams, the other real miniature-humanoid 1v1.",
+      "from": "paper_football_team"
+    },
+    {
+      "to": "paper_bhuman2025",
+      "type": "parallel",
+      "why_en": "Learned gameplay imitation and explicit competition modules are alternative system organizations with different tactical maturity.",
+      "from": "paper_soccerdiffusion"
+    },
+    {
+      "to": "paper_robonaldo",
+      "type": "parallel",
+      "why_en": "HumanX emphasizes generalizable anchorable interactions, while RoboNaldo specializes its curriculum for shooting outcomes.",
+      "from": "paper_humanx"
+    },
+    {
+      "to": "est_slam",
+      "type": "parallel",
+      "why_en": "Field self-localization and ball tracking share estimation tools but estimate different states; SLAM is not required for every local soccer skill.",
+      "from": "soccer_ball_state"
+    },
+    {
+      "from": "motion_smpl",
+      "to": "paper_videomimic",
+      "type": "prereq",
+      "why_en": "Defines human pose, shape, and global motion separately from robot joint commands."
+    },
+    {
+      "from": "motion_retargeting",
+      "to": "paper_videomimic",
+      "type": "prereq",
+      "why_en": "Produces robot-compatible motion targets."
+    },
+    {
+      "from": "motion_tracking",
+      "to": "paper_videomimic",
+      "type": "prereq",
+      "why_en": "Learns and executes skills using scene context and root commands."
+    },
+    {
+      "from": "sim_assets",
+      "to": "paper_videomimic",
+      "type": "prereq",
+      "why_en": "Provides an explicit human/robot or scene representation needed to reconstruct context and learn executable movement."
+    },
+    {
+      "from": "est_slam",
+      "to": "paper_videomimic",
+      "type": "prereq",
+      "why_en": "Recovers motion and scene geometry in a consistent spatial context."
+    },
+    {
+      "from": "paper_gvhmr",
+      "to": "paper_videomimic",
+      "type": "parallel",
+      "why_en": "Both recover human motion from video; VideoMimic additionally builds scene context and trains robot control."
+    },
+    {
+      "from": "paper_videomimic",
+      "to": "paper_humanx",
+      "type": "parallel",
+      "why_en": "Environment-conditioned whole-body imitation and anchor-centric interaction imitation preserve different kinds of task context."
+    },
+    {
+      "from": "paper_videomimic",
+      "to": "paper_beyondretarget",
+      "type": "parallel",
+      "why_en": "Explicit reconstructed human/scene pipelines and direct robot-motion prediction place their representation and optimization boundaries differently."
+    }
+  ],
+  "research": [
+    {
+      "title": "SMPL official model and publication",
+      "url": "https://smpl.is.tue.mpg.de/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://smpl.is.tue.mpg.de/"
+    },
+    {
+      "title": "GMR official code and documentation",
+      "url": "https://github.com/YanjieZe/GMR",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/YanjieZe/GMR"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2510.02252",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2510.02252"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/1804.02717",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/1804.02717"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2505.02833",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2505.02833"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2104.02180",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2104.02180"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2611.06564",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2611.06564"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2609.29850",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2609.29850"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2511.03996",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2511.03996"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2304.01159",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2304.01159"
+    },
+    {
+      "title": "RoboNaldo official project",
+      "url": "https://opendrivelab.com/RoboNaldo/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://opendrivelab.com/RoboNaldo/"
+    },
+    {
+      "title": "MIT Underactuated Robotics: contact",
+      "url": "https://underactuated.mit.edu/contact.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://underactuated.mit.edu/contact.html"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2606.11092",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2606.11092"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2505.12679",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2505.12679"
+    },
+    {
+      "title": "Joga official project",
+      "url": "https://joga.csail.mit.edu/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://joga.csail.mit.edu/"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2609.28175",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2609.28175"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2609.38852",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2609.38852"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2105.12196",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2105.12196"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2304.13653",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2304.13653"
+    },
+    {
+      "title": "DeepMimic official project",
+      "url": "https://xbpeng.github.io/projects/DeepMimic/index.html",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://xbpeng.github.io/projects/DeepMimic/index.html"
+    },
+    {
+      "title": "AMP official project",
+      "url": "https://xbpeng.github.io/projects/AMP/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://xbpeng.github.io/projects/AMP/"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2305.06456",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2305.06456"
+    },
+    {
+      "title": "PHC official code",
+      "url": "https://github.com/ZhengyiLuo/PHC",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/ZhengyiLuo/PHC"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2409.06662",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2409.06662"
+    },
+    {
+      "title": "GVHMR official project",
+      "url": "https://zju3dv.github.io/gvhmr/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://zju3dv.github.io/gvhmr/"
+    },
+    {
+      "title": "GVHMR official code",
+      "url": "https://github.com/zju3dv/GVHMR",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/zju3dv/GVHMR"
+    },
+    {
+      "title": "Retargeting Matters official project",
+      "url": "https://jaraujo98.github.io/retargeting_matters",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://jaraujo98.github.io/retargeting_matters/"
+    },
+    {
+      "title": "TWIST official project",
+      "url": "https://humanoid-teleop.github.io",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://humanoid-teleop.github.io/"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2602.02473",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2602.02473"
+    },
+    {
+      "title": "HumanX official project",
+      "url": "https://wyhuai.github.io/human-x/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://wyhuai.github.io/human-x/"
+    },
+    {
+      "title": "HumanX official code",
+      "url": "https://github.com/wyhuai/HumanX",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/wyhuai/HumanX"
+    },
+    {
+      "title": "DribbleBot official code",
+      "url": "https://github.com/Improbable-AI/dribblebot",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/Improbable-AI/dribblebot"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2210.04435",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2210.04435"
+    },
+    {
+      "title": "Original author-hosted goalkeeper paper",
+      "url": "https://hybrid-robotics.berkeley.edu/publications/IROS2023_Dynamic_Goalkeeper_RL.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://hybrid-robotics.berkeley.edu/publications/IROS2023_Dynamic_Goalkeeper_RL.pdf"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2504.20808",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2504.20808"
+    },
+    {
+      "title": "SoccerDiffusion official project",
+      "url": "https://bit-bots.github.io/SoccerDiffusion",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://bit-bots.github.io/SoccerDiffusion/"
+    },
+    {
+      "title": "Dribble Master official project",
+      "url": "https://zhuoheng0910.github.io/dribble-master/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://zhuoheng0910.github.io/dribble-master/"
+    },
+    {
+      "title": "Reactive soccer official project",
+      "url": "https://humanoid-kick.github.io",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://humanoid-kick.github.io/"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2602.05310",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2602.05310"
+    },
+    {
+      "title": "PAiD official project",
+      "url": "https://soccer-humanoid.github.io/",
+      "checked_date": "2026-11-16",
+      "notes": "Author-linked project URL currently returns HTTP 404; removed from clickable node sources. The original arXiv paper remains available.",
+      "http_status_at_check": 404,
+      "resolved_url": "https://soccer-humanoid.github.io/"
+    },
+    {
+      "title": "Original paper on arXiv",
+      "url": "https://arxiv.org/abs/2510.18002",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2510.18002"
+    },
+    {
+      "title": "Humanoid Goalkeeper official project",
+      "url": "https://humanoid-goalkeeper.github.io/Goalkeeper/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://humanoid-goalkeeper.github.io/Goalkeeper/"
+    },
+    {
+      "title": "Joga original paper PDF",
+      "url": "https://joga.csail.mit.edu/static/joga.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://joga.csail.mit.edu/static/joga.pdf"
+    },
+    {
+      "title": "DAVIS official project",
+      "url": "https://thusi-lab.github.io/DAVIS/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://thusi-lab.github.io/DAVIS/"
+    },
+    {
+      "title": "B-Human official 2025 documentation",
+      "url": "https://docs.b-human.de/coderelease2025/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://docs.b-human.de/coderelease2025/"
+    },
+    {
+      "title": "B-Human official code",
+      "url": "https://github.com/bhuman/BHumanCodeRelease",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/bhuman/BHumanCodeRelease"
+    },
+    {
+      "title": "Official team release announcement",
+      "url": "https://lists.robocup.org/archives/list/robocup-nao%40lists.robocup.org/thread/FCERESMMYSAE2Q6LXFGLJ3Y6VIHQELFM/",
+      "checked_date": "2026-11-16",
+      "notes": "Primary paper, official project, official code or official teaching reference; linked to node-level claims. Author-reported results are not an independent replication.",
+      "http_status_at_check": 200,
+      "resolved_url": "https://lists.robocup.org/archives/list/robocup-nao%40lists.robocup.org/thread/FCERESMMYSAE2Q6LXFGLJ3Y6VIHQELFM/"
+    },
+    {
+      "title": "VideoMimic original paper",
+      "url": "https://arxiv.org/abs/2505.03729",
+      "checked_date": "2026-11-16",
+      "http_status_at_check": 200,
+      "resolved_url": "https://arxiv.org/abs/2505.03729",
+      "notes": "Primary VideoMimic publication, author project/code or official proceedings."
+    },
+    {
+      "title": "VideoMimic official project",
+      "url": "https://videomimic.github.io/",
+      "checked_date": "2026-11-16",
+      "http_status_at_check": 200,
+      "resolved_url": "https://videomimic.github.io/",
+      "notes": "Primary VideoMimic publication, author project/code or official proceedings."
+    },
+    {
+      "title": "VideoMimic official code",
+      "url": "https://github.com/hongsukchoi/VideoMimic",
+      "checked_date": "2026-11-16",
+      "http_status_at_check": 200,
+      "resolved_url": "https://github.com/hongsukchoi/VideoMimic",
+      "notes": "Primary VideoMimic publication, author project/code or official proceedings."
+    },
+    {
+      "title": "CoRL 2025 proceedings",
+      "url": "https://proceedings.mlr.press/v305/allshire25a.html",
+      "checked_date": "2026-11-16",
+      "http_status_at_check": 200,
+      "resolved_url": "https://proceedings.mlr.press/v305/allshire25a.html",
+      "notes": "Primary VideoMimic publication, author project/code or official proceedings."
+    }
+  ],
+  "unresolved_terms": [
+    {
+      "term": "CORA / Cora",
+      "status": "unresolved",
+      "notes": "No unambiguous humanoid-soccer paper identified from this spelling. Other CORA systems and continual-learning papers are unrelated. Ask for a link, screenshot, author, or title before adding a node."
+    },
+    {
+      "term": "SoccerX / Soccer...",
+      "status": "unresolved",
+      "notes": "The user’s remembered name is ambiguous. SoccerDiffusion, soccerbot, and HumanX are verified distinct projects; none is asserted to be the intended SoccerX."
+    },
+    {
+      "term": "BioMimic",
+      "status": "unresolved",
+      "notes": "Earlier wording may refer to another motion-imitation project; retain verified BeyondMimic and SuperMimic without silently renaming the ambiguous term."
+    }
+  ]
+}
