@@ -16,3 +16,9 @@ All new perception, software, motion and soccer topics attach their primary refe
 ## Classification and course readings
 
 The typed browsing taxonomy distinguishes learning paradigms, models, objective functions, fitting/transfer methods, application domains and system families. [EECS545](https://web.eecs.umich.edu/~honglak/teaching/eecs545/) and the primary textbooks linked at each node inform the organization; it is an editorial learning structure. The CSE598 collection publishes paper references and professional presenter associations, with reading context distinguished from authorship and talk delivery. Private course files, meeting logistics and learning progress are excluded.
+
+## Course-anchored navigation and research framework
+
+The Foundations map uses source-linked course modules from Modern Robotics, U-M EECS545, Berkeley CS285, Stanford CS231n, U-M SI602/ROB501 and CSE598, with explicit control/estimation/manipulation/simulation/engineering supplements. Sources and syllabus/version boundaries are recorded in `source/curriculum_*.json` and [CURRICULUM.md](CURRICULUM.md). CSE598 homework and quiz references contribute topic headings only; private questions, answers and logistics are not reproduced.
+
+The capability audit is informed by the [CMU robotics curriculum](https://www.ri.cmu.edu/education/academic-programs/master-of-science-robotics/curriculum/) and [Stanford CS237A scope](https://bulletin.stanford.edu/courses/2185453). Module choices, research-topic assignments and gap judgments are editorial mappings. Stable supplemental assignments are separately pinned; adding research records does not silently redesign the foundation courses.

@@ -1,0 +1,1785 @@
+{
+  "courses": [
+    {
+      "id": "course_eecs545",
+      "title": "Machine Learning",
+      "zh": "机器学习",
+      "anchor": "University of Michigan · EECS545",
+      "source_urls": [
+        {
+          "title": "U-M EECS545 official archived syllabus",
+          "url": "https://web.eecs.umich.edu/~honglak/teaching/eecs545/"
+        },
+        {
+          "title": "Michigan Robotics official course list: EECS545",
+          "url": "https://robotics.umich.edu/academics/courses/complete-course-list/"
+        },
+        {
+          "title": "Probabilistic Machine Learning: An Introduction",
+          "url": "https://probml.github.io/pml-book/book1.html"
+        }
+      ],
+      "scope": "Foundational statistical and machine learning. Editorial modules are informed by the official archived syllabus and the user’s W26 lecture headings; they are not a claim that the archived web page is the current W26 syllabus. Only headings were inspected locally. Tree ensembles and modern adaptation are atlas supplements, explicitly identified below.",
+      "modules": [
+        {
+          "id": "eecs545_prereq",
+          "title": "Mathematics and Data",
+          "zh": "数学与数据",
+          "node_ids": [
+            "m_vector",
+            "m_matrix",
+            "m_matmul",
+            "m_derivative",
+            "m_partial",
+            "m_gradient",
+            "p_probability",
+            "p_conditional",
+            "p_bayes",
+            "p_gaussian",
+            "e_python"
+          ],
+          "summary": "Review the objects, derivatives and probability operations that learning methods use.",
+          "learning_outcome": "Write input/output shapes, units and the meaning of a conditional distribution.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_formulation",
+          "title": "Learning Settings, Models and Objectives",
+          "zh": "学习设置、模型与目标",
+          "node_ids": [
+            "ml_supervised",
+            "ml_unsupervised",
+            "ml_semisupervised",
+            "ml_erm",
+            "ml_mse",
+            "loss_crossentropy"
+          ],
+          "summary": "Separate what data are available, which functions are fitted and how error is measured.",
+          "learning_outcome": "Describe one algorithm through its data setting, model, objective and optimizer.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_linear",
+          "title": "Regression and Classification",
+          "zh": "回归与分类",
+          "node_ids": [
+            "ml_linear",
+            "ml_logistic",
+            "ml_knn",
+            "ml_naivebayes",
+            "ml_gda",
+            "d_softmax",
+            "p_likelihood"
+          ],
+          "summary": "Compare affine prediction, conditional classification and generative class models.",
+          "learning_outcome": "Fit and compare regression/classification baselines without confusing scores and probabilities.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_validation",
+          "title": "Regularization and Model Selection",
+          "zh": "正则化与模型选择",
+          "node_ids": [
+            "ml_split",
+            "ml_bias_variance",
+            "ml_regularization",
+            "ml_normalize",
+            "ml_evaluation",
+            "ml_distribution_shift"
+          ],
+          "summary": "Select hyperparameters using appropriate data splits and identify generalization failures.",
+          "learning_outcome": "Design an episode-separated validation protocol and diagnose overfitting or shift.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_kernels",
+          "title": "Kernel Methods and Support Vectors",
+          "zh": "核方法与支持向量",
+          "node_ids": [
+            "ml_kernel",
+            "ml_svm",
+            "loss_hinge",
+            "ml_gp",
+            "c_constraints"
+          ],
+          "summary": "Relate feature-space similarity to margin-based prediction and Gaussian-process conditioning.",
+          "learning_outcome": "Explain kernel choice, regularization and uncertainty assumptions using equations.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_neural",
+          "title": "Neural and Sequence Models",
+          "zh": "神经与序列模型",
+          "node_ids": [
+            "d_mlp",
+            "d_activation",
+            "d_backprop",
+            "d_sgd",
+            "d_adam",
+            "d_cnn",
+            "d_rnn",
+            "d_lstm",
+            "d_attention",
+            "d_transformer"
+          ],
+          "summary": "Build differentiable predictors and understand recurrence and attention as alternative sequence computations.",
+          "learning_outcome": "Trace a forward computation and its gradient through a small network.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_latent",
+          "title": "Clustering and Latent-Variable Inference",
+          "zh": "聚类与潜变量推断",
+          "node_ids": [
+            "ml_kmeans",
+            "ml_clustering",
+            "ml_em",
+            "ml_hmm",
+            "g_latent"
+          ],
+          "summary": "Distinguish a latent probabilistic model from the algorithm used to fit it.",
+          "learning_outcome": "Derive hard assignments versus responsibilities and identify EM’s inference and fitting steps.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_representation",
+          "title": "Decomposition and Representation Learning",
+          "zh": "分解与表征学习",
+          "node_ids": [
+            "ml_pca",
+            "ml_ica",
+            "g_autoencoder",
+            "v_selfsupervised",
+            "g_vae",
+            "g_diffusion"
+          ],
+          "summary": "Compare variance, independence, reconstruction and predictive representation objectives.",
+          "learning_outcome": "Explain what information each learned representation preserves under its assumptions.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "eecs545_extensions",
+          "title": "Supplement: Ensembles and Adaptation",
+          "zh": "补充：集成与适配",
+          "node_ids": [
+            "ml_tree",
+            "ml_bagging",
+            "ml_randomforest",
+            "ml_boosting",
+            "train_transfer",
+            "train_distillation",
+            "train_lora"
+          ],
+          "summary": "Additional stable ML concepts support current robot-learning systems.",
+          "learning_outcome": "Choose a baseline or adaptation method and state which parameters and targets it changes.",
+          "mapping_basis": "Atlas supplement, not asserted to appear in the inspected W26 lecture headings or archived syllabus."
+        }
+      ],
+      "research_bridges": [
+        {
+          "topic_id": "representations",
+          "note": "Foundational latent-variable and self-supervised ideas support modern visual representation papers.",
+          "node_ids": [
+            "v_dino",
+            "v_dinov2",
+            "repr_ijepa"
+          ]
+        },
+        {
+          "topic_id": "world_models",
+          "note": "Conditional density and generalization concepts explain multi-modal futures and model exploitation.",
+          "node_ids": [
+            "i_overview",
+            "wm_uncertainty",
+            "wm_latent_prediction"
+          ]
+        },
+        {
+          "topic_id": "vla",
+          "note": "Transfer, distillation and supervised action prediction connect to generalist robot policies.",
+          "node_ids": [
+            "vla_behavior_cloning",
+            "train_distillation",
+            "paper_openvla"
+          ]
+        },
+        {
+          "topic_id": "reliability",
+          "note": "Data splitting and uncertainty must be revisited for shifted robot observations.",
+          "node_ids": [
+            "ml_evaluation",
+            "ml_distribution_shift"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course_cs285",
+      "title": "Deep Reinforcement Learning",
+      "zh": "深度强化学习",
+      "anchor": "UC Berkeley · CS185/285 · Spring 2026",
+      "source_urls": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        },
+        {
+          "title": "Berkeley CS185/285 prerequisites and syllabus",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/syllabus/"
+        },
+        {
+          "title": "CS285: Policy Gradients",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-5.pdf"
+        },
+        {
+          "title": "CS285: Value-Based RL",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-7.pdf"
+        }
+      ],
+      "scope": "Course-aligned foundations in imitation, policy/value learning, inference, model-based and offline RL, exploration and multi-task decision making. The official prerequisite is CS189 or equivalent plus familiarity with RL, optimization and ML. Module grouping is editorial; contemporary LLM-RL material is linked as an advanced bridge rather than treated as a prerequisite for robotics.",
+      "modules": [
+        {
+          "id": "cs285_prereq",
+          "title": "Probability, Optimization and Function Approximation",
+          "zh": "概率、优化与函数逼近",
+          "node_ids": [
+            "p_expectation",
+            "p_sampling",
+            "p_conditional",
+            "m_gradient",
+            "d_mlp",
+            "d_backprop",
+            "d_sgd",
+            "e_torch"
+          ],
+          "summary": "Prepare the sampling and optimization tools used in deep RL.",
+          "learning_outcome": "Compute a minibatch expectation estimate and differentiate a parameterized predictor.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_imitation",
+          "title": "Imitation and Distribution Shift",
+          "zh": "模仿学习与分布偏移",
+          "node_ids": [
+            "vla_behavior_cloning",
+            "r_policy",
+            "e_dataset",
+            "ml_distribution_shift"
+          ],
+          "summary": "Use demonstrations as action supervision and examine the resulting state-distribution changes.",
+          "learning_outcome": "Explain why low demonstration loss can coexist with poor closed-loop behavior.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_mdp",
+          "title": "MDPs, Returns and Bellman Relations",
+          "zh": "MDP、回报与贝尔曼关系",
+          "node_ids": [
+            "rl_mdp",
+            "rl_bellman",
+            "r_markov",
+            "r_state",
+            "rl_td"
+          ],
+          "summary": "Specify sequential objectives and derive one-step value relations.",
+          "learning_outcome": "Distinguish transition dynamics, rewards, values and bootstrapped targets.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_policy",
+          "title": "Policy Gradients and Actor–Critic",
+          "zh": "策略梯度与演员评论家",
+          "node_ids": [
+            "rl_policy_gradient",
+            "rl_actorcritic",
+            "rl_gae",
+            "rl_ppo"
+          ],
+          "summary": "Estimate policy gradients, use value baselines and control update size.",
+          "learning_outcome": "Trace the roles of rewards, advantages, likelihood ratios and critic estimates.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_value",
+          "title": "Q-Learning and Deep Value Methods",
+          "zh": "Q 学习与深度价值方法",
+          "node_ids": [
+            "rl_offpolicy",
+            "rl_replay_targets",
+            "rl_dqn",
+            "loss_huber"
+          ],
+          "summary": "Fit discrete-action values with replay and controlled target updates.",
+          "learning_outcome": "Implement and inspect target construction, termination masking and greedy action selection.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_continuous",
+          "title": "Off-Policy Continuous Actor–Critic",
+          "zh": "异策略连续控制",
+          "node_ids": [
+            "rl_sac",
+            "p_entropy",
+            "d_softmax"
+          ],
+          "summary": "Combine stochastic policies, replay and soft values for continuous actions.",
+          "learning_outcome": "Compare on-policy data use with off-policy reuse and explain entropy temperature.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_inference",
+          "title": "Variational Inference and Control",
+          "zh": "变分推断与控制",
+          "node_ids": [
+            "p_kl",
+            "g_vae",
+            "rl_control_inference"
+          ],
+          "summary": "Relate approximate inference and constrained trajectory distributions to entropy-regularized control.",
+          "learning_outcome": "State the modeling assumptions connecting reward and probabilistic optimality.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_modelbased",
+          "title": "Model Learning and Planning",
+          "zh": "模型学习与规划",
+          "node_ids": [
+            "rl_modelbased",
+            "est_sysid",
+            "r_rollout",
+            "r_mpc",
+            "r_shooting",
+            "r_cem"
+          ],
+          "summary": "Use dynamics predictions for action search or policy improvement.",
+          "learning_outcome": "Separate one-step model fit, multi-step prediction and realized closed-loop return.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_offline",
+          "title": "Offline Learning and Data Support",
+          "zh": "离线学习与数据支持",
+          "node_ids": [
+            "rl_offline",
+            "r_offline",
+            "ml_distribution_shift",
+            "wm_uncertainty"
+          ],
+          "summary": "Learn from a fixed dataset and account for unsupported decisions.",
+          "learning_outcome": "Explain why an off-policy algorithm may still fail when interaction is disallowed.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs285_exploration",
+          "title": "Exploration, Theory and Multiple Tasks",
+          "zh": "探索、理论与多任务",
+          "node_ids": [
+            "rl_exploration",
+            "cv_information_gain",
+            "r_goal",
+            "train_transfer"
+          ],
+          "summary": "Study data acquisition and the assumptions behind generalization across tasks.",
+          "learning_outcome": "Distinguish random action variation, useful coverage and information-seeking behavior; identify further multi-task/theory gaps.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        }
+      ],
+      "research_bridges": [
+        {
+          "topic_id": "soccer",
+          "note": "Policy/value learning supports skill acquisition, while observation and contact errors remain separate problems.",
+          "node_ids": [
+            "rl_ppo",
+            "soccer_ball_state",
+            "paper_paid",
+            "paper_joga"
+          ]
+        },
+        {
+          "topic_id": "motion",
+          "note": "Reference tracking and motion priors combine rewards, data and policy optimization.",
+          "node_ids": [
+            "motion_tracking",
+            "motion_prior",
+            "paper_amp",
+            "paper_supermimic"
+          ]
+        },
+        {
+          "topic_id": "world_models",
+          "note": "Model-based control connects directly to latent dynamics and imagined policy learning.",
+          "node_ids": [
+            "wm_pets",
+            "wm_mbpo",
+            "wm_dreamerv3",
+            "wm_tdmpc2"
+          ]
+        },
+        {
+          "topic_id": "vla",
+          "note": "Offline/online policy improvement and the current course’s LLM-RL theme connect to adapting generalist policies.",
+          "node_ids": [
+            "rl_offline",
+            "language_llm",
+            "paper_pistar06"
+          ]
+        },
+        {
+          "topic_id": "reliability",
+          "note": "Off-policy estimates and exploration require explicit support, uncertainty and evaluation assumptions.",
+          "node_ids": [
+            "rl_offpolicy",
+            "rl_offline",
+            "ml_evaluation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "course_cs231n",
+      "title": "Deep Learning for Computer Vision",
+      "zh": "计算机视觉深度学习",
+      "anchor": "Stanford · CS231n · Spring 2026 · Fei-Fei Li and co-instructors",
+      "source_urls": [
+        {
+          "title": "Stanford CS231n Spring 2026 overview and prerequisites",
+          "url": "https://cs231n.stanford.edu/"
+        },
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "scope": "Official Spring 2026 emphasis is deep learning for visual recognition, with later material on video, self-supervision, generation, 3D vision, vision-language and world modeling. Python, calculus/linear algebra and basic probability are prerequisites. It is not represented as a complete classical multiview-geometry, SLAM or robotics course; those are linked foundations or research branches.",
+      "modules": [
+        {
+          "id": "cs231n_prereq",
+          "title": "Numerical and Visual Data Foundations",
+          "zh": "数值与视觉数据基础",
+          "node_ids": [
+            "e_python",
+            "m_matrix",
+            "m_matmul",
+            "m_derivative",
+            "m_chain",
+            "p_probability",
+            "d_tensor",
+            "ml_split"
+          ],
+          "summary": "Represent images as arrays and use correct shapes, derivatives and evaluation partitions.",
+          "learning_outcome": "Write a shape-consistent image classifier computation and keep preprocessing within training statistics.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_classification",
+          "title": "Visual Classification and Losses",
+          "zh": "视觉分类与损失",
+          "node_ids": [
+            "domain_cv",
+            "ml_knn",
+            "ml_linear",
+            "ml_logistic",
+            "d_softmax",
+            "loss_crossentropy",
+            "ml_regularization"
+          ],
+          "summary": "Specify image-label prediction and compare simple data-driven baselines.",
+          "learning_outcome": "Distinguish classification architecture, score, probability and objective.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_optimization",
+          "title": "Neural Optimization and Backpropagation",
+          "zh": "神经优化与反向传播",
+          "node_ids": [
+            "d_mlp",
+            "d_activation",
+            "d_backprop",
+            "d_sgd",
+            "d_adam",
+            "ml_bias_variance"
+          ],
+          "summary": "Train differentiable networks and diagnose optimization versus generalization problems.",
+          "learning_outcome": "Verify gradients and explain how parameter updates change model predictions.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_cnn",
+          "title": "CNNs, Residual Architectures and Transfer",
+          "zh": "卷积、残差与迁移",
+          "node_ids": [
+            "d_cnn",
+            "d_norm",
+            "d_residual",
+            "train_transfer"
+          ],
+          "summary": "Use spatial feature extraction and reusable pretrained representations.",
+          "learning_outcome": "Explain convolutional structure and choose which parameters to freeze or adapt.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_sequences",
+          "title": "Sequences, Attention and Visual Transformers",
+          "zh": "序列、注意力与视觉 Transformer",
+          "node_ids": [
+            "d_rnn",
+            "d_lstm",
+            "d_attention",
+            "d_self_attention",
+            "d_multihead",
+            "d_position",
+            "d_transformer",
+            "v_vit"
+          ],
+          "summary": "Compare recurrence and attention for sequence-dependent visual processing.",
+          "learning_outcome": "Locate the attention and feed-forward components and distinguish a block from a full architecture.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_dense",
+          "title": "Detection, Segmentation and Interpretation",
+          "zh": "检测、分割与解释",
+          "node_ids": [
+            "per_detection",
+            "cv_segmentation",
+            "ml_evaluation"
+          ],
+          "summary": "Separate object boxes, pixel categories and instance masks, then evaluate corresponding errors.",
+          "learning_outcome": "Choose an output representation and metric suited to the visual task; identify interpretation/adversarial gaps.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_video",
+          "title": "Video and Temporal Visual Features",
+          "zh": "视频与时序视觉特征",
+          "node_ids": [
+            "d_cnn",
+            "d_rnn",
+            "d_self_attention",
+            "d_position",
+            "per_tracking"
+          ],
+          "summary": "Use shared image/sequence tools as prerequisites for video understanding.",
+          "learning_outcome": "Distinguish temporal recognition from object-state tracking and identify the missing dedicated video methods.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_scale",
+          "title": "Distributed Training and Memory",
+          "zh": "分布式训练与内存",
+          "node_ids": [
+            "train_batch",
+            "train_ddp",
+            "train_checkpoint",
+            "train_amp",
+            "train_profile"
+          ],
+          "summary": "Separate training throughput, memory footprint and end-to-end latency.",
+          "learning_outcome": "Explain what data parallelism and activation checkpointing change.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_selfsupervision",
+          "title": "Self-Supervised Visual Representations",
+          "zh": "自监督视觉表征",
+          "node_ids": [
+            "v_selfsupervised",
+            "v_collapse",
+            "wm_target_encoder",
+            "multimodal_contrastive",
+            "train_distillation"
+          ],
+          "summary": "Compare data-generated targets, alignment objectives and collapse prevention.",
+          "learning_outcome": "State what a representation objective predicts and which information it may preserve.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_generation",
+          "title": "Generative Visual Models",
+          "zh": "视觉生成模型",
+          "node_ids": [
+            "g_autoencoder",
+            "g_vae",
+            "g_diffusion",
+            "g_ddpm",
+            "g_ddim",
+            "language_causallm"
+          ],
+          "summary": "Compare latent reconstruction, likelihood-style factorization and iterative denoising.",
+          "learning_outcome": "Separate generated observation quality from physical consistency; identify the missing GAN foundation.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_3d",
+          "title": "3D Representation and Reconstruction",
+          "zh": "三维表征与重建",
+          "node_ids": [
+            "per_camera",
+            "cv_depth",
+            "cv_multiview",
+            "cv_sdf",
+            "cv_gaussian_splat"
+          ],
+          "summary": "Relate image measurements to explicit and implicit scene representations.",
+          "learning_outcome": "Explain depth ambiguity, observed surfaces and the distinction between appearance and geometry.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        },
+        {
+          "id": "cs231n_multimodal",
+          "title": "Vision–Language and Interactive Worlds",
+          "zh": "视觉语言与交互世界",
+          "node_ids": [
+            "language_embeddings",
+            "multimodal_contrastive",
+            "vla_vlm",
+            "r_dynamics",
+            "wm_latent_prediction"
+          ],
+          "summary": "Connect visual representations with language alignment and action-conditioned prediction.",
+          "learning_outcome": "Specify the inputs, outputs and interaction assumptions of a multimodal or world-prediction system.",
+          "mapping_basis": "Editorial grouping aligned to the cited course themes; node content is the atlas explanation, not copied teaching material."
+        }
+      ],
+      "research_bridges": [
+        {
+          "topic_id": "perception",
+          "note": "Dense prediction and 3D foundations support current depth, reconstruction and scene models.",
+          "node_ids": [
+            "paper_depth_anything3",
+            "paper_vggt",
+            "paper_foundationpose",
+            "paper_sam3d"
+          ]
+        },
+        {
+          "topic_id": "representations",
+          "note": "Self-supervision extends to visual and video foundation representations.",
+          "node_ids": [
+            "v_dino",
+            "v_dinov2",
+            "paper_mae",
+            "repr_vjepa"
+          ]
+        },
+        {
+          "topic_id": "generative",
+          "note": "Generative foundations lead to scene and video generation without implying a complete robot simulator.",
+          "node_ids": [
+            "g_vae",
+            "g_diffusion",
+            "wm_cosmos",
+            "wm_genie"
+          ]
+        },
+        {
+          "topic_id": "vla",
+          "note": "Visual and language representations feed action interfaces and robot-specific training.",
+          "node_ids": [
+            "paper_clip",
+            "vla_vlm",
+            "paper_openvla",
+            "paper_pi0"
+          ]
+        },
+        {
+          "topic_id": "world_models",
+          "note": "The course’s world-modeling theme connects to action-conditioned latent and visual prediction.",
+          "node_ids": [
+            "wm_latent_prediction",
+            "v_dinowm",
+            "wm_vjepa2"
+          ]
+        },
+        {
+          "topic_id": "reliability",
+          "note": "Visual evaluation extends to shifts, adversarial perturbations and uncertainty.",
+          "node_ids": [
+            "ml_distribution_shift",
+            "paper_eot_adversarial",
+            "paper_introconformal"
+          ]
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "title": "Core deep-RL update mechanisms",
+      "category": "reinforcement_learning",
+      "why": "The prior graph had MDP/Bellman, actor–critic and PPO but omitted core explanations needed to compare value-based, off-policy, model-based and offline methods.",
+      "course_sources": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        }
+      ],
+      "status": "added_in_this_revision",
+      "node_ids": [
+        "rl_policy_gradient",
+        "rl_td",
+        "rl_offpolicy",
+        "rl_replay_targets",
+        "rl_dqn",
+        "rl_gae",
+        "rl_sac",
+        "rl_modelbased",
+        "rl_offline",
+        "rl_exploration",
+        "rl_control_inference"
+      ]
+    },
+    {
+      "title": "Pixel-level segmentation tasks",
+      "category": "computer_vision",
+      "why": "Dense object regions and task-specific metrics are required before treating segmentation or scene-model papers as understood.",
+      "course_sources": [
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "status": "added_in_this_revision",
+      "node_ids": [
+        "cv_segmentation"
+      ]
+    },
+    {
+      "title": "Dynamic programming and policy/value iteration derivations",
+      "category": "reinforcement_learning",
+      "why": "The Bellman node provides the relation, but tabular policy evaluation/improvement, value iteration, contraction assumptions and exact-vs-approximate guarantees need a dedicated worked unit.",
+      "course_sources": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "rl_dynamic_programming"
+      ],
+      "related_node_ids": [
+        "rl_bellman",
+        "rl_dqn"
+      ]
+    },
+    {
+      "title": "Multi-task, goal-conditioned and hierarchical RL",
+      "category": "reinforcement_learning",
+      "why": "Task-conditioned objectives, goal relabeling and temporal abstraction need distinct definitions before multi-task papers can be compared.",
+      "course_sources": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "rl_multitask",
+        "rl_goal_conditioned",
+        "rl_hierarchy"
+      ],
+      "related_node_ids": [
+        "r_goal",
+        "soccer_skill_chaining"
+      ]
+    },
+    {
+      "title": "RL learning theory and off-policy evaluation",
+      "category": "reinforcement_learning",
+      "why": "Coverage, concentrability, sample complexity and evaluation-estimator assumptions are not fully developed by the current empirical algorithm explanations.",
+      "course_sources": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "rl_generalization_theory",
+        "rl_offpolicy_evaluation"
+      ],
+      "related_node_ids": [
+        "rl_offline",
+        "ml_evaluation"
+      ]
+    },
+    {
+      "title": "Preference modeling, inverse RL and LLM post-training",
+      "category": "reinforcement_learning",
+      "why": "The Spring2026 course includes LLM-RL and inverse-RL discussion, but language backbones and generic PPO do not define reward models, preference data or their evaluation.",
+      "course_sources": [
+        {
+          "title": "Berkeley CS185/285 Spring 2026 schedule",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "rl_preferences",
+        "rl_inverse"
+      ],
+      "related_node_ids": [
+        "language_llm",
+        "rl_ppo"
+      ]
+    },
+    {
+      "title": "Generative adversarial networks",
+      "category": "computer_vision",
+      "why": "A GAN generator/discriminator game is distinct from VAE and diffusion objectives and is named in the current CS231n generative module.",
+      "course_sources": [
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "g_gan"
+      ],
+      "related_node_ids": [
+        "g_vae",
+        "g_diffusion"
+      ]
+    },
+    {
+      "title": "Dedicated video-recognition foundations",
+      "category": "computer_vision",
+      "why": "Generic temporal models and tracking do not fully explain 3D convolutions, two-stream motion features, temporal sampling or video-recognition evaluation.",
+      "course_sources": [
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "cv_video_recognition",
+        "cv_optical_flow"
+      ],
+      "related_node_ids": [
+        "d_cnn",
+        "d_rnn",
+        "per_tracking"
+      ]
+    },
+    {
+      "title": "Visual interpretation and adversarial robustness",
+      "category": "computer_vision",
+      "why": "Saliency/feature inversion and adversarial examples need objective- and threat-model-specific explanations before using newer robustness papers.",
+      "course_sources": [
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "cv_interpretation",
+        "cv_adversarial"
+      ],
+      "related_node_ids": [
+        "d_backprop",
+        "ml_evaluation",
+        "paper_eot_adversarial"
+      ]
+    },
+    {
+      "title": "Statistical learning theory and graphical-model inference",
+      "category": "machine_learning",
+      "why": "The official archived EECS545 syllabus includes learning theory and graphical-model topics beyond the currently detailed HMM/factor-graph introductions.",
+      "course_sources": [
+        {
+          "title": "U-M EECS545 official archived syllabus",
+          "url": "https://web.eecs.umich.edu/~honglak/teaching/eecs545/"
+        },
+        {
+          "title": "Probabilistic Machine Learning: An Introduction",
+          "url": "https://probml.github.io/pml-book/book1.html"
+        }
+      ],
+      "status": "still_missing",
+      "suggested_ids": [
+        "ml_learning_theory",
+        "ml_graphical_inference"
+      ],
+      "related_node_ids": [
+        "ml_erm",
+        "ml_hmm",
+        "est_factorgraph"
+      ]
+    },
+    {
+      "title": "Complete CV geometry and SLAM coverage",
+      "category": "scope_boundary",
+      "why": "CS231n is used for deep visual learning. Geometry, calibration and SLAM need their own stable courses or modules rather than being falsely attributed as a complete CS231n sequence.",
+      "course_sources": [
+        {
+          "title": "Stanford CS231n Spring 2026 overview and prerequisites",
+          "url": "https://cs231n.stanford.edu/"
+        },
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ],
+      "status": "scope_boundary",
+      "related_node_ids": [
+        "per_camera",
+        "cv_multiview",
+        "est_slam",
+        "est_factorgraph"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rl_policy_gradient",
+      "en": "Policy Gradients and REINFORCE",
+      "title": "策略梯度",
+      "kind": "concept",
+      "entity_type": "algorithm",
+      "group": "rl_algorithms",
+      "summary": "Differentiate expected return through action log probabilities rather than environment dynamics.",
+      "definition": "Policy-gradient methods optimize a parameterized policy using trajectory samples and derivatives of action log probabilities. The score-function identity permits this without differentiating the transition dynamics. A return or action-value estimate weights each score gradient; a state-dependent baseline can reduce variance without changing the expected gradient under the appropriate sampling assumptions. Finite samples can still have high variance, and an approximate critic can introduce estimation error. This method differs from supervised action imitation because updates weight actions by estimated future outcomes rather than simply matching demonstrated actions.",
+      "example": "Run a stochastic control policy in simulation, record rewards, and assign reward-to-go estimates to sampled actions. Actions associated with above-baseline outcomes receive different update weights from below-baseline actions. Evaluate across seeds and held-out conditions; a positive sampled gradient step does not guarantee a higher true return.",
+      "role_en": "Provides the derivation behind actor–critic and PPO, and a model-free contrast to differentiating through a world model.",
+      "latex": "\\nabla_\\theta J=\\mathbb E_{\\tau\\sim\\pi_\\theta}\\!\\left[\\sum_t\\nabla_\\theta\\log\\pi_\\theta(a_t\\mid s_t)\\,\\hat A_t\\right]",
+      "notation": [
+        {
+          "symbol": "\\tau",
+          "meaning": "Trajectory sampled using the policy and environment."
+        },
+        {
+          "symbol": "\\hat A_t",
+          "meaning": "Return-minus-baseline or advantage estimate; unbiasedness depends on its construction."
+        },
+        {
+          "symbol": "\\pi_\\theta",
+          "meaning": "Differentiable stochastic action distribution."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "rl_bellman",
+        "p_expectation",
+        "d_backprop"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Policy Gradients",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-5.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_td",
+      "en": "Temporal-Difference Learning and Bootstrapping",
+      "title": "时序差分与自举",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Use a learned next-state value inside a prediction target.",
+      "definition": "Temporal-difference learning updates a value estimate using rewards and another current value estimate. This use of an estimated future value is called bootstrapping. A one-step TD residual compares the current value with an immediate reward plus discounted next-state value. Terminal states require correct masking; a time-limit truncation may have different semantics from a true terminal event. Bootstrapping can reduce variance relative to full-return targets but introduces dependence on the accuracy and stability of current estimates. Nonlinear approximation, off-policy sampling and bootstrapping together require particular care.",
+      "example": "At one transition, combine the observed reward with the estimated value of the next state and update the current-state value toward that target. When an episode truly terminates, omit the continuation value. Confusing a timeout with task termination can systematically bias the learned value.",
+      "role_en": "Connects Bellman equations to actor–critic, Q-learning, DQN, SAC and advantage estimation.",
+      "latex": "\\delta_t=r_t+\\gamma(1-d_t)V_\\phi(s_{t+1})-V_\\phi(s_t)",
+      "notation": [
+        {
+          "symbol": "d_t",
+          "meaning": "True-terminal indicator for this target convention."
+        },
+        {
+          "symbol": "\\delta_t",
+          "meaning": "One-step TD error."
+        },
+        {
+          "symbol": "\\gamma",
+          "meaning": "Discount factor."
+        }
+      ],
+      "prereqs": [
+        "rl_bellman",
+        "ml_mse"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Actor Critic",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-6.pdf"
+        },
+        {
+          "title": "CS285: Value-Based RL",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-7.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_offpolicy",
+      "en": "On-Policy, Off-Policy and Importance Ratios",
+      "title": "同策略与异策略数据",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Distinguish the policy that collected observations from the policy being evaluated or improved.",
+      "definition": "On-policy methods use data matched to the relevant current policy, while off-policy methods can learn about a target policy from data collected by a different behavior policy. This distinction concerns data and update semantics, not whether training happens on a robot or simulator. Importance ratios can correct some action-distribution mismatches when support and estimator assumptions hold, but large or compounded ratios can create high variance. Other off-policy algorithms use Bellman consistency or different corrections. An off-policy-capable algorithm can still interact online; offline learning additionally forbids collecting new environment transitions during training.",
+      "example": "A replay buffer contains actions from earlier exploratory policies. The current policy is different, so simply treating these trajectories as current-policy Monte Carlo samples is generally invalid. A Q-learning update can use off-policy transitions through its own target structure; an ordinary policy-gradient estimate needs an appropriate correction.",
+      "role_en": "Clarifies replay reuse, SAC, PPO likelihood ratios and the stronger restrictions of offline RL.",
+      "latex": "\\rho_t=\\frac{\\pi_\\theta(a_t\\mid s_t)}{\\mu(a_t\\mid s_t)}",
+      "notation": [
+        {
+          "symbol": "\\mu",
+          "meaning": "Behavior policy that collected the action."
+        },
+        {
+          "symbol": "\\pi_\\theta",
+          "meaning": "Target policy."
+        },
+        {
+          "symbol": "\\rho_t",
+          "meaning": "Action-probability or density ratio where behavior support is sufficient; not by itself a complete correction for every objective."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "p_conditional"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Value-Based RL",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-7.pdf"
+        },
+        {
+          "title": "CS285: Policy Gradients",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-5.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_replay_targets",
+      "en": "Experience Replay and Target Networks",
+      "title": "经验回放与目标网络",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_algorithms",
+      "summary": "Data reuse and slowly changing targets address different sources of instability.",
+      "definition": "Experience replay stores environment transitions and samples them for learning, allowing data reuse and changing the temporal correlation pattern of minibatches. A target network supplies comparatively slow-changing predictions in bootstrapped targets, using periodic copies or moving-average parameter updates. These are separate mechanisms that can be combined. Replay sampling does not automatically remove distribution bias, and target networks do not ensure convergence. Buffer age, coverage, termination fields, priorities and update-to-data ratio affect training. Whether replay is valid depends on the learning rule; it cannot be added indiscriminately to an on-policy estimator.",
+      "example": "Store state, action, reward, next state and termination information, sample a minibatch, and compute a TD target using frozen target parameters. Update the online network and then apply the configured target-update rule. Test data fields and masks before interpreting a low TD loss as successful control.",
+      "role_en": "Supplies practical DQN/SAC training components and distinguishes a TD target network from a JEPA representation target encoder.",
+      "latex": "\\bar\\theta\\leftarrow(1-\\eta)\\bar\\theta+\\eta\\theta,\\qquad (s,a,r,s\\prime,d)\\sim\\mathcal B",
+      "notation": [
+        {
+          "symbol": "\\bar\\theta",
+          "meaning": "Target-network parameters."
+        },
+        {
+          "symbol": "\\eta",
+          "meaning": "Moving-average coefficient; periodic hard copies are an alternative."
+        },
+        {
+          "symbol": "\\mathcal B",
+          "meaning": "Replay buffer distribution, not necessarily the current policy distribution."
+        }
+      ],
+      "prereqs": [
+        "rl_td",
+        "rl_offpolicy",
+        "train_batch"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Q-Learning in Practice",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-8.pdf"
+        },
+        {
+          "title": "CS285 Spring 2026 Section 4: DQN and SAC",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/sections/section-4.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_dqn",
+      "en": "Deep Q-Networks (DQN)",
+      "title": "深度 Q 网络",
+      "kind": "concept",
+      "entity_type": "algorithm",
+      "group": "rl_algorithms",
+      "summary": "Approximate discrete-action values with a neural network and fit Bellman targets.",
+      "definition": "DQN uses a neural network to approximate action values and learns from sampled transitions using Q-learning-style targets. A replay buffer reuses observations, and a separate target network slows target changes in the widely used formulation. The greedy action maximizes estimated Q among a finite action set; exploration uses an additional collecting strategy. This discrete maximization is unsuitable for directly enumerating high-dimensional continuous joint commands. Function approximation and bootstrapping can produce unstable or biased values, and low prediction loss is not equivalent to good policy return. Variants such as Double DQN make additional changes.",
+      "example": "A robot selects among a small set of validated high-level skills using estimated Q values. The low-level skill controllers remain responsible for execution. This differs from using DQN to enumerate every possible vector of joint torques, which would make the action set impractically large.",
+      "role_en": "Provides the canonical deep value-learning baseline before off-policy continuous actor–critic algorithms.",
+      "latex": "y=r+\\gamma(1-d)\\max_{a\\prime}Q_{\\bar\\theta}(s\\prime,a\\prime),\\quad\\mathcal L=\\mathbb E_{\\mathcal B}\\!\\left[(Q_\\theta(s,a)-\\operatorname{sg}(y))^2\\right]",
+      "notation": [
+        {
+          "symbol": "\\theta,\\bar\\theta",
+          "meaning": "Online and target Q-network parameters."
+        },
+        {
+          "symbol": "\\operatorname{sg}",
+          "meaning": "Stop-gradient operator for the fitted target."
+        },
+        {
+          "symbol": "d",
+          "meaning": "True-terminal indicator; squared loss shown as a basic form, with robust alternatives used in practice."
+        }
+      ],
+      "prereqs": [
+        "rl_bellman",
+        "rl_td",
+        "rl_replay_targets",
+        "d_mlp"
+      ],
+      "sources": [
+        {
+          "title": "CS285 Spring 2026 Section 4: DQN and SAC",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/sections/section-4.pdf"
+        },
+        {
+          "title": "Human-level control through deep reinforcement learning",
+          "url": "https://www.nature.com/articles/nature14236"
+        }
+      ]
+    },
+    {
+      "id": "rl_gae",
+      "en": "Advantages and Generalized Advantage Estimation",
+      "title": "优势函数与 GAE",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Compare an action with the state baseline and combine multi-step TD residuals.",
+      "definition": "The advantage function compares an action value with the value of the state under the same policy. Generalized advantage estimation forms a discounted sum of TD residuals to construct a practical policy-gradient weight. Its lambda parameter controls how strongly longer-horizon residuals contribute, changing bias and variance when the value function is approximate. Implementations must correctly handle episode boundaries, true termination and truncated rollouts. Normalizing a batch of advantages is an additional implementation choice, not the mathematical definition. A favorable estimated advantage does not establish that a physical action is safe or optimal.",
+      "example": "For a PPO rollout, compute value estimates and TD residuals, then accumulate them backward with the chosen discount and lambda. Stop or bootstrap according to the actual boundary semantics. Comparing several lambda values requires measuring return and variability, rather than assuming the longest estimate is always best.",
+      "role_en": "Makes the advantage term in policy gradients and PPO explicit and links critic error to policy updates.",
+      "latex": "A^\\pi(s,a)=Q^\\pi(s,a)-V^\\pi(s),\\qquad\\hat A_t^{\\mathrm{GAE}}=\\sum_{l=0}^{T-t-1}(\\gamma\\lambda)^l\\delta_{t+l}",
+      "notation": [
+        {
+          "symbol": "\\lambda",
+          "meaning": "Trace parameter in [0,1]."
+        },
+        {
+          "symbol": "\\delta_t",
+          "meaning": "TD residual with the appropriate boundary mask."
+        },
+        {
+          "symbol": "T",
+          "meaning": "Finite rollout boundary; required bootstrap handling is assumed."
+        }
+      ],
+      "prereqs": [
+        "rl_td",
+        "rl_policy_gradient",
+        "rl_actorcritic"
+      ],
+      "sources": [
+        {
+          "title": "Generalized Advantage Estimation original paper",
+          "url": "https://arxiv.org/abs/1506.02438"
+        }
+      ]
+    },
+    {
+      "id": "rl_sac",
+      "en": "Soft Actor–Critic (SAC)",
+      "title": "软演员评论家",
+      "kind": "concept",
+      "entity_type": "algorithm",
+      "group": "rl_algorithms",
+      "summary": "Off-policy actor–critic optimizes reward together with policy entropy.",
+      "definition": "Soft actor–critic is an off-policy actor–critic family based on maximum-entropy reinforcement learning. It fits soft action values from replay data and improves a stochastic policy using both expected value and log-probability terms. Common modern continuous-control implementations use two Q functions, target critics, reparameterized action sampling and a temperature controlling entropy; these details should be distinguished from every historical version. Action bounds and distribution transformations require correct probability-density handling. Replay reuse can improve sample use, but neither entropy regularization nor the algorithm establishes safe exploration or guaranteed convergence.",
+      "example": "A simulated controller learns continuous action targets using replayed transitions and a stochastic policy. During deployment, the chosen deterministic or stochastic execution convention affects behavior. Compare environment steps, wall-clock compute and physical success separately when evaluating SAC against an on-policy PPO baseline.",
+      "role_en": "Provides a core continuous-control alternative to PPO and links off-policy learning to entropy-based control inference.",
+      "latex": "J_\\pi(\\theta)=\\mathbb E_{s\\sim\\mathcal B,\\ a\\sim\\pi_\\theta}\\!\\left[\\alpha\\log\\pi_\\theta(a\\mid s)-\\min_{i=1,2}Q_{\\phi_i}(s,a)\\right]",
+      "notation": [
+        {
+          "symbol": "\\alpha",
+          "meaning": "Entropy temperature in a common modern SAC actor objective."
+        },
+        {
+          "symbol": "Q_{\\phi_i}",
+          "meaning": "Twin learned critics."
+        },
+        {
+          "symbol": "\\mathcal B",
+          "meaning": "Replay-state distribution; minimize this actor loss."
+        }
+      ],
+      "prereqs": [
+        "rl_actorcritic",
+        "rl_offpolicy",
+        "rl_replay_targets",
+        "p_entropy"
+      ],
+      "sources": [
+        {
+          "title": "Soft Actor-Critic original paper",
+          "url": "https://arxiv.org/abs/1801.01290"
+        },
+        {
+          "title": "CS285 Spring 2026 Section 4: DQN and SAC",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/sections/section-4.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_modelbased",
+      "en": "Model-Based Reinforcement Learning",
+      "title": "基于模型的强化学习",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Learn or use transition predictions to improve decisions, not merely to forecast observations.",
+      "definition": "Model-based reinforcement learning uses a dynamics model to support policy improvement or action selection. A learned model can predict compact states, latent representations, observations or rewards; these choices change training data needs and planning costs. Some methods optimize actions through rollouts and execute the first action, while others train a policy or critic using imagined data. Model fitting alone is not yet an RL solution. Planning can exploit model errors outside data support, and long rollouts compound mistakes. Closed-loop replanning, uncertainty handling and real-environment evaluation address different parts of this problem.",
+      "example": "Fit a compact next-state predictor from simulator transitions, use it to score candidate short action sequences, and execute one step before observing again. Compare the realized transition with the prediction. A low average one-step error does not ensure that optimized action sequences remain accurate near contacts.",
+      "role_en": "Forms the stable prerequisite bridge to world-model planning papers, PETS, MBPO, Dreamer and TD-MPC.",
+      "latex": "\\hat s_{t+1}=f_\\theta(\\hat s_t,a_t),\\qquad a_{t:t+H-1}^*=\\arg\\max_{a_{t:t+H-1}}\\sum_{k=0}^{H-1}\\gamma^k\\hat r(\\hat s_{t+k},a_{t+k})",
+      "notation": [
+        {
+          "symbol": "f_\\theta",
+          "meaning": "Chosen dynamics predictor; stochastic and latent variants need appropriate rollout semantics."
+        },
+        {
+          "symbol": "H",
+          "meaning": "Planning horizon."
+        },
+        {
+          "symbol": "\\hat r",
+          "meaning": "Predicted or known task reward; expression illustrates model-predictive action selection."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "r_rollout",
+        "r_mpc",
+        "est_sysid"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Model-Based RL Part 1",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-15.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_offline",
+      "en": "Offline Reinforcement Learning",
+      "title": "离线强化学习",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Optimize decision quality from a fixed dataset without collecting new training transitions.",
+      "definition": "Offline reinforcement learning learns a policy from a fixed dataset of transitions or trajectories, without new environment interaction during that training phase. It differs from behavior cloning because it uses return-related structure to evaluate or improve actions rather than only matching demonstrated actions. The learned policy can choose actions poorly supported by the data, causing value extrapolation error and distribution shift. Conservative values, behavior constraints and policy extraction rules address this in different ways. Offline evaluation is itself difficult without appropriate support or assumptions. Off-policy capability alone does not make an ordinary online algorithm robust in this setting.",
+      "example": "A robot has recorded successful and failed motion episodes, but training cannot request new trials. A learned critic may assign high value to an unrecorded action that it has never evaluated physically. Test support, tuning protocol and deployment outcomes rather than selecting a policy only by its predicted training-set value.",
+      "role_en": "Clarifies offline datasets in world models and VLA pipelines and the offline-to-online bridge used in modern robot learning.",
+      "latex": "\\mathcal D=\\{(s_i,a_i,r_i,s_i\\prime,d_i)\\}_{i=1}^{N},\\qquad\\hat\\pi=\\mathcal A(\\mathcal D)",
+      "notation": [
+        {
+          "symbol": "\\mathcal D",
+          "meaning": "Fixed training data with no new interactions during offline training."
+        },
+        {
+          "symbol": "\\mathcal A",
+          "meaning": "An offline learning procedure; formula alone does not specify a valid algorithm."
+        }
+      ],
+      "prereqs": [
+        "rl_offpolicy",
+        "ml_distribution_shift",
+        "vla_behavior_cloning"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Offline RL Part 1",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-17.pdf"
+        },
+        {
+          "title": "Conservative Q-Learning for Offline Reinforcement Learning",
+          "url": "https://arxiv.org/abs/2006.04779"
+        }
+      ]
+    },
+    {
+      "id": "rl_exploration",
+      "en": "Exploration and Intrinsic Rewards",
+      "title": "探索与内在奖励",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Collect informative experience while respecting task and physical constraints.",
+      "definition": "Exploration concerns how an agent gathers experience needed to improve decisions. Random action noise, entropy regularization, novelty bonuses, uncertainty-directed behavior and goal-conditioned exploration make different assumptions and can lead to different coverage. An intrinsic reward can supplement task reward, but novelty may track sensor noise or uncontrollable events rather than useful discoveries. Information gain and reward improvement are different objectives. Simulation exploration can use resets unavailable on hardware, so a data-collection strategy must be evaluated within actual constraints. No novelty or entropy bonus by itself establishes safe real-world exploration.",
+      "example": "A soccer controller repeatedly sees only stationary-ball situations. Adding noise may produce varied actions but few useful contact examples. A structured collection scheme can target underrepresented valid states. Inspect coverage and failures directly, while keeping physical limits and recovery capability separate from the training reward.",
+      "role_en": "Connects entropy, uncertainty and active perception to experience collection and multi-task robot learning.",
+      "latex": "r_t^{\\mathrm{total}}=r_t^{\\mathrm{task}}+\\beta b(s_t,a_t,s_{t+1})",
+      "notation": [
+        {
+          "symbol": "b",
+          "meaning": "Chosen intrinsic bonus; not necessarily a calibrated information measure."
+        },
+        {
+          "symbol": "\\beta",
+          "meaning": "Weight between task reward and the auxiliary bonus."
+        }
+      ],
+      "prereqs": [
+        "rl_mdp",
+        "p_entropy",
+        "wm_uncertainty"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Exploration",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-19.pdf"
+        }
+      ]
+    },
+    {
+      "id": "rl_control_inference",
+      "en": "Control as Probabilistic Inference",
+      "title": "控制的概率推断视角",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "rl_foundations",
+      "summary": "Relate reward-seeking policies to probabilistic optimality variables and entropy-regularized objectives.",
+      "definition": "Control as inference introduces probabilistic variables representing desirable outcomes and relates their likelihood to reward. Inference over trajectories then suggests policy-learning objectives, often including entropy or a policy-prior divergence term. This is a modeling construction, not a claim that every controller literally performs exact Bayesian inference. Dynamics constraints matter: freely tilting an entire stochastic trajectory distribution can alter transition behavior that the controller cannot choose. Variational formulations restrict the policy-induced distribution and yield tractable objectives under specified assumptions. This view helps connect maximum-entropy RL, approximate inference and generative decision methods.",
+      "example": "A policy receives reward for reaching a target while retaining entropy in its action distribution. The probabilistic formulation explains why the objective may contain both reward and log-policy terms. It still requires explicit transition assumptions, reward scaling and a practical learning algorithm such as a soft actor–critic method.",
+      "role_en": "Connects variational reasoning to maximum-entropy control and later generative/world-model planning research.",
+      "latex": "J(\\pi)=\\mathbb E_{\\tau\\sim p_\\pi}\\!\\left[\\sum_t r(s_t,a_t)+\\alpha\\mathcal H(\\pi(\\cdot\\mid s_t))\\right]",
+      "notation": [
+        {
+          "symbol": "p_\\pi",
+          "meaning": "Trajectory distribution with environment dynamics fixed and actions selected by the policy."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Entropy weight; reference-policy formulations replace entropy by a divergence term."
+        }
+      ],
+      "prereqs": [
+        "p_bayes",
+        "p_kl",
+        "p_entropy",
+        "rl_mdp"
+      ],
+      "sources": [
+        {
+          "title": "CS285: Control as Inference",
+          "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-13.pdf"
+        }
+      ]
+    },
+    {
+      "id": "cv_segmentation",
+      "en": "Semantic, Instance and Panoptic Segmentation",
+      "title": "语义、实例与全景分割",
+      "kind": "concept",
+      "entity_type": "concept",
+      "group": "vision_tasks",
+      "summary": "Pixel labels and object-instance identities answer different visual questions.",
+      "definition": "Image segmentation predicts regions or labels at pixel resolution. Semantic segmentation assigns a category to each pixel without distinguishing individual objects of the same category. Instance segmentation separates individual object masks, while panoptic segmentation combines category coverage with instance identities according to a defined labeling convention. These outputs differ from bounding-box detection and require matching annotation and evaluation procedures. Pixel-level confidence is not geometric certainty, especially near boundaries, transparent surfaces or occlusion. A mask supports downstream geometry only when associated camera measurements and calibration are valid; it does not reveal hidden object surfaces.",
+      "example": "Two players occupy the same image. A semantic map labels both as person, while instance masks assign separate identities to their visible regions. A ball mask can guide depth selection, but occluded ball surfaces remain unobserved. Report boundary and small-object errors alongside any global pixel metric.",
+      "role_en": "Fills a core CS231n perception prerequisite connecting visual recognition to object-centric geometry, tracking and interaction.",
+      "latex": "\\mathrm{IoU}(A,B)=\\frac{|A\\cap B|}{|A\\cup B|}",
+      "notation": [
+        {
+          "symbol": "A,B",
+          "meaning": "Predicted and reference pixel sets for a specified class or matched instance."
+        },
+        {
+          "symbol": "\\mathrm{IoU}",
+          "meaning": "Intersection over union; multi-class, instance and panoptic evaluation add their own aggregation and matching conventions."
+        }
+      ],
+      "prereqs": [
+        "d_cnn",
+        "per_detection",
+        "ml_evaluation"
+      ],
+      "sources": [
+        {
+          "title": "Fully Convolutional Networks for Semantic Segmentation",
+          "url": "https://arxiv.org/abs/1411.4038"
+        },
+        {
+          "title": "Stanford CS231n Spring 2026 schedule",
+          "url": "https://cs231n.stanford.edu/schedule.html"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "rl_mdp",
+      "to": "rl_policy_gradient",
+      "type": "prereq",
+      "why_en": "The policy induces trajectories and returns in an MDP."
+    },
+    {
+      "from": "rl_bellman",
+      "to": "rl_policy_gradient",
+      "type": "prereq",
+      "why_en": "Return and value definitions determine action credit."
+    },
+    {
+      "from": "p_expectation",
+      "to": "rl_policy_gradient",
+      "type": "prereq",
+      "why_en": "The objective averages over sampled trajectories."
+    },
+    {
+      "from": "d_backprop",
+      "to": "rl_policy_gradient",
+      "type": "prereq",
+      "why_en": "Autodiff evaluates gradients of the policy log probability."
+    },
+    {
+      "from": "rl_bellman",
+      "to": "rl_td",
+      "type": "prereq",
+      "why_en": "The Bellman relation supplies a one-step reward-plus-value target."
+    },
+    {
+      "from": "ml_mse",
+      "to": "rl_td",
+      "type": "prereq",
+      "why_en": "A critic can be fitted to a stop-gradient bootstrapped target using squared error."
+    },
+    {
+      "from": "rl_mdp",
+      "to": "rl_offpolicy",
+      "type": "prereq",
+      "why_en": "Actions and state visitation depend on the collecting policy."
+    },
+    {
+      "from": "p_conditional",
+      "to": "rl_offpolicy",
+      "type": "prereq",
+      "why_en": "Ratios compare conditional action distributions."
+    },
+    {
+      "from": "rl_td",
+      "to": "rl_replay_targets",
+      "type": "prereq",
+      "why_en": "Target networks stabilize changing bootstrapped predictions."
+    },
+    {
+      "from": "rl_offpolicy",
+      "to": "rl_replay_targets",
+      "type": "prereq",
+      "why_en": "Replay commonly reuses data from earlier behavior policies."
+    },
+    {
+      "from": "train_batch",
+      "to": "rl_replay_targets",
+      "type": "prereq",
+      "why_en": "Minibatch construction determines which stored transitions are used."
+    },
+    {
+      "from": "rl_bellman",
+      "to": "rl_dqn",
+      "type": "prereq",
+      "why_en": "Q-learning uses the Bellman optimality target."
+    },
+    {
+      "from": "rl_td",
+      "to": "rl_dqn",
+      "type": "prereq",
+      "why_en": "Learning bootstraps from estimated next-state values."
+    },
+    {
+      "from": "rl_replay_targets",
+      "to": "rl_dqn",
+      "type": "prereq",
+      "why_en": "Replay and target-network mechanisms form the practical training setup."
+    },
+    {
+      "from": "d_mlp",
+      "to": "rl_dqn",
+      "type": "prereq",
+      "why_en": "A neural approximator represents Q; visual DQN may instead use a CNN encoder."
+    },
+    {
+      "from": "rl_td",
+      "to": "rl_gae",
+      "type": "prereq",
+      "why_en": "GAE combines temporally extended TD residuals."
+    },
+    {
+      "from": "rl_policy_gradient",
+      "to": "rl_gae",
+      "type": "prereq",
+      "why_en": "Advantages weight policy-gradient score terms."
+    },
+    {
+      "from": "rl_actorcritic",
+      "to": "rl_gae",
+      "type": "prereq",
+      "why_en": "A critic supplies the baseline and next-state estimates."
+    },
+    {
+      "from": "rl_actorcritic",
+      "to": "rl_sac",
+      "type": "prereq",
+      "why_en": "SAC maintains an actor and learned critics."
+    },
+    {
+      "from": "rl_offpolicy",
+      "to": "rl_sac",
+      "type": "prereq",
+      "why_en": "Critics reuse data collected by other behavior policies."
+    },
+    {
+      "from": "rl_replay_targets",
+      "to": "rl_sac",
+      "type": "prereq",
+      "why_en": "Replay and target critics support bootstrapped fitting."
+    },
+    {
+      "from": "p_entropy",
+      "to": "rl_sac",
+      "type": "prereq",
+      "why_en": "The actor objective includes an entropy-related log-probability term."
+    },
+    {
+      "from": "rl_mdp",
+      "to": "rl_modelbased",
+      "type": "prereq",
+      "why_en": "A dynamics model approximates the transition structure used by decision making."
+    },
+    {
+      "from": "r_rollout",
+      "to": "rl_modelbased",
+      "type": "prereq",
+      "why_en": "Multi-step predictions accumulate model error."
+    },
+    {
+      "from": "r_mpc",
+      "to": "rl_modelbased",
+      "type": "prereq",
+      "why_en": "Receding-horizon control is one way to use the model for decisions."
+    },
+    {
+      "from": "est_sysid",
+      "to": "rl_modelbased",
+      "type": "prereq",
+      "why_en": "Transition models must be identified or learned from data."
+    },
+    {
+      "from": "rl_offpolicy",
+      "to": "rl_offline",
+      "type": "prereq",
+      "why_en": "The policy being learned generally differs from the data-collecting policy."
+    },
+    {
+      "from": "ml_distribution_shift",
+      "to": "rl_offline",
+      "type": "prereq",
+      "why_en": "Actions and states selected after learning can fall outside training support."
+    },
+    {
+      "from": "vla_behavior_cloning",
+      "to": "rl_offline",
+      "type": "prereq",
+      "why_en": "Behavior cloning supplies a useful fixed-data baseline but a different objective."
+    },
+    {
+      "from": "rl_mdp",
+      "to": "rl_exploration",
+      "type": "prereq",
+      "why_en": "Exploration changes the distribution of collected states and actions."
+    },
+    {
+      "from": "p_entropy",
+      "to": "rl_exploration",
+      "type": "prereq",
+      "why_en": "Stochasticity and entropy relate to some exploration strategies."
+    },
+    {
+      "from": "wm_uncertainty",
+      "to": "rl_exploration",
+      "type": "prereq",
+      "why_en": "Model uncertainty can guide exploration, subject to its calibration and assumptions."
+    },
+    {
+      "from": "p_bayes",
+      "to": "rl_control_inference",
+      "type": "prereq",
+      "why_en": "Inference formulations combine trajectory priors and constructed optimality likelihoods."
+    },
+    {
+      "from": "p_kl",
+      "to": "rl_control_inference",
+      "type": "prereq",
+      "why_en": "Variational approximations compare distributions."
+    },
+    {
+      "from": "p_entropy",
+      "to": "rl_control_inference",
+      "type": "prereq",
+      "why_en": "Entropy appears in a common maximum-entropy control objective."
+    },
+    {
+      "from": "rl_mdp",
+      "to": "rl_control_inference",
+      "type": "prereq",
+      "why_en": "The environment transition distribution constrains which trajectories a policy can induce."
+    },
+    {
+      "from": "d_cnn",
+      "to": "cv_segmentation",
+      "type": "prereq",
+      "why_en": "Dense visual features support per-pixel predictions; Transformer alternatives also exist."
+    },
+    {
+      "from": "per_detection",
+      "to": "cv_segmentation",
+      "type": "prereq",
+      "why_en": "Object detection provides a useful comparison between boxes and pixel masks."
+    },
+    {
+      "from": "ml_evaluation",
+      "to": "cv_segmentation",
+      "type": "prereq",
+      "why_en": "Each segmentation task needs compatible labels and metrics."
+    }
+  ],
+  "research": [
+    {
+      "title": "U-M EECS545 official archived syllabus",
+      "url": "https://web.eecs.umich.edu/~honglak/teaching/eecs545/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Michigan Robotics official course list: EECS545",
+      "url": "https://robotics.umich.edu/academics/courses/complete-course-list/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Berkeley CS185/285 Spring 2026 schedule",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Berkeley CS185/285 prerequisites and syllabus",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/syllabus/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Stanford CS231n Spring 2026 overview and prerequisites",
+      "url": "https://cs231n.stanford.edu/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Stanford CS231n Spring 2026 schedule",
+      "url": "https://cs231n.stanford.edu/schedule.html",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Policy Gradients",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-5.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Actor Critic",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-6.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Value-Based RL",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-7.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Q-Learning in Practice",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-8.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285 Spring 2026 Section 4: DQN and SAC",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/sections/section-4.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Model-Based RL Part 1",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-15.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Offline RL Part 1",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-17.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Exploration",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-19.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "CS285: Control as Inference",
+      "url": "https://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-13.pdf",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Soft Actor-Critic original paper",
+      "url": "https://arxiv.org/abs/1801.01290",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Generalized Advantage Estimation original paper",
+      "url": "https://arxiv.org/abs/1506.02438",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Human-level control through deep reinforcement learning",
+      "url": "https://www.nature.com/articles/nature14236",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Conservative Q-Learning for Offline Reinforcement Learning",
+      "url": "https://arxiv.org/abs/2006.04779",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Fully Convolutional Networks for Semantic Segmentation",
+      "url": "https://arxiv.org/abs/1411.4038",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Probabilistic Machine Learning: An Introduction",
+      "url": "https://probml.github.io/pml-book/book1.html",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    },
+    {
+      "title": "Speech and Language Processing author manuscript",
+      "url": "https://web.stanford.edu/~jurafsky/slp3/",
+      "checked_date": "2026-11-16",
+      "notes": "Official course, original paper or author textbook. Course-to-atlas modules are editorial mappings; local EECS545 use is restricted to headings."
+    }
+  ],
+  "design_notes": [
+    "Foundations modules point to reusable concepts; evolving papers live in research topic bridges.",
+    "A concept can belong to more than one course module without duplicating its canonical node.",
+    "Courses are anchors for scope and learning outcomes, not claims of enrollment, course completion or mastery.",
+    "Existing CSE598 course metadata is left untouched.",
+    "Course sources may change; this mapping records the checked Spring2026 public schedules where available."
+  ]
+}

@@ -1,0 +1,1951 @@
+{
+  "courses": [
+    {
+      "id": "course_math",
+      "title": "Mathematics: From High School to Robotics Research",
+      "zh": "数学：从高中基础到机器人研究",
+      "anchor": "Editorial prerequisite map connecting SI602, ROB501, CSE598 preparation, and verified public mathematics courses.",
+      "source_urls": [
+        {
+          "title": "OpenStax College Algebra 2e",
+          "url": "https://openstax.org/details/books/college-algebra-2e"
+        },
+        {
+          "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+          "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+        },
+        {
+          "title": "Stanford Math51 official topic sequence, Autumn2026",
+          "url": "https://web.stanford.edu/class/math51/schedule.html"
+        },
+        {
+          "title": "Berkeley CS70 official topic list, Fall2026",
+          "url": "https://www.eecs70.org/policies/"
+        },
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        },
+        {
+          "title": "Stanford CS205L official numerical mathematics topics",
+          "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+        },
+        {
+          "title": "Stanford EE364A: Convex Optimization I, official course",
+          "url": "https://web.stanford.edu/class/ee364a/index.html"
+        }
+      ],
+      "scope": "A branching orientation rather than a claim that one university course covers the entire path. Each learner can enter at an already understood concept; course membership is not proof of mastery. Algebra/probability, geometry, analysis, and computation develop partly in parallel.",
+      "modules": [
+        {
+          "id": "course_math__math_language",
+          "title": "Mathematical Language and School Algebra",
+          "zh": "数学语言与高中代数",
+          "node_ids": [
+            "math_logic_sets",
+            "m_function",
+            "m_explog",
+            "m_sum",
+            "math_counting"
+          ],
+          "summary": "Establish domains, equations, functions, exponential/logarithmic rules, indexing, and outcome counting before compact research notation.",
+          "learning_outcome": "Translate a verbal statement into correctly scoped symbols and distinguish an example from a proof.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "OpenStax College Algebra 2e",
+              "url": "https://openstax.org/details/books/college-algebra-2e"
+            },
+            {
+              "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+              "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_geometry",
+          "title": "Vectors, Geometry and Linear Maps",
+          "zh": "向量、几何与线性映射",
+          "node_ids": [
+            "m_vector",
+            "m_coordinates",
+            "m_trig",
+            "m_matrix",
+            "m_matmul",
+            "la_subspaces"
+          ],
+          "summary": "Develop geometric and algebraic views of the same vector operations, including dimensions, coordinate choices, and information loss.",
+          "learning_outcome": "Check matrix shapes and identify span, null space, rank, and coordinate dependence.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Stanford Math51 official topic sequence, Autumn2026",
+              "url": "https://web.stanford.edu/class/math51/schedule.html"
+            },
+            {
+              "title": "Stanford EE263: Matrix Methods, current2026 course",
+              "url": "https://ee263.stanford.edu/"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_analysis",
+          "title": "Rates, Accumulation and Local Models",
+          "zh": "变化率、累积与局部模型",
+          "node_ids": [
+            "m_derivative",
+            "c_integral",
+            "c_ftc",
+            "m_partial",
+            "m_chain",
+            "m_jacobian",
+            "c_taylor",
+            "c_hessian"
+          ],
+          "summary": "Connect one-variable calculus to multivariable derivatives and first/second-order models used by optimization and dynamics.",
+          "learning_outcome": "Derive a local approximation and state its input/output dimensions and region of usefulness.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "MIT18.01SC: Single Variable Calculus",
+              "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+            },
+            {
+              "title": "MIT18.02SC: Multivariable Calculus",
+              "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/"
+            },
+            {
+              "title": "Stanford Math51 official topic sequence, Autumn2026",
+              "url": "https://web.stanford.edu/class/math51/schedule.html"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_uncertainty",
+          "title": "Probability and Statistical Evidence",
+          "zh": "概率与统计证据",
+          "node_ids": [
+            "p_probability",
+            "p_conditional",
+            "p_bayes",
+            "p_random",
+            "p_joint_density",
+            "p_expectation",
+            "p_variance",
+            "p_stat_inference"
+          ],
+          "summary": "Separate event probability, uncertain state, finite-sample estimation, and evidence about a hypothesis.",
+          "learning_outcome": "Compute conditional/marginal quantities and explain what a reported interval or test does and does not establish.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+              "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+            },
+            {
+              "title": "Berkeley CS70 official topic list, Fall2026",
+              "url": "https://www.eecs70.org/policies/"
+            },
+            {
+              "title": "MIT18.05: Introduction to Probability and Statistics, Spring2022",
+              "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_spectral",
+          "title": "Projection and Spectral Structure",
+          "zh": "投影与谱结构",
+          "node_ids": [
+            "la_projection_qr",
+            "m_eigen",
+            "la_psd",
+            "la_svd",
+            "la_pinv",
+            "ml_pca",
+            "num_conditioning"
+          ],
+          "summary": "Explain fitting, low-dimensional structure, sensitivity, and information-preserving versus information-losing transformations.",
+          "learning_outcome": "Choose a factorization for a fitting problem and diagnose rank deficiency or poor conditioning.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Stanford Math51 official topic sequence, Autumn2026",
+              "url": "https://web.stanford.edu/class/math51/schedule.html"
+            },
+            {
+              "title": "Stanford EE263: Matrix Methods, current2026 course",
+              "url": "https://ee263.stanford.edu/"
+            },
+            {
+              "title": "Stanford CS205L official numerical mathematics topics",
+              "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_optimization",
+          "title": "Optimization and Guarantees",
+          "zh": "优化与保证条件",
+          "node_ids": [
+            "m_gradient",
+            "c_convexity_jensen",
+            "c_constraints",
+            "c_convergence_fixedpoint",
+            "d_adam"
+          ],
+          "summary": "Distinguish the optimization problem, numerical update, and assumptions supporting convergence or global optimality.",
+          "learning_outcome": "Identify variables, objective, constraints, and whether a claimed guarantee applies to the actual nonconvex model.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "Stanford EE364A: Convex Optimization I, official course",
+              "url": "https://web.stanford.edu/class/ee364a/index.html"
+            },
+            {
+              "title": "Stanford CS205L official numerical mathematics topics",
+              "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+            }
+          ]
+        },
+        {
+          "id": "course_math__math_robot_research",
+          "title": "Research Connections",
+          "zh": "机器人研究中的数学连接",
+          "node_ids": [
+            "geo_so3",
+            "geo_se3",
+            "c_ode",
+            "est_kalman",
+            "ctrl_statespace",
+            "rl_bellman",
+            "d_backprop"
+          ],
+          "summary": "Connect the same mathematical foundations to pose, dynamics, uncertainty, learning gradients, and sequential decisions without collapsing them into one model.",
+          "learning_outcome": "Trace a paper equation back to its prerequisite definitions and state which assumptions come from the model versus the data.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "Stanford EE363: Linear Dynamical Systems, Spring2026",
+              "url": "https://ee363.stanford.edu/"
+            },
+            {
+              "title": "Stanford CS205L official numerical mathematics topics",
+              "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+            }
+          ]
+        }
+      ],
+      "presentation": "orientation"
+    },
+    {
+      "id": "course_si602",
+      "title": "SI602: Mathematical Foundations for Applied Data Science",
+      "zh": "SI602：应用数据科学的数学基础",
+      "anchor": "Topic-only alignment to the supplied SI602 syllabus; official public identity is independently verified.",
+      "source_urls": [
+        {
+          "title": "UMSI official course identity: SI602",
+          "url": "https://waivers.si.umich.edu/skill-based-waivers"
+        },
+        {
+          "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+          "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+        },
+        {
+          "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+          "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+        },
+        {
+          "title": "The Data Science Design Manual: author lecture resources",
+          "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+        }
+      ],
+      "scope": "The ten-unit outline is source-backed by the supplied syllabus. Public links are the course identity and its listed learning resources, not a claim that a complete current public syllabus was obtained. Further topics are explicitly optional. No private quizzes, answers, personal performance, deadlines, or meeting details are included.",
+      "modules": [
+        {
+          "id": "course_si602__si602_u1",
+          "title": "1. Mathematical Notation and Review",
+          "zh": "数学记号与复习",
+          "node_ids": [
+            "math_logic_sets",
+            "m_function",
+            "m_sum",
+            "m_explog",
+            "math_counting"
+          ],
+          "summary": "Sets, sequences, summations, counting, and logarithms.",
+          "learning_outcome": "Read notation and state the counting convention before calculating.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+              "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit1"
+        },
+        {
+          "id": "course_si602__si602_u2",
+          "title": "2. Counting and Probability Spaces",
+          "zh": "计数与概率空间",
+          "node_ids": [
+            "math_counting",
+            "p_probability"
+          ],
+          "summary": "Advanced counting and the definition of events and probability spaces.",
+          "learning_outcome": "Construct a finite event model and justify when counting ratios are valid.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+              "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+            },
+            {
+              "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+              "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit2"
+        },
+        {
+          "id": "course_si602__si602_u3",
+          "title": "3. Conditional Probability",
+          "zh": "条件概率",
+          "node_ids": [
+            "p_conditional",
+            "p_bayes"
+          ],
+          "summary": "Conditional probability and reasoning over restricted sample spaces.",
+          "learning_outcome": "Distinguish opposite conditioning directions, independence, and mutually exclusive events.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+              "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit3"
+        },
+        {
+          "id": "course_si602__si602_u4",
+          "title": "4. Random Variables and Expectation",
+          "zh": "随机变量与期望",
+          "node_ids": [
+            "p_random",
+            "p_expectation"
+          ],
+          "summary": "Random variables, their distributions, and expectation.",
+          "learning_outcome": "Define a random quantity before computing its weighted mean.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+              "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit4"
+        },
+        {
+          "id": "course_si602__si602_u5",
+          "title": "5. Variance, Covariance and Sampling",
+          "zh": "方差、协方差与抽样",
+          "node_ids": [
+            "p_variance",
+            "p_sampling",
+            "p_stat_inference"
+          ],
+          "summary": "Dispersion, correlation, sampling, and the distinction between confidence and probability.",
+          "learning_outcome": "Separate a population quantity from an estimator and its sampling variability.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+              "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+            },
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit5"
+        },
+        {
+          "id": "course_si602__si602_u6",
+          "title": "6. Distributions and Entropy",
+          "zh": "统计分布与熵",
+          "node_ids": [
+            "p_random",
+            "p_gaussian",
+            "p_entropy"
+          ],
+          "summary": "Statistical distribution models and entropy as an information summary.",
+          "learning_outcome": "State the distribution assumptions and distinguish density, uncertainty, and observed frequency.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit6"
+        },
+        {
+          "id": "course_si602__si602_u7",
+          "title": "7. Significance and Matrix Geometry",
+          "zh": "统计显著性与矩阵几何",
+          "node_ids": [
+            "p_stat_inference",
+            "m_vector",
+            "m_matmul"
+          ],
+          "summary": "Statistical significance alongside geometric dot products and matrix multiplication.",
+          "learning_outcome": "Report an effect and its uncertainty while interpreting a matrix product geometrically.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit7"
+        },
+        {
+          "id": "course_si602__si602_u8",
+          "title": "8. Span, Basis and Invertibility",
+          "zh": "张成、基与可逆性",
+          "node_ids": [
+            "la_subspaces",
+            "m_matrix",
+            "m_matmul"
+          ],
+          "summary": "Linear independence, basis, rank, invertibility, and elimination.",
+          "learning_outcome": "Determine whether a linear system has a unique solution or unresolved directions.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford Math51 official topic sequence, Autumn2026",
+              "url": "https://web.stanford.edu/class/math51/schedule.html"
+            },
+            {
+              "title": "Stanford EE263: Matrix Methods, current2026 course",
+              "url": "https://ee263.stanford.edu/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit8"
+        },
+        {
+          "id": "course_si602__si602_u9",
+          "title": "9. Orthogonality, Eigenvectors and PCA",
+          "zh": "正交、特征向量与主成分",
+          "node_ids": [
+            "la_projection_qr",
+            "m_eigen",
+            "la_psd",
+            "ml_pca"
+          ],
+          "summary": "Orthonormal directions, eigenstructure, and principal components.",
+          "learning_outcome": "Explain how an orthogonal change of coordinates relates to covariance and reduced representations.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            },
+            {
+              "title": "Stanford EE263: Matrix Methods, current2026 course",
+              "url": "https://ee263.stanford.edu/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit9"
+        },
+        {
+          "id": "course_si602__si602_u10",
+          "title": "10. SVD, Similarity and Networks",
+          "zh": "奇异值、相似性与网络",
+          "node_ids": [
+            "la_svd",
+            "m_norm",
+            "m_eigen",
+            "ml_clustering",
+            "ml_hmm"
+          ],
+          "summary": "SVD, matrices as graphs, PageRank, network grouping, and similarity versus distance.",
+          "learning_outcome": "Connect matrix structure to graph/ranking behavior while distinguishing a full graph theory treatment from these applications.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            },
+            {
+              "title": "Berkeley EECS16A official notes/topics, Spring2026",
+              "url": "https://eecs16a.org/"
+            }
+          ],
+          "source_section": "Supplied SI602 syllabus approximate topic outline: Unit10"
+        },
+        {
+          "id": "course_si602__si602_further",
+          "title": "Further Topics: Regression and Models",
+          "zh": "补充主题：回归与模型",
+          "node_ids": [
+            "ml_linear",
+            "ml_logistic",
+            "ml_erm",
+            "p_entropy",
+            "ml_hmm"
+          ],
+          "summary": "Regression, losses, optimization, distance methods, and HMMs are listed as further topics rather than a guaranteed core unit.",
+          "learning_outcome": "Recognize the mathematical objective and data assumptions of a model before applying it.",
+          "basis": "source_backed_optional",
+          "source_urls": [
+            {
+              "title": "The Data Science Design Manual: author lecture resources",
+              "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+            }
+          ],
+          "source_section": "Supplied syllabus further-topics paragraph; coverage is tentative."
+        }
+      ]
+    },
+    {
+      "id": "course_rob501",
+      "title": "ROB501: Mathematics for Robotics",
+      "zh": "ROB501：机器人数学",
+      "anchor": "Michigan official course overview and catalog, with explicitly archived public materials.",
+      "source_urls": [
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        },
+        {
+          "title": "University of Michigan Engineering Bulletin: ROB501",
+          "url": "https://bulletin.engin.umich.edu/courses/robotics-courses/"
+        },
+        {
+          "title": "Michigan Robotics ROB501 public course materials, archived offering",
+          "url": "https://github.com/michiganrobotics/rob501"
+        },
+        {
+          "title": "ROB501 open textbook, University of Michigan institutional repository",
+          "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+        }
+      ],
+      "scope": "The public overview/catalog support these topic themes. The open course repository is an archived offering, and the institutional textbook is a dated edition; neither is claimed to be the exact syllabus of every current instructor. The course assumes some prior matrix algebra, probability, vector calculus, and complex-number familiarity.",
+      "modules": [
+        {
+          "id": "course_rob501__rob501_proof",
+          "title": "1. Definitions and Mathematical Arguments",
+          "zh": "定义与数学论证",
+          "node_ids": [
+            "math_logic_sets"
+          ],
+          "summary": "Proof structures and quantified assumptions establish the language for subsequent abstraction.",
+          "learning_outcome": "Write a clear implication and distinguish induction, contradiction, and a counterexample.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "Michigan Robotics ROB501 public course materials, archived offering",
+              "url": "https://github.com/michiganrobotics/rob501"
+            }
+          ],
+          "source_section": "Proof and mathematical arguments"
+        },
+        {
+          "id": "course_rob501__rob501_spaces",
+          "title": "2. Abstract Linear Algebra",
+          "zh": "抽象线性代数",
+          "node_ids": [
+            "la_subspaces",
+            "m_eigen",
+            "la_psd"
+          ],
+          "summary": "Vector spaces, operators, bases, inner products, and structured matrices extend numerical matrix manipulation.",
+          "learning_outcome": "Identify the space, operator, basis, and invariant property used in a theorem.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "ROB501 open textbook, University of Michigan institutional repository",
+              "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+            }
+          ],
+          "source_section": "Abstract spaces and linear operators"
+        },
+        {
+          "id": "course_rob501__rob501_projection",
+          "title": "3. Projection and Least Squares",
+          "zh": "投影与最小二乘",
+          "node_ids": [
+            "la_projection_qr",
+            "la_svd",
+            "la_pinv",
+            "num_conditioning"
+          ],
+          "summary": "Projection geometry leads to QR, least-squares fitting, and stable numerical interpretation.",
+          "learning_outcome": "Derive an orthogonality condition and select an appropriate solve without assuming every matrix is invertible.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "ROB501 open textbook, University of Michigan institutional repository",
+              "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+            }
+          ],
+          "source_section": "Projection theorem, Gram–Schmidt, QR and least squares"
+        },
+        {
+          "id": "course_rob501__rob501_probability",
+          "title": "4. Probability and Random Vectors",
+          "zh": "概率与随机向量",
+          "node_ids": [
+            "p_probability",
+            "p_joint_density",
+            "p_expectation",
+            "p_variance",
+            "p_gaussian"
+          ],
+          "summary": "Probability spaces and Gaussian random vectors describe uncertainty over states and measurements.",
+          "learning_outcome": "Propagate mean/covariance through a linear transformation and distinguish marginalization from conditioning.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "ROB501 open textbook, University of Michigan institutional repository",
+              "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+            }
+          ],
+          "source_section": "Probability and Gaussian random vectors"
+        },
+        {
+          "id": "course_rob501__rob501_estimation",
+          "title": "5. Estimation and Filtering",
+          "zh": "估计与滤波",
+          "node_ids": [
+            "la_projection_qr",
+            "est_bayesfilter",
+            "est_kalman",
+            "est_ekf",
+            "p_sampling"
+          ],
+          "summary": "Least-squares, best linear estimation, minimum-variance ideas, and recursive filters connect measurements to state inference.",
+          "learning_outcome": "State the noise assumptions and identify when a linear-Gaussian simplification or particle approximation is being used.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "University of Michigan Engineering Bulletin: ROB501",
+              "url": "https://bulletin.engin.umich.edu/courses/robotics-courses/"
+            }
+          ],
+          "source_section": "Estimation; catalog additionally lists extensions and particle filters"
+        },
+        {
+          "id": "course_rob501__rob501_analysis",
+          "title": "6. Analysis and Convergence",
+          "zh": "分析与收敛",
+          "node_ids": [
+            "m_norm",
+            "c_convergence_fixedpoint",
+            "c_taylor",
+            "c_hessian"
+          ],
+          "summary": "Normed spaces, convergence, continuity, compactness, fixed points, and local nonlinear solver reasoning.",
+          "learning_outcome": "Separate a local numerical observation from a theorem with explicit domain and regularity conditions.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "ROB501 open textbook, University of Michigan institutional repository",
+              "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+            }
+          ],
+          "source_section": "Real analysis, convergence, Newton–Raphson"
+        },
+        {
+          "id": "course_rob501__rob501_optimization",
+          "title": "7. Optimization and Search",
+          "zh": "优化与搜索",
+          "node_ids": [
+            "c_convexity_jensen",
+            "c_constraints",
+            "m_gradient",
+            "r_search",
+            "r_shooting"
+          ],
+          "summary": "Convexity, constrained optimization, linear/quadratic programs, and search strategies support robotic computation.",
+          "learning_outcome": "Formulate the optimization variables and constraints, and identify local versus global solution claims.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Michigan ROB501 official educational overview",
+              "url": "https://grizzle.robotics.umich.edu/education/rob501"
+            },
+            {
+              "title": "University of Michigan Engineering Bulletin: ROB501",
+              "url": "https://bulletin.engin.umich.edu/courses/robotics-courses/"
+            }
+          ],
+          "source_section": "Optimization and randomized search strategies"
+        }
+      ]
+    },
+    {
+      "id": "course_math_bridge",
+      "title": "Mathematics Bridges for Learning and Robotics Research",
+      "zh": "面向机器学习与机器人研究的数学衔接",
+      "anchor": "CSE598 beginning foundations plus verified Stanford and Berkeley course materials.",
+      "source_urls": [
+        {
+          "title": "Action and Perception course identity, linked by instructor public homepage",
+          "url": "https://web.eecs.umich.edu/~stellayu/"
+        },
+        {
+          "title": "Stanford Math51 official topic sequence, Autumn2026",
+          "url": "https://web.stanford.edu/class/math51/schedule.html"
+        },
+        {
+          "title": "Berkeley CS70 official topic list, Fall2026",
+          "url": "https://www.eecs70.org/policies/"
+        },
+        {
+          "title": "Berkeley EECS16A official notes/topics, Spring2026",
+          "url": "https://eecs16a.org/"
+        },
+        {
+          "title": "Berkeley EECS16B public archive, Spring2024",
+          "url": "https://eecs16b.org/"
+        },
+        {
+          "title": "Stanford EE263: Matrix Methods, current2026 course",
+          "url": "https://ee263.stanford.edu/"
+        },
+        {
+          "title": "Stanford EE363: Linear Dynamical Systems, Spring2026",
+          "url": "https://ee363.stanford.edu/"
+        },
+        {
+          "title": "Stanford EE364A: Convex Optimization I, official course",
+          "url": "https://web.stanford.edu/class/ee364a/index.html"
+        },
+        {
+          "title": "Stanford CS205L official numerical mathematics topics",
+          "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+        },
+        {
+          "title": "Mathematics for Machine Learning, author resources",
+          "url": "https://mml-book.github.io/"
+        }
+      ],
+      "scope": "Each module marks source-backed topic coverage or editorial bridging. A mapping to an atlas node is an educational organization, not official transfer equivalency, enrollment advice, proof of mastery, or a claim of exact syllabus equivalence. No private homework or quiz content is reproduced.",
+      "modules": [
+        {
+          "id": "course_math_bridge__bridge_cse598_probability",
+          "title": "CSE598 Preparation: Probability to Gaussian Models",
+          "zh": "CSE598前置：从概率到高斯",
+          "node_ids": [
+            "p_probability",
+            "p_conditional",
+            "p_bayes",
+            "p_expectation",
+            "p_variance",
+            "p_joint_density",
+            "p_gaussian"
+          ],
+          "summary": "A topic-only bridge informed by the beginning foundations index: events, expectation, joint distributions, and Gaussian transformations.",
+          "learning_outcome": "Explain symbols and assumptions in a probabilistic model without relying on a private assignment or solution.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "MIT18.05: Introduction to Probability and Statistics, Spring2022",
+              "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/"
+            },
+            {
+              "title": "Mathematics for Machine Learning, author resources",
+              "url": "https://mml-book.github.io/"
+            },
+            {
+              "title": "Action and Perception course identity, linked by instructor public homepage",
+              "url": "https://web.eecs.umich.edu/~stellayu/"
+            }
+          ]
+        },
+        {
+          "id": "course_math_bridge__bridge_cse598_calculus",
+          "title": "CSE598 Preparation: Calculus and Matrix Shapes",
+          "zh": "CSE598前置：微积分与矩阵形状",
+          "node_ids": [
+            "m_derivative",
+            "m_chain",
+            "c_integral",
+            "c_ftc",
+            "m_partial",
+            "m_jacobian",
+            "c_hessian",
+            "la_svd"
+          ],
+          "summary": "Connect derivative rules, integration, multivariable notation, matrix dimensions, and factorization to modern learning papers.",
+          "learning_outcome": "Check the shape and coordinate convention of a derivative or covariance expression.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "MIT18.01SC: Single Variable Calculus",
+              "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+            },
+            {
+              "title": "MIT18.02SC: Multivariable Calculus",
+              "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/"
+            },
+            {
+              "title": "Mathematics for Machine Learning, author resources",
+              "url": "https://mml-book.github.io/"
+            }
+          ]
+        },
+        {
+          "id": "course_math_bridge__bridge_cse598_jensen",
+          "title": "CSE598 Preparation: Expectations and Nonlinear Objectives",
+          "zh": "CSE598前置：期望与非线性目标",
+          "node_ids": [
+            "c_convexity_jensen",
+            "p_entropy",
+            "p_kl",
+            "p_likelihood",
+            "ml_erm"
+          ],
+          "summary": "Jensen, expected nonlinear functions, and likelihood/loss notation are selected prerequisites, not a reproduction of a course assessment.",
+          "learning_outcome": "Identify which quantity is averaged, which function is nonlinear, and which inequality assumptions apply.",
+          "basis": "editorial_bridge",
+          "source_urls": [
+            {
+              "title": "Convex Optimization, author-hosted textbook",
+              "url": "https://web.stanford.edu/~boyd/cvxbook/"
+            },
+            {
+              "title": "Mathematics for Machine Learning, author resources",
+              "url": "https://mml-book.github.io/"
+            }
+          ]
+        },
+        {
+          "id": "course_math_bridge__bridge_cs70",
+          "title": "Berkeley CS70: Discrete Reasoning and Probability",
+          "zh": "伯克利CS70：离散推理与概率",
+          "node_ids": [
+            "math_logic_sets",
+            "math_counting",
+            "p_probability",
+            "p_conditional",
+            "p_expectation",
+            "p_variance",
+            "p_joint_density"
+          ],
+          "summary": "The verified topic list joins proofs and discrete reasoning with counting and probabilistic reasoning; cryptography/computability are not required for every robotics paper.",
+          "learning_outcome": "Read mathematical assumptions precisely and construct discrete/continuous probability arguments.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Berkeley CS70 official topic list, Fall2026",
+              "url": "https://www.eecs70.org/policies/"
+            }
+          ],
+          "source_section": "Selected public CS70 topics; this module is not the complete course"
+        },
+        {
+          "id": "course_math_bridge__bridge_math51",
+          "title": "Stanford Math51: Linear Algebra with Differential Calculus",
+          "zh": "斯坦福Math51：线性代数与多元微分",
+          "node_ids": [
+            "la_subspaces",
+            "la_projection_qr",
+            "m_partial",
+            "m_jacobian",
+            "m_chain",
+            "c_hessian",
+            "m_eigen"
+          ],
+          "summary": "The public sequence integrates linear geometry with multivariable derivatives and local optimization.",
+          "learning_outcome": "Interpret a derivative as a linear map and relate first/second-order behavior to matrix structure.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford Math51 official topic sequence, Autumn2026",
+              "url": "https://web.stanford.edu/class/math51/schedule.html"
+            }
+          ],
+          "source_section": "Selected chapters on spaces, projection, derivative matrices, and Hessians"
+        },
+        {
+          "id": "course_math_bridge__bridge_ee263",
+          "title": "Stanford EE263: Current Matrix Methods",
+          "zh": "斯坦福EE263：当前矩阵方法课程",
+          "node_ids": [
+            "la_subspaces",
+            "la_projection_qr",
+            "la_svd",
+            "la_pinv",
+            "p_gaussian",
+            "num_conditioning"
+          ],
+          "summary": "The current course emphasizes advanced applied linear algebra, SVD, fitting, and uncertainty-aware estimation.",
+          "learning_outcome": "Choose least-squares/least-norm and spectral tools with their rank and noise assumptions.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford EE263: Matrix Methods, current2026 course",
+              "url": "https://ee263.stanford.edu/"
+            }
+          ],
+          "source_section": "Current2026 course; not the older linear-dynamics syllabus"
+        },
+        {
+          "id": "course_math_bridge__bridge_dynamics",
+          "title": "Signals and Linear Dynamics",
+          "zh": "信号与线性动力系统",
+          "node_ids": [
+            "m_complex",
+            "c_ode",
+            "m_eigen",
+            "ctrl_statespace",
+            "ctrl_controllability",
+            "ctrl_lqr",
+            "est_kalman"
+          ],
+          "summary": "Current Stanford EE363 and explicitly archived Berkeley EECS16B connect state-space dynamics, modes, control, and estimation.",
+          "learning_outcome": "Relate eigenmodes and uncertainty to time evolution and distinguish observability from controllability.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford EE363: Linear Dynamical Systems, Spring2026",
+              "url": "https://ee363.stanford.edu/"
+            },
+            {
+              "title": "Berkeley EECS16B public archive, Spring2024",
+              "url": "https://eecs16b.org/"
+            },
+            {
+              "title": "Stanford archived EE263 linear algebra and dynamical systems materials",
+              "url": "https://ee263.stanford.edu/archive/"
+            }
+          ],
+          "source_section": "EE363 current2026; EECS16B public archive2024; old EE263 explicitly archived"
+        },
+        {
+          "id": "course_math_bridge__bridge_16a",
+          "title": "Berkeley EECS16A: Signals and Information",
+          "zh": "伯克利EECS16A：信号与信息",
+          "node_ids": [
+            "m_vector",
+            "la_subspaces",
+            "m_norm",
+            "m_complex",
+            "la_projection_qr",
+            "m_eigen"
+          ],
+          "summary": "The verified2026 offering includes signals, inner products, complex exponentials, least squares, graph matrices, and eigenanalysis.",
+          "learning_outcome": "Interpret a signal as a vector and explain the geometric role of its basis and fitted representation.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Berkeley EECS16A official notes/topics, Spring2026",
+              "url": "https://eecs16a.org/"
+            }
+          ],
+          "source_section": "Current2026 title differs from older device-design versions"
+        },
+        {
+          "id": "course_math_bridge__bridge_ee364a",
+          "title": "Stanford EE364A: Convex Problem Formulation",
+          "zh": "斯坦福EE364A：凸优化建模",
+          "node_ids": [
+            "c_convexity_jensen",
+            "la_psd",
+            "c_constraints",
+            "la_projection_qr",
+            "m_gradient"
+          ],
+          "summary": "Recognizing convex problems, optimality/duality, and numerical methods prepares formal research optimization.",
+          "learning_outcome": "Separate a convex reformulation from a heuristic nonconvex solver and state the applicable guarantee.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford EE364A: Convex Optimization I, official course",
+              "url": "https://web.stanford.edu/class/ee364a/index.html"
+            },
+            {
+              "title": "Convex Optimization, author-hosted textbook",
+              "url": "https://web.stanford.edu/~boyd/cvxbook/"
+            }
+          ],
+          "source_section": "Selected convex analysis, optimization, and algorithms"
+        },
+        {
+          "id": "course_math_bridge__bridge_cs205l",
+          "title": "Stanford CS205L: Numerical Mathematical Methods",
+          "zh": "斯坦福CS205L：数值数学方法",
+          "node_ids": [
+            "num_conditioning",
+            "c_taylor",
+            "la_projection_qr",
+            "la_svd",
+            "ml_regularization",
+            "d_backprop",
+            "d_adam"
+          ],
+          "summary": "Numerical linear algebra, local approximation, derivatives, and optimization connect mathematical formulas to reliable computation.",
+          "learning_outcome": "Diagnose whether a failure comes from model conditioning, finite precision, approximation, or the optimization algorithm.",
+          "basis": "source_backed",
+          "source_urls": [
+            {
+              "title": "Stanford CS205L official numerical mathematics topics",
+              "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+            }
+          ],
+          "source_section": "Selected public numerical-method units"
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "math_logic_sets",
+      "en": "Sets, Logic, Quantifiers and Proof",
+      "title": "集合、逻辑、量词与证明",
+      "group": "algebra",
+      "kind": "concept",
+      "summary": "集合、逻辑、量词与证明",
+      "definition": "Mathematical statements specify objects, assumptions, and conclusions. Sets collect objects; membership, intersection, union, and complement describe relationships among them. Quantifiers distinguish a claim about every object from a claim that at least one object exists. A proof establishes a statement under stated assumptions, while a counterexample disproves a universal claim. Direct argument, contradiction, and induction are different proof structures. This language is needed before reading probability events, vector-space definitions, convergence guarantees, or optimization theorems. Numerical examples support understanding but cannot prove an unrestricted universal statement.",
+      "example": "To evaluate whether every matrix of a certain shape is invertible, first state the domain and dimensions. One singular example disproves that universal claim; several invertible examples do not prove it.",
+      "role_en": "High-school-to-university entry point for event notation, research assumptions, and ROB501 proof work.",
+      "latex": "A\\cap B=\\{x:x\\in A\\land x\\in B\\},\\qquad\\forall x\\in D,\\;P(x)",
+      "notation": [
+        {
+          "symbol": "A,B,D",
+          "meaning": "Sets; D is the domain of a quantified claim."
+        },
+        {
+          "symbol": "\\forall,\\exists",
+          "meaning": "For every, and there exists."
+        },
+        {
+          "symbol": "\\land,P(x)",
+          "meaning": "Logical conjunction and a predicate about x."
+        }
+      ],
+      "prereqs": [],
+      "sources": [
+        {
+          "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+          "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+        },
+        {
+          "title": "Berkeley CS70 official topic list, Fall2026",
+          "url": "https://www.eecs70.org/policies/"
+        },
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "math_counting",
+      "en": "Counting, Combinations and Binomial Coefficients",
+      "title": "计数、排列组合与二项系数",
+      "group": "algebra",
+      "kind": "concept",
+      "summary": "计数、排列组合与二项系数",
+      "definition": "Counting determines how many outcomes satisfy a specification before probabilities are assigned. The product rule counts sequences of choices, while addition requires disjoint alternatives or a correction for overlap. Permutations retain order; combinations ignore order. Replacement and repeated objects change the count and must be specified. A binomial coefficient counts subsets of fixed size and also appears in repeated Bernoulli trials. Counting gives probabilities by a ratio only when the underlying elementary outcomes are equally likely; that assumption is part of the model.",
+      "example": "Choose a subset of sensors from an available pool and distinguish it from assigning those sensors to ordered roles. State whether a sensor may be reused before applying a product, permutation, or combination formula.",
+      "role_en": "Fills SI602 Units1–2 and the counting prerequisite for discrete distributions and probability spaces.",
+      "latex": "\\binom nk=\\frac{n!}{k!(n-k)!},\\qquad P(A)=\\frac{|A|}{|\\Omega|}\\ \\text{for equally likely outcomes}",
+      "notation": [
+        {
+          "symbol": "n,k",
+          "meaning": "Number of distinct available items and selected items."
+        },
+        {
+          "symbol": "\\Omega,A",
+          "meaning": "Finite sample space and event."
+        },
+        {
+          "symbol": "|\\cdot|",
+          "meaning": "Number of elements in a finite set."
+        }
+      ],
+      "prereqs": [
+        "math_logic_sets",
+        "m_sum"
+      ],
+      "sources": [
+        {
+          "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+          "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+        },
+        {
+          "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+          "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+        },
+        {
+          "title": "Berkeley CS70 official topic list, Fall2026",
+          "url": "https://www.eecs70.org/policies/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "la_subspaces",
+      "en": "Span, Independence, Basis, Rank and Null Space",
+      "title": "张成、线性无关、基、秩与零空间",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "张成、线性无关、基、秩与零空间",
+      "definition": "The span of vectors is the set of all their linear combinations. A linearly independent set has no redundant vector, and a basis is an independent set that spans a space. Matrix rank measures the dimension of its column space; its null space contains input directions mapped to zero. These definitions explain solvability, identifiability, and degrees of freedom in a linear model. A matrix can have many rows while still losing information through dependent columns. Dimension and rank are mathematical properties, not counts of neural network layers.",
+      "example": "For a measurement matrix, identify an input direction in its null space. Adding that direction to a candidate state leaves the measurements unchanged, demonstrating an ambiguity that collecting more duplicate equations cannot remove.",
+      "role_en": "Connects SI602 linear algebra to least squares, SVD, state identifiability, observability, and research proof language.",
+      "latex": "\\operatorname{span}(v_1,\\ldots,v_k)=\\left\\{\\sum_i a_iv_i\\right\\},\\qquad\\operatorname{rank}(A)+\\dim\\ker(A)=n",
+      "notation": [
+        {
+          "symbol": "A\\in\\mathbb R^{m\\times n}",
+          "meaning": "Matrix acting on an n-dimensional input."
+        },
+        {
+          "symbol": "\\ker(A)",
+          "meaning": "Set of x satisfying Ax=0."
+        },
+        {
+          "symbol": "a_i",
+          "meaning": "Arbitrary scalar coefficients."
+        }
+      ],
+      "prereqs": [
+        "m_vector",
+        "m_matrix",
+        "m_matmul"
+      ],
+      "sources": [
+        {
+          "title": "Stanford Math51 official topic sequence, Autumn2026",
+          "url": "https://web.stanford.edu/class/math51/schedule.html"
+        },
+        {
+          "title": "Stanford EE263: Matrix Methods, current2026 course",
+          "url": "https://ee263.stanford.edu/"
+        },
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "la_projection_qr",
+      "en": "Orthogonal Projection, QR and Least Squares",
+      "title": "正交投影、QR与最小二乘",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "正交投影、QR与最小二乘",
+      "definition": "Orthogonal projection finds the closest vector in a subspace under an inner-product norm. In linear least squares, the fitted observation lies in the column space of the design matrix and the residual is orthogonal to that space. QR factorization constructs an orthonormal basis and a triangular coordinate system for computing the solution without explicitly forming a matrix inverse. Rank deficiency changes uniqueness and requires an appropriate solution convention. This geometry unifies regression, fitting, and parts of state estimation; weighted observations require the corresponding weighted inner product.",
+      "example": "Fit an overdetermined measurement system and plot the residual. Check that it is orthogonal to each design-matrix column. Compare a QR solve with explicitly inverting normal equations when the columns are nearly dependent.",
+      "role_en": "Fills the mathematical mechanism between matrix multiplication and regression/estimation in ROB501, Math51, and EE263.",
+      "latex": "A=QR,\\quad Q^\\top Q=I,\\quad R\\hat x=Q^\\top b,\\quad A^\\top(b-A\\hat x)=0",
+      "notation": [
+        {
+          "symbol": "A,b",
+          "meaning": "Full-column-rank design matrix and observed vector in this reduced-QR schematic."
+        },
+        {
+          "symbol": "Q,R",
+          "meaning": "Orthonormal columns and invertible upper-triangular factor."
+        },
+        {
+          "symbol": "\\hat x",
+          "meaning": "Least-squares parameter estimate."
+        }
+      ],
+      "prereqs": [
+        "la_subspaces",
+        "m_norm"
+      ],
+      "sources": [
+        {
+          "title": "Stanford EE263: Matrix Methods, current2026 course",
+          "url": "https://ee263.stanford.edu/"
+        },
+        {
+          "title": "Stanford Math51 official topic sequence, Autumn2026",
+          "url": "https://web.stanford.edu/class/math51/schedule.html"
+        },
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        },
+        {
+          "title": "Mathematics for Machine Learning, author resources",
+          "url": "https://mml-book.github.io/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "c_convergence_fixedpoint",
+      "en": "Limits, Convergence and Fixed-Point Iteration",
+      "title": "极限、收敛与不动点迭代",
+      "group": "calculus",
+      "kind": "concept",
+      "summary": "极限、收敛与不动点迭代",
+      "definition": "A sequence converges when its terms eventually remain arbitrarily close to a limiting value in a specified metric. An iterative algorithm therefore needs a stated notion of error and assumptions that make progress imply convergence. A contraction reduces distances by a uniform factor below one; on an appropriate complete invariant domain, fixed-point theory supplies existence, uniqueness, and convergence guarantees. These conditions are stronger than observing a decreasing error for several steps. Newton-type updates can be fast locally but require additional smoothness and initialization assumptions.",
+      "example": "Compare repeated application of a distance-contracting map with an update that decreases error only near its solution. Plot several initializations and distinguish numerical evidence from a convergence guarantee that explicitly states its domain and assumptions.",
+      "role_en": "Provides ROB501 analysis language and a bridge from computational updates to convergence claims in optimization, solvers, and filtering.",
+      "latex": "\\|T(x)-T(y)\\|\\le q\\|x-y\\|,\\quad0\\le q<1,\\quad x_{k+1}=T(x_k)",
+      "notation": [
+        {
+          "symbol": "T",
+          "meaning": "Self-map on the declared complete invariant domain."
+        },
+        {
+          "symbol": "q",
+          "meaning": "Uniform contraction constant."
+        },
+        {
+          "symbol": "x_k",
+          "meaning": "Iterate; the fixed point satisfies T(x*)=x*."
+        }
+      ],
+      "prereqs": [
+        "m_function",
+        "m_norm"
+      ],
+      "sources": [
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        },
+        {
+          "title": "ROB501 open textbook, University of Michigan institutional repository",
+          "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+        },
+        {
+          "title": "Stanford CS205L official numerical mathematics topics",
+          "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "c_convexity_jensen",
+      "en": "Convexity and Jensen’s Inequality",
+      "title": "凸性与Jensen不等式",
+      "group": "optimization",
+      "kind": "concept",
+      "summary": "凸性与Jensen不等式",
+      "definition": "A convex function lies below the line segment connecting any two points in its domain, provided the domain is convex. Jensen’s inequality extends this relation from finite weighted combinations to expectations under the required integrability assumptions. It explains why applying a nonlinear function before averaging generally differs from applying it to the average. Convexity also supports optimization guarantees, but the objective and feasible set must both be examined. A neural network loss as a function of all weights is generally not made convex merely by using a familiar convex per-example error.",
+      "example": "Compare the average squared error with the square of the average signed error on a small distribution. Then identify which quantity Jensen bounds and state the convex function being applied instead of memorizing an inequality direction.",
+      "role_en": "Fills the CSE598 preparation link among expectation, nonlinear functions, log objectives, and convex optimization.",
+      "latex": "f(\\lambda x+(1-\\lambda)y)\\le\\lambda f(x)+(1-\\lambda)f(y),\\quad f(\\mathbb E X)\\le\\mathbb E f(X)",
+      "notation": [
+        {
+          "symbol": "\\lambda\\in[0,1]",
+          "meaning": "Convex-combination weight."
+        },
+        {
+          "symbol": "f",
+          "meaning": "Convex function on a convex domain."
+        },
+        {
+          "symbol": "X",
+          "meaning": "Random variable whose relevant expectations exist."
+        }
+      ],
+      "prereqs": [
+        "m_function",
+        "p_expectation"
+      ],
+      "sources": [
+        {
+          "title": "Convex Optimization, author-hosted textbook",
+          "url": "https://web.stanford.edu/~boyd/cvxbook/"
+        },
+        {
+          "title": "Stanford EE364A: Convex Optimization I, official course",
+          "url": "https://web.stanford.edu/class/ee364a/index.html"
+        },
+        {
+          "title": "Mathematics for Machine Learning, author resources",
+          "url": "https://mml-book.github.io/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "p_joint_density",
+      "en": "Joint Distributions, Densities, CDFs and Marginals",
+      "title": "联合分布、密度、分布函数与边缘化",
+      "group": "probability",
+      "kind": "concept",
+      "summary": "联合分布、密度、分布函数与边缘化",
+      "definition": "A distribution assigns probabilities to events. For continuous variables, a density must be integrated over a region; its value at a point is not a point probability. A cumulative distribution function gives the probability that a variable is below a threshold. Joint distributions describe several variables together, while marginalization removes variables by summation or integration. Conditioning renormalizes the remaining possibilities when defined. These operations distinguish correlated variables from independent ones and provide the mathematical interface used by Gaussian models, latent-variable methods, and Bayesian state estimation.",
+      "example": "Given a joint density for position and measurement error, integrate out the error to obtain the position marginal. Compare a rectangular event probability with a conditional distribution and explicitly identify the normalization denominator.",
+      "role_en": "Connects calculus to continuous probability, CSE598 Gaussian preparation, mixture models, latent variables, and filtering.",
+      "latex": "F_X(x)=P(X\\le x),\\quad f_X(x)=\\int f_{X,Y}(x,y)\\,dy,\\quad f_{X\\mid Y}(x\\mid y)=\\frac{f_{X,Y}(x,y)}{f_Y(y)}",
+      "notation": [
+        {
+          "symbol": "F_X,f_X",
+          "meaning": "Cumulative distribution and marginal density."
+        },
+        {
+          "symbol": "f_{X,Y}",
+          "meaning": "Joint density."
+        },
+        {
+          "symbol": "f_Y(y)>0",
+          "meaning": "Condition for the displayed conditional-density ratio."
+        }
+      ],
+      "prereqs": [
+        "p_random",
+        "c_integral",
+        "p_conditional"
+      ],
+      "sources": [
+        {
+          "title": "MIT18.05: Introduction to Probability and Statistics, Spring2022",
+          "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/"
+        },
+        {
+          "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+          "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+        },
+        {
+          "title": "Mathematics for Machine Learning, author resources",
+          "url": "https://mml-book.github.io/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "p_stat_inference",
+      "en": "Estimation, Confidence Intervals and Hypothesis Tests",
+      "title": "统计估计、置信区间与假设检验",
+      "group": "probability",
+      "kind": "concept",
+      "summary": "统计估计、置信区间与假设检验",
+      "definition": "Statistical inference uses finite observations to estimate population quantities or evaluate a stated hypothesis under a sampling model. An estimator is a random function of data before the sample is observed. A frequentist confidence procedure has a repeated-sampling coverage property; it is not automatically a posterior probability for one fixed realized parameter. A p-value measures the extremeness of data under a null model and test statistic, not the probability that the null hypothesis is true. Effect size, assumptions, dependence, and multiple comparisons matter alongside significance.",
+      "example": "Estimate a robot’s success probability from independent trials and report an interval with its sampling assumptions. If comparing controllers, specify the pairing and null hypothesis, and report the performance difference rather than only whether a significance threshold was crossed.",
+      "role_en": "Adds the SI602 significance/confidence link and supports honest algorithm evaluation without reproducing any private assessment.",
+      "latex": "P_\\theta\\{\\theta\\in C(X_{1:n})\\}\\ge1-\\alpha,\\qquad p=P_{H_0}\\{T(X)\\ge T(x_{\\rm obs})\\}",
+      "notation": [
+        {
+          "symbol": "C(X_{1:n})",
+          "meaning": "Confidence-set procedure; coverage is a sampling property."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Chosen error level."
+        },
+        {
+          "symbol": "T,H_0",
+          "meaning": "Test statistic and null model; the displayed p-value is one-sided."
+        }
+      ],
+      "prereqs": [
+        "p_expectation",
+        "p_variance",
+        "p_sampling"
+      ],
+      "sources": [
+        {
+          "title": "MIT18.05: Introduction to Probability and Statistics, Spring2022",
+          "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/"
+        },
+        {
+          "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+          "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+        },
+        {
+          "title": "The Data Science Design Manual: author lecture resources",
+          "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "num_conditioning",
+      "en": "Conditioning, Residuals and Numerical Stability",
+      "title": "条件数、残差与数值稳定性",
+      "group": "linear_algebra",
+      "kind": "concept",
+      "summary": "条件数、残差与数值稳定性",
+      "definition": "Conditioning describes how strongly an exact problem’s solution changes when its input changes. Numerical stability instead describes how an algorithm propagates rounding and approximation errors. A small residual does not necessarily imply a small solution error when the problem is ill-conditioned. Matrix singular values make this sensitivity visible, and scaling, regularization, or a different formulation can help. Solving a linear system is usually preferable to explicitly forming an inverse. These distinctions matter in least squares, robot Jacobians, covariance updates, and differentiable optimization.",
+      "example": "Perturb nearly dependent measurements by a small amount and compare the resulting parameter change. Report both residual and solution error, then compare a stable factorization with an explicit inverse under the same floating-point precision.",
+      "role_en": "Connects SVD and floating-point computation to reliable implementation of estimation, inverse kinematics, and training algorithms.",
+      "latex": "\\kappa_2(A)=\\frac{\\sigma_{\\max}(A)}{\\sigma_{\\min}(A)},\\qquad r=b-A\\hat x",
+      "notation": [
+        {
+          "symbol": "A",
+          "meaning": "Nonsingular matrix for the displayed condition-number ratio."
+        },
+        {
+          "symbol": "\\sigma_{\\max},\\sigma_{\\min}",
+          "meaning": "Largest and smallest singular values."
+        },
+        {
+          "symbol": "r,\\hat x",
+          "meaning": "Residual and computed solution."
+        }
+      ],
+      "prereqs": [
+        "la_svd",
+        "cs_floating",
+        "m_norm"
+      ],
+      "sources": [
+        {
+          "title": "Stanford CS205L official numerical mathematics topics",
+          "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+        },
+        {
+          "title": "Stanford EE263: Matrix Methods, current2026 course",
+          "url": "https://ee263.stanford.edu/"
+        },
+        {
+          "title": "Mathematics for Machine Learning, author resources",
+          "url": "https://mml-book.github.io/"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    },
+    {
+      "id": "m_complex",
+      "en": "Complex Numbers and Complex Exponentials",
+      "title": "复数与复指数",
+      "group": "algebra",
+      "kind": "concept",
+      "summary": "复数与复指数",
+      "definition": "A complex number has real and imaginary components and can also be represented by magnitude and phase. Multiplication combines scaling with rotation in the complex plane. Euler’s formula connects complex exponentials to sine and cosine, providing a compact way to express periodic signals and solutions of linear systems. Complex eigenvalues of a real dynamical matrix can describe oscillation without implying that a physical sensor measures an imaginary quantity. Complex arithmetic is a prerequisite for later spectral and frequency-domain methods, not a claim that every robot policy needs complex-valued neural weights.",
+      "example": "Represent a sinusoidal signal using a complex exponential, then take the real part to recover the measured signal. Relate multiplication by a unit-magnitude complex number to a planar rotation while keeping physical units and phase conventions explicit.",
+      "role_en": "Provides the assumed complex-number background in ROB501 and the signals/dynamics bridge in Berkeley EECS16 and Stanford EE363.",
+      "latex": "z=a+ib=re^{i\\phi},\\quad i^2=-1,\\quad e^{i\\phi}=\\cos\\phi+i\\sin\\phi",
+      "notation": [
+        {
+          "symbol": "a,b",
+          "meaning": "Real and imaginary components."
+        },
+        {
+          "symbol": "r,\\phi",
+          "meaning": "Magnitude and phase."
+        },
+        {
+          "symbol": "i",
+          "meaning": "Imaginary unit."
+        }
+      ],
+      "prereqs": [
+        "m_function",
+        "m_trig"
+      ],
+      "sources": [
+        {
+          "title": "Berkeley EECS16A official notes/topics, Spring2026",
+          "url": "https://eecs16a.org/"
+        },
+        {
+          "title": "Berkeley EECS16B public archive, Spring2024",
+          "url": "https://eecs16b.org/"
+        },
+        {
+          "title": "Michigan ROB501 official educational overview",
+          "url": "https://grizzle.robotics.umich.edu/education/rob501"
+        }
+      ],
+      "curriculum_evidence": "A new explanatory concept, supported by the linked public mathematics resources. Course membership is recorded separately and is not inferred from this node alone."
+    }
+  ],
+  "edges": [
+    {
+      "from": "math_logic_sets",
+      "to": "math_counting",
+      "type": "prereq",
+      "why_en": "Provides math logic sets needed to define Counting, Combinations and Binomial Coefficients with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_sum",
+      "to": "math_counting",
+      "type": "prereq",
+      "why_en": "Provides m sum needed to define Counting, Combinations and Binomial Coefficients with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_vector",
+      "to": "la_subspaces",
+      "type": "prereq",
+      "why_en": "Provides m vector needed to define Span, Independence, Basis, Rank and Null Space with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_matrix",
+      "to": "la_subspaces",
+      "type": "prereq",
+      "why_en": "Provides m matrix needed to define Span, Independence, Basis, Rank and Null Space with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_matmul",
+      "to": "la_subspaces",
+      "type": "prereq",
+      "why_en": "Provides m matmul needed to define Span, Independence, Basis, Rank and Null Space with explicit assumptions and dimensions."
+    },
+    {
+      "from": "la_subspaces",
+      "to": "la_projection_qr",
+      "type": "prereq",
+      "why_en": "Provides la subspaces needed to define Orthogonal Projection, QR and Least Squares with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_norm",
+      "to": "la_projection_qr",
+      "type": "prereq",
+      "why_en": "Provides m norm needed to define Orthogonal Projection, QR and Least Squares with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_function",
+      "to": "c_convergence_fixedpoint",
+      "type": "prereq",
+      "why_en": "Provides m function needed to define Limits, Convergence and Fixed-Point Iteration with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_norm",
+      "to": "c_convergence_fixedpoint",
+      "type": "prereq",
+      "why_en": "Provides m norm needed to define Limits, Convergence and Fixed-Point Iteration with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_function",
+      "to": "c_convexity_jensen",
+      "type": "prereq",
+      "why_en": "Provides m function needed to define Convexity and Jensen’s Inequality with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_expectation",
+      "to": "c_convexity_jensen",
+      "type": "prereq",
+      "why_en": "Provides p expectation needed to define Convexity and Jensen’s Inequality with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_random",
+      "to": "p_joint_density",
+      "type": "prereq",
+      "why_en": "Provides p random needed to define Joint Distributions, Densities, CDFs and Marginals with explicit assumptions and dimensions."
+    },
+    {
+      "from": "c_integral",
+      "to": "p_joint_density",
+      "type": "prereq",
+      "why_en": "Provides c integral needed to define Joint Distributions, Densities, CDFs and Marginals with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_conditional",
+      "to": "p_joint_density",
+      "type": "prereq",
+      "why_en": "Provides p conditional needed to define Joint Distributions, Densities, CDFs and Marginals with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_expectation",
+      "to": "p_stat_inference",
+      "type": "prereq",
+      "why_en": "Provides p expectation needed to define Estimation, Confidence Intervals and Hypothesis Tests with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_variance",
+      "to": "p_stat_inference",
+      "type": "prereq",
+      "why_en": "Provides p variance needed to define Estimation, Confidence Intervals and Hypothesis Tests with explicit assumptions and dimensions."
+    },
+    {
+      "from": "p_sampling",
+      "to": "p_stat_inference",
+      "type": "prereq",
+      "why_en": "Provides p sampling needed to define Estimation, Confidence Intervals and Hypothesis Tests with explicit assumptions and dimensions."
+    },
+    {
+      "from": "la_svd",
+      "to": "num_conditioning",
+      "type": "prereq",
+      "why_en": "Provides la svd needed to define Conditioning, Residuals and Numerical Stability with explicit assumptions and dimensions."
+    },
+    {
+      "from": "cs_floating",
+      "to": "num_conditioning",
+      "type": "prereq",
+      "why_en": "Provides cs floating needed to define Conditioning, Residuals and Numerical Stability with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_norm",
+      "to": "num_conditioning",
+      "type": "prereq",
+      "why_en": "Provides m norm needed to define Conditioning, Residuals and Numerical Stability with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_function",
+      "to": "m_complex",
+      "type": "prereq",
+      "why_en": "Provides m function needed to define Complex Numbers and Complex Exponentials with explicit assumptions and dimensions."
+    },
+    {
+      "from": "m_trig",
+      "to": "m_complex",
+      "type": "prereq",
+      "why_en": "Provides m trig needed to define Complex Numbers and Complex Exponentials with explicit assumptions and dimensions."
+    },
+    {
+      "from": "math_logic_sets",
+      "to": "p_probability",
+      "type": "prereq",
+      "why_en": "Defines sample spaces, events, unions, intersections, and quantified probability assumptions."
+    },
+    {
+      "from": "math_counting",
+      "to": "p_probability",
+      "type": "prereq",
+      "why_en": "Supplies finite outcome counts while preserving the equally-likely assumption."
+    },
+    {
+      "from": "la_subspaces",
+      "to": "la_svd",
+      "type": "prereq",
+      "why_en": "Explains rank and null directions separated by singular values."
+    },
+    {
+      "from": "la_subspaces",
+      "to": "m_eigen",
+      "type": "prereq",
+      "why_en": "Defines the vector spaces and independent directions used by eigendecomposition."
+    },
+    {
+      "from": "la_subspaces",
+      "to": "ctrl_controllability",
+      "type": "application",
+      "why_en": "Unobservable/null directions explain which state components measurements cannot identify."
+    },
+    {
+      "from": "la_projection_qr",
+      "to": "ml_linear",
+      "type": "prereq",
+      "why_en": "Explains regression as orthogonal fitting and a stable factorization solve."
+    },
+    {
+      "from": "la_projection_qr",
+      "to": "est_kalman",
+      "type": "application",
+      "why_en": "Least-squares estimation is a geometric precursor to uncertainty-weighted recursive filtering."
+    },
+    {
+      "from": "c_convergence_fixedpoint",
+      "to": "m_gradient",
+      "type": "application",
+      "why_en": "Provides vocabulary for step-size assumptions, fixed points, and convergence claims."
+    },
+    {
+      "from": "c_convexity_jensen",
+      "to": "c_constraints",
+      "type": "prereq",
+      "why_en": "Distinguishes convex guarantees from general nonlinear constrained optimization."
+    },
+    {
+      "from": "c_convexity_jensen",
+      "to": "p_kl",
+      "type": "application",
+      "why_en": "Convexity helps justify probability divergences and expected log inequalities."
+    },
+    {
+      "from": "p_joint_density",
+      "to": "p_gaussian",
+      "type": "prereq",
+      "why_en": "Defines multivariate densities, marginals, and conditional distributions."
+    },
+    {
+      "from": "p_joint_density",
+      "to": "ml_em",
+      "type": "application",
+      "why_en": "Marginalization and conditional latent distributions underlie the E-step."
+    },
+    {
+      "from": "p_stat_inference",
+      "to": "ml_evaluation",
+      "type": "application",
+      "why_en": "Separates observed performance, uncertainty, effect size, and hypothesis evidence."
+    },
+    {
+      "from": "num_conditioning",
+      "to": "la_pinv",
+      "type": "application",
+      "why_en": "Explains small singular values, sensitivity, truncation, and damping."
+    },
+    {
+      "from": "num_conditioning",
+      "to": "rb_ik",
+      "type": "application",
+      "why_en": "Explains why near-singular Jacobians amplify motion or measurement error."
+    },
+    {
+      "from": "m_complex",
+      "to": "ctrl_statespace",
+      "type": "application",
+      "why_en": "Complex modes describe oscillatory solutions of real linear systems."
+    }
+  ],
+  "gaps": {
+    "filled": [
+      {
+        "node_id": "math_logic_sets",
+        "reason": "High-school-to-university entry point for event notation, research assumptions, and ROB501 proof work."
+      },
+      {
+        "node_id": "math_counting",
+        "reason": "Fills SI602 Units1–2 and the counting prerequisite for discrete distributions and probability spaces."
+      },
+      {
+        "node_id": "la_subspaces",
+        "reason": "Connects SI602 linear algebra to least squares, SVD, state identifiability, observability, and research proof language."
+      },
+      {
+        "node_id": "la_projection_qr",
+        "reason": "Fills the mathematical mechanism between matrix multiplication and regression/estimation in ROB501, Math51, and EE263."
+      },
+      {
+        "node_id": "c_convergence_fixedpoint",
+        "reason": "Provides ROB501 analysis language and a bridge from computational updates to convergence claims in optimization, solvers, and filtering."
+      },
+      {
+        "node_id": "c_convexity_jensen",
+        "reason": "Fills the CSE598 preparation link among expectation, nonlinear functions, log objectives, and convex optimization."
+      },
+      {
+        "node_id": "p_joint_density",
+        "reason": "Connects calculus to continuous probability, CSE598 Gaussian preparation, mixture models, latent variables, and filtering."
+      },
+      {
+        "node_id": "p_stat_inference",
+        "reason": "Adds the SI602 significance/confidence link and supports honest algorithm evaluation without reproducing any private assessment."
+      },
+      {
+        "node_id": "num_conditioning",
+        "reason": "Connects SVD and floating-point computation to reliable implementation of estimation, inverse kinematics, and training algorithms."
+      },
+      {
+        "node_id": "m_complex",
+        "reason": "Provides the assumed complex-number background in ROB501 and the signals/dynamics bridge in Berkeley EECS16 and Stanford EE363."
+      }
+    ],
+    "remaining": [
+      {
+        "topic": "Determinants, elimination, LU and Cholesky",
+        "status": "partially represented",
+        "node_ids": [
+          "m_matrix",
+          "la_subspaces",
+          "la_psd",
+          "num_conditioning"
+        ],
+        "note": "Course maps reference these foundations, but dedicated fine-grained nodes and worked numerical examples remain useful; not silently claimed complete."
+      },
+      {
+        "topic": "Real-analysis details: open/closed sets, completeness, compactness",
+        "status": "overview only",
+        "node_ids": [
+          "math_logic_sets",
+          "c_convergence_fixedpoint"
+        ],
+        "note": "ROB501 covers these explicitly; the new convergence node gives an entry point, not a full analysis course."
+      },
+      {
+        "topic": "Newton, Gauss–Newton, duality, LP/QP and interior-point algorithms",
+        "status": "distributed across overview nodes",
+        "node_ids": [
+          "c_taylor",
+          "c_hessian",
+          "c_constraints",
+          "c_convergence_fixedpoint"
+        ],
+        "note": "The course paths expose where to study them; dedicated solver derivations and worked numerical examples remain to be developed in the atlas."
+      },
+      {
+        "topic": "Concentration, LLN/CLT, confidence procedures and multiple testing",
+        "status": "inference entry point only",
+        "node_ids": [
+          "p_stat_inference",
+          "p_sampling",
+          "p_variance"
+        ],
+        "note": "Different statistical results require distinct assumptions and future dedicated derivations."
+      },
+      {
+        "topic": "Graph mathematics, Markov chains and PageRank",
+        "status": "applications linked; dedicated basics incomplete",
+        "node_ids": [
+          "m_eigen",
+          "ml_hmm",
+          "rl_mdp",
+          "cv_scene_graph"
+        ],
+        "note": "A scene graph and an HMM are applications, not substitutes for a full graph/Markov-chain foundation."
+      },
+      {
+        "topic": "Fourier transforms, convolution and sampling theory",
+        "status": "complex-number prerequisite added; spectral course incomplete",
+        "node_ids": [
+          "m_complex",
+          "d_cnn",
+          "ctrl_statespace"
+        ],
+        "note": "The current expansion explains entry points without pretending these linked application nodes teach the full theory."
+      },
+      {
+        "topic": "Measure-theoretic probability and stochastic processes",
+        "status": "advanced optional extension",
+        "node_ids": [
+          "p_joint_density",
+          "est_bayesfilter",
+          "rl_mdp"
+        ],
+        "note": "Not required before every applied robotics paper, but relevant to deeper probabilistic research."
+      }
+    ],
+    "coverage_statement": "These courses and node links supply a structured first foundation map, not a claim to contain every theorem needed for all robotics research."
+  },
+  "research": {
+    "checked_date": "2026-11-16",
+    "method": "Read supplied SI602 syllabus and CSE598 foundation indexes for topic scope; independently verified public course identities, topic pages, and author-hosted references. No protected question/answer content is included.",
+    "course_version_notes": [
+      "Stanford current EE263 changed after2025; dynamics are linked to current EE363 or explicitly archived EE263.",
+      "Berkeley EECS16A endpoint currently documents Spring2026 and uses a newer signals-oriented title; EECS16B endpoint explicitly hosts a Spring2024 archive.",
+      "The SI602 public identity is verified, but the detailed unit map is attributed to the supplied syllabus rather than falsely labeled a fetched public syllabus.",
+      "CSE598 modules are editorial prerequisites informed by its beginning foundations index, not a copy of its graded assessments."
+    ],
+    "source_urls": [
+      {
+        "title": "Discrete Mathematics: An Open Introduction, author-hosted textbook",
+        "url": "https://discrete.openmathbooks.org/dmoi3/frontmatter.html"
+      },
+      {
+        "title": "Mathematics for Computer Science, MIT author-hosted textbook",
+        "url": "https://people.csail.mit.edu/meyer/mcs.pdf"
+      },
+      {
+        "title": "The Data Science Design Manual: author lecture resources",
+        "url": "https://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/"
+      },
+      {
+        "title": "OpenStax College Algebra 2e",
+        "url": "https://openstax.org/details/books/college-algebra-2e"
+      },
+      {
+        "title": "Mathematics for Machine Learning, author resources",
+        "url": "https://mml-book.github.io/"
+      },
+      {
+        "title": "UMSI official course identity: SI602",
+        "url": "https://waivers.si.umich.edu/skill-based-waivers"
+      },
+      {
+        "title": "Michigan ROB501 official educational overview",
+        "url": "https://grizzle.robotics.umich.edu/education/rob501"
+      },
+      {
+        "title": "Michigan Robotics ROB501 public course materials, archived offering",
+        "url": "https://github.com/michiganrobotics/rob501"
+      },
+      {
+        "title": "ROB501 open textbook, University of Michigan institutional repository",
+        "url": "https://deepblue.lib.umich.edu/bitstream/2027.42/195971/1/ROB501_Textbook2022_03_21.pdf"
+      },
+      {
+        "title": "University of Michigan Engineering Bulletin: ROB501",
+        "url": "https://bulletin.engin.umich.edu/courses/robotics-courses/"
+      },
+      {
+        "title": "Berkeley CS70 official topic list, Fall2026",
+        "url": "https://www.eecs70.org/policies/"
+      },
+      {
+        "title": "Berkeley EECS16A official notes/topics, Spring2026",
+        "url": "https://eecs16a.org/"
+      },
+      {
+        "title": "Berkeley EECS16B public archive, Spring2024",
+        "url": "https://eecs16b.org/"
+      },
+      {
+        "title": "Stanford Math51 official topic sequence, Autumn2026",
+        "url": "https://web.stanford.edu/class/math51/schedule.html"
+      },
+      {
+        "title": "Stanford EE263: Matrix Methods, current2026 course",
+        "url": "https://ee263.stanford.edu/"
+      },
+      {
+        "title": "Stanford archived EE263 linear algebra and dynamical systems materials",
+        "url": "https://ee263.stanford.edu/archive/"
+      },
+      {
+        "title": "Stanford EE363: Linear Dynamical Systems, Spring2026",
+        "url": "https://ee363.stanford.edu/"
+      },
+      {
+        "title": "Stanford EE364A: Convex Optimization I, official course",
+        "url": "https://web.stanford.edu/class/ee364a/index.html"
+      },
+      {
+        "title": "Convex Optimization, author-hosted textbook",
+        "url": "https://web.stanford.edu/~boyd/cvxbook/"
+      },
+      {
+        "title": "Stanford CS205L official numerical mathematics topics",
+        "url": "https://web.stanford.edu/class/cs205l/lectures.html"
+      },
+      {
+        "title": "MIT18.01SC: Single Variable Calculus",
+        "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/"
+      },
+      {
+        "title": "MIT18.02SC: Multivariable Calculus",
+        "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/"
+      },
+      {
+        "title": "MIT18.05: Introduction to Probability and Statistics, Spring2022",
+        "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/"
+      },
+      {
+        "title": "Action and Perception course identity, linked by instructor public homepage",
+        "url": "https://web.eecs.umich.edu/~stellayu/"
+      }
+    ]
+  }
+}

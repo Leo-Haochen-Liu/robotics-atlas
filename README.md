@@ -2,24 +2,24 @@
 
 **Live website:** https://leo-haochen-liu.github.io/robotics-atlas/
 
-An interactive, source-linked robotics learning atlas with **492 topics, 194 papers or releases, and 1527 typed connections**. World models remain part of the wider robotics map.
+An interactive, source-linked robotics learning atlas with **524 canonical topics, 194 papers or releases, and 1631 typed connections**.
 
-## Explore
+## Foundations and Research
 
-Expand a category and branch, or search the Knowledge Library. Learning paradigms, model families, loss functions, training methods and application domains have separate homes. Classical models appear below neural and generative model families; only solid arrows state learning prerequisites. Dashed arrows distinguish usage, objectives, specialization and method connections. See [taxonomy conventions](TAXONOMY.md).
+**Foundations** uses stable course anchors: SI602/ROB501 and mathematics bridges, Modern Robotics, EECS545, Berkeley CS285, Stanford CS231n, U-M CSE598 Action and Perception, a simulation foundation track, and engineering/research practice. The current 14 course tracks map 330 concept records into modules. Advanced control, estimation, manipulation and systems sources supplement the named core courses. See [curriculum and sources](CURRICULUM.md).
 
-Each concept includes LaTeX, notation, a definition, example, references and prerequisite/downstream networks. Each paper is one record with internal framework, training, evaluation, scale and limitations. Both floating panels retain their title and close button while only the body scrolls. Direction buttons support mobile panning.
+**Research** organizes papers and reusable methods in 9 topic collections. Robot Soccer is one collection containing ball perception, contact, skills, robot platforms and papers. World models, VLA, motion, manipulation, geometry/SLAM, representations, simulation and reliability remain available. Every displayed reference points to one canonical record. A concept can be referenced by several courses or research topics without duplicating its definition.
 
-The CSE598 reading collection covers 20 topics and 106 reading entries. Browse it from the Knowledge Library or [the reading inventory](COURSE_READINGS.md). A scheduled reading association is separate from authorship and does not establish that a talk occurred.
+Paper pages link to their required concepts. Concept pages show relevant papers and course modules, so a method such as behavior cloning or conditional flow matching is close to the research that uses it. The 20-topic CSE598 collection retains 106 reading associations.
 
-English is the default; the Chinese toggle shows Chinese titles and retained explanations. The page embeds its math renderer and figures and can work offline. External references require internet.
+Use the two buttons at the top to switch maps. Both floating panels keep their titles and close buttons visible while their bodies scroll. Zoom and directional buttons support mobile viewing. English is the default, with a Chinese toggle. LaTeX and figures are embedded for offline reading; external sources require internet.
 
-## Build
+## Coverage and maintenance
 
-Run `python3 build_site.py`. Editable data and interface sources live in `source/`; the script builds `docs/` for GitHub Pages and updates paper/course inventories. No API key or external build service is required.
+The [coverage audit](COVERAGE_AUDIT.md) identifies additions, mappings and remaining study depth. A concept entry is not equivalent to a complete university course, executed lab or hardware skill. This is a curated learning framework, not an exhaustive or popularity-ranked inventory. The underlying [typed taxonomy](TAXONOMY.md) remains descriptive metadata rather than the main browsing hierarchy.
 
-## Evidence and coverage
+Stable curriculum records live in `source/curriculum_*.json`; reviewed supplemental assignments are pinned in `source/foundation_supplements.json`. Adding a research paper does not automatically alter course modules. Paper records remain in the expansion data; topic links are built separately by `source/curriculum_build.py`. No automatic update schedule is configured.
 
-This is a curated educational inventory, not an exhaustive list or popularity ranking. Each node links primary sources. Official releases are identified separately from full papers. Robot-file counts apply to the pinned model and variant; they are not hardware performance measurements. The atlas does not claim independent reproduction of every method.
+Run `python3 build_site.py` to generate `docs/` for GitHub Pages and refresh the public inventories. No API key is required.
 
-See [paper inventory](PAPER_INVENTORY.md) and [source attribution](SOURCES.md). Third-party research figures and KaTeX retain their source attribution and license terms.
+See [paper inventory](PAPER_INVENTORY.md), [course readings](COURSE_READINGS.md), and [source attribution](SOURCES.md). Third-party research figures and KaTeX retain their attribution and license terms.

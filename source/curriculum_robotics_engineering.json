@@ -1,0 +1,2301 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-11-16",
+  "courses": [
+    {
+      "id": "course_modern_robotics",
+      "title": "Modern Robotics: Mechanics, Planning, and Control",
+      "zh": "机器人学基础：力学、规划与控制",
+      "anchor": "Lynch and Park; official book chapters 2–13",
+      "source_urls": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "Modern Robotics: official video supplements",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/foundations-of-robot-motion/"
+        },
+        {
+          "title": "Northwestern Modern Robotics specialization",
+          "url": "https://www.coursera.org/specializations/modernrobotics"
+        }
+      ],
+      "scope": "Core robot mechanics and motion methods, anchored to the actual book chapters. Modern Robotics does not comprehensively cover probabilistic estimation, advanced legged/robust/optimal control, modern reinforcement learning or robot-learning deployment engineering. Supplementary node links extend the foundations; they are not claims that every linked algorithm is taught in the book.",
+      "modules": [
+        {
+          "id": "mr_configuration",
+          "title": "Configuration Space",
+          "zh": "构型空间",
+          "node_ids": [
+            "desc_dof",
+            "ctrl_collision",
+            "ph_constraints"
+          ],
+          "summary": "Chapter 2: configurations, workspaces and constraints.",
+          "learning_outcome": "Count independent motion variables and distinguish configuration from task space."
+        },
+        {
+          "id": "mr_spatial",
+          "title": "Rigid-Body Motions",
+          "zh": "刚体运动",
+          "node_ids": [
+            "r_frames",
+            "geo_so3",
+            "geo_se3",
+            "geo_quaternion",
+            "geo_twist",
+            "geo_expmap"
+          ],
+          "summary": "Chapter 3: transformations, twists and wrenches.",
+          "learning_outcome": "Transform position, velocity and force quantities with explicit reference frames."
+        },
+        {
+          "id": "mr_fk",
+          "title": "Forward Kinematics",
+          "zh": "正运动学",
+          "node_ids": [
+            "rb_fk",
+            "desc_tree",
+            "desc_joint_axis"
+          ],
+          "summary": "Chapter 4: product-of-exponentials kinematics.",
+          "learning_outcome": "Compute an end-effector transform from joint coordinates."
+        },
+        {
+          "id": "mr_jacobian",
+          "title": "Velocity Kinematics and Statics",
+          "zh": "速度运动学与静力学",
+          "node_ids": [
+            "rb_jacobian",
+            "la_pinv",
+            "eng_grasp_wrench"
+          ],
+          "summary": "Chapter 5: Jacobians, singularities and statics.",
+          "learning_outcome": "Relate joint velocities and torques to task-space motion and wrench."
+        },
+        {
+          "id": "mr_ik",
+          "title": "Inverse Kinematics",
+          "zh": "逆运动学",
+          "node_ids": [
+            "rb_ik",
+            "la_pinv"
+          ],
+          "summary": "Chapter 6: analytic and numerical inverse kinematics.",
+          "learning_outcome": "Solve pose targets and identify infeasibility or singular behavior."
+        },
+        {
+          "id": "mr_closed",
+          "title": "Closed Chains",
+          "zh": "闭链运动学",
+          "node_ids": [
+            "ph_constraints",
+            "desc_tree",
+            "desc_mimic"
+          ],
+          "summary": "Chapter 7: mechanisms with loop constraints.",
+          "learning_outcome": "Explain why a serial spanning tree requires additional loop constraints."
+        },
+        {
+          "id": "mr_dynamics",
+          "title": "Open-Chain Dynamics",
+          "zh": "开链动力学",
+          "node_ids": [
+            "ph_newton",
+            "ph_torque",
+            "ph_inertia",
+            "ph_energy",
+            "ph_lagrange",
+            "ph_manipulator",
+            "rb_inverse_dynamics",
+            "desc_inertial",
+            "eng_actuator_dynamics"
+          ],
+          "summary": "Chapter 8: forward and inverse dynamics.",
+          "learning_outcome": "Connect link parameters and actuator assumptions to predicted motion."
+        },
+        {
+          "id": "mr_trajectory",
+          "title": "Trajectory Generation",
+          "zh": "轨迹生成",
+          "node_ids": [
+            "eng_trajectory_generation",
+            "desc_limits"
+          ],
+          "summary": "Chapter 9: interpolation and time scaling.",
+          "learning_outcome": "Generate a timed reference and check speed and acceleration requirements."
+        },
+        {
+          "id": "mr_planning",
+          "title": "Motion Planning",
+          "zh": "运动规划",
+          "node_ids": [
+            "ctrl_collision",
+            "ctrl_sampling_planners",
+            "ctrl_trajopt"
+          ],
+          "summary": "Chapter 10: search, sampling and optimization.",
+          "learning_outcome": "Distinguish collision-free paths from dynamically executable trajectories."
+        },
+        {
+          "id": "mr_control",
+          "title": "Robot Control",
+          "zh": "机器人控制",
+          "node_ids": [
+            "r_feedback",
+            "ctrl_pd",
+            "ctrl_pid",
+            "rb_inverse_dynamics",
+            "ctrl_impedance"
+          ],
+          "summary": "Chapter 11: motion, force and interaction control.",
+          "learning_outcome": "Choose feedback quantities and interpret tracking error dynamics."
+        },
+        {
+          "id": "mr_grasping",
+          "title": "Grasping and Manipulation",
+          "zh": "抓取与操作",
+          "node_ids": [
+            "ph_friction",
+            "eng_grasp_wrench",
+            "eng_hybrid_contact"
+          ],
+          "summary": "Chapter 12: contact motion and force feasibility.",
+          "learning_outcome": "Analyze whether contact forces can support an object wrench."
+        },
+        {
+          "id": "mr_mobile",
+          "title": "Wheeled Mobile Robots",
+          "zh": "轮式移动机器人",
+          "node_ids": [
+            "eng_wheeled_nonholonomic",
+            "est_odometry",
+            "nav_stack"
+          ],
+          "summary": "Chapter 13: wheel kinematics and mobile manipulation.",
+          "learning_outcome": "Use wheel constraints and distinguish odometry from globally corrected localization."
+        }
+      ]
+    },
+    {
+      "id": "course_control",
+      "title": "Underactuated Robotics and Optimal Control",
+      "zh": "欠驱动机器人与最优控制",
+      "anchor": "MIT Underactuated Robotics",
+      "source_urls": [
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "MIT OCW Underactuated Robotics",
+          "url": "https://ocw.mit.edu/courses/6-832-underactuated-robotics-spring-2009/"
+        }
+      ],
+      "scope": "Advanced continuation after mechanics and basic feedback. Uses MIT notes for underactuation, stability, dynamic programming, trajectory optimization, contact and legged control. This is not an introductory substitute for calculus, linear algebra or mechanics.",
+      "modules": [
+        {
+          "id": "ua_interfaces",
+          "title": "Robot State, Rollouts and Planning Interfaces",
+          "zh": "机器人状态、展开与规划接口",
+          "node_ids": [
+            "r_state",
+            "r_dynamics",
+            "r_markov",
+            "r_feedback",
+            "r_goal",
+            "r_rollout",
+            "r_search",
+            "r_shooting",
+            "r_cem",
+            "r_mpc",
+            "r_reach",
+            "r_offline",
+            "vla_action_chunk",
+            "concept_differentiable_dynamics",
+            "r_async_inference",
+            "vla_embodiment",
+            "g_noise_action"
+          ],
+          "summary": "Atlas supplement: connects state, feedback, rollouts, search and learned action interfaces.",
+          "learning_outcome": "State what is observed, predicted and optimized, and separate action coordinates from physical state.",
+          "atlas_supplement": true
+        },
+        {
+          "id": "ua_models",
+          "title": "Underactuation and Hybrid Model Systems",
+          "zh": "欠驱动与混杂模型",
+          "node_ids": [
+            "ph_manipulator",
+            "eng_hybrid_contact",
+            "ctrl_linearize"
+          ],
+          "summary": "Pendulum, cart-pole and walking models expose actuation and contact structure.",
+          "learning_outcome": "Identify which state directions cannot be directly commanded."
+        },
+        {
+          "id": "ua_feedback",
+          "title": "Linear Feedback and Stability",
+          "zh": "线性反馈与稳定性",
+          "node_ids": [
+            "ctrl_statespace",
+            "ctrl_controllability",
+            "ctrl_lqr",
+            "ctrl_lyapunov"
+          ],
+          "summary": "Local control and stability support more general nonlinear methods.",
+          "learning_outcome": "Linearize, design local feedback and state the region of validity."
+        },
+        {
+          "id": "ua_optimal",
+          "title": "Dynamic Programming and Trajectory Optimization",
+          "zh": "动态规划与轨迹优化",
+          "node_ids": [
+            "rl_bellman",
+            "ctrl_trajopt",
+            "r_mpc",
+            "r_reach"
+          ],
+          "summary": "Value functions and constrained trajectories give complementary control formulations.",
+          "learning_outcome": "Separate offline trajectory design from feedback replanning."
+        },
+        {
+          "id": "ua_legs",
+          "title": "Legged and Contact-Rich Control",
+          "zh": "足式与接触控制",
+          "node_ids": [
+            "ctrl_centroidal",
+            "ctrl_lipm_zmp",
+            "ctrl_capturepoint",
+            "ctrl_wbc_qp",
+            "ctrl_impedance"
+          ],
+          "summary": "Momentum, support and force allocation connect to humanoid balance.",
+          "learning_outcome": "Relate a reduced-order plan to whole-body contact-force feasibility."
+        },
+        {
+          "id": "ua_uncertainty",
+          "title": "Robustness and Model Uncertainty",
+          "zh": "鲁棒性与模型不确定性",
+          "node_ids": [
+            "wm_uncertainty",
+            "est_sysid",
+            "sim_domainrand",
+            "ctrl_lyapunov"
+          ],
+          "summary": "Uncertainty changes feasible control and interpretation of nominal results.",
+          "learning_outcome": "Explain which uncertainty model a robustness claim assumes."
+        }
+      ]
+    },
+    {
+      "id": "course_estimation",
+      "title": "Visual Navigation, State Estimation and Mapping",
+      "zh": "视觉导航、状态估计与建图",
+      "anchor": "MIT 16.485 Visual Navigation; signals prerequisite from MIT 6.003",
+      "source_urls": [
+        {
+          "title": "MIT Visual Navigation: public lecture materials",
+          "url": "https://vnav.mit.edu/lectures.html"
+        },
+        {
+          "title": "MIT OCW 6.003: Signals and Systems",
+          "url": "https://ocw.mit.edu/courses/6-003-signals-and-systems-fall-2011/"
+        }
+      ],
+      "scope": "Estimation complements Modern Robotics with probabilistic sensor fusion, visual-inertial odometry and sparse SLAM. The atlas offers conceptual foundations and primary course links; it does not claim a full implementation of every VIO or SLAM algorithm.",
+      "modules": [
+        {
+          "id": "est_signals",
+          "title": "Signals, Sampling and Timing",
+          "zh": "信号、采样与时间",
+          "node_ids": [
+            "eng_signal_sampling",
+            "ros2_time",
+            "per_latency"
+          ],
+          "summary": "Acquisition rate, bandwidth and delay affect every sensor estimate.",
+          "learning_outcome": "Compute observation age and identify aliasing or filtering delay."
+        },
+        {
+          "id": "est_geometry",
+          "title": "Sensor Geometry and Calibration",
+          "zh": "传感器几何与标定",
+          "node_ids": [
+            "per_camera",
+            "per_extrinsics",
+            "per_imu",
+            "per_lidar",
+            "est_calibration_observability"
+          ],
+          "summary": "Projection and sensor models define measurable quantities.",
+          "learning_outcome": "State frames, units and excitation needed for calibration."
+        },
+        {
+          "id": "est_filtering",
+          "title": "Recursive State Estimation",
+          "zh": "递归状态估计",
+          "node_ids": [
+            "est_bayesfilter",
+            "est_kalman",
+            "est_ekf",
+            "est_sensorfusion"
+          ],
+          "summary": "Prediction and measurement updates maintain a state belief.",
+          "learning_outcome": "Track covariance and distinguish measured variables from latent state."
+        },
+        {
+          "id": "est_smoothing",
+          "title": "Odometry, Smoothing and SLAM",
+          "zh": "里程计、平滑与同步定位建图",
+          "node_ids": [
+            "est_odometry",
+            "est_vio",
+            "est_lio",
+            "est_factorgraph",
+            "est_slam",
+            "est_loopclosure"
+          ],
+          "summary": "Sparse constraints and loop closures reduce accumulated drift.",
+          "learning_outcome": "Explain gauge freedom, data association and the role of loop closure."
+        },
+        {
+          "id": "est_mapping",
+          "title": "Mapping and Navigation Interfaces",
+          "zh": "建图与导航接口",
+          "node_ids": [
+            "map_occupancy",
+            "map_esdf",
+            "nav_stack",
+            "eng_record_replay"
+          ],
+          "summary": "Map representations support collision checking and repeatable navigation evaluation.",
+          "learning_outcome": "Choose a representation and replay a logged estimator comparison."
+        },
+        {
+          "id": "est_tracking",
+          "title": "Object Measurements, Association and Tracking",
+          "zh": "物体测量、关联与跟踪",
+          "node_ids": [
+            "per_detection",
+            "per_association",
+            "per_tracking",
+            "per_latency"
+          ],
+          "summary": "Atlas supplement: bridges navigation estimation to tracked objects and task observations.",
+          "learning_outcome": "Separate detector output, geometric measurement, association and filtered state.",
+          "atlas_supplement": true
+        }
+      ]
+    },
+    {
+      "id": "course_manipulation",
+      "title": "Robotic Manipulation: Perception, Planning, and Control",
+      "zh": "机器人操作：感知、规划与控制",
+      "anchor": "MIT Robotic Manipulation",
+      "source_urls": [
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        },
+        {
+          "title": "Drake Python tutorials",
+          "url": "https://drake.mit.edu/"
+        }
+      ],
+      "scope": "Connects mechanics to an integrated perception–planning–control system. Uses official MIT material and Drake examples; modern foundation-model papers remain separate linked research records.",
+      "modules": [
+        {
+          "id": "man_station",
+          "title": "Robot, Sensors and Task Interfaces",
+          "zh": "机器人、传感器与任务接口",
+          "node_ids": [
+            "desc_urdf",
+            "desc_transmission",
+            "desc_import",
+            "per_camera",
+            "ros2_control"
+          ],
+          "summary": "Define the robot and observations before selecting an algorithm.",
+          "learning_outcome": "Specify frames, command interfaces and available measurements."
+        },
+        {
+          "id": "man_pose",
+          "title": "Geometric Perception and Pose",
+          "zh": "几何感知与位姿",
+          "node_ids": [
+            "cv_multiview",
+            "per_extrinsics",
+            "per_association",
+            "est_factorgraph"
+          ],
+          "summary": "Geometric correspondence and estimation support contact decisions.",
+          "learning_outcome": "Identify outliers and quantify pose uncertainty relevant to the task."
+        },
+        {
+          "id": "man_grasp",
+          "title": "Grasps and Contact Feasibility",
+          "zh": "抓取与接触可行性",
+          "node_ids": [
+            "eng_grasp_wrench",
+            "ph_friction",
+            "eng_hybrid_contact",
+            "ctrl_impedance"
+          ],
+          "summary": "Manipulation requires achievable forces as well as reachable poses.",
+          "learning_outcome": "Check geometric, friction and actuator constraints for an interaction."
+        },
+        {
+          "id": "man_plan",
+          "title": "Task and Motion Execution",
+          "zh": "任务与运动执行",
+          "node_ids": [
+            "rb_ik",
+            "ctrl_trajopt",
+            "ctrl_sampling_planners",
+            "eng_trajectory_generation",
+            "r_feedback"
+          ],
+          "summary": "Combine perception, collision constraints and feedback execution.",
+          "learning_outcome": "Describe failure recovery when the estimated object or contact changes."
+        },
+        {
+          "id": "man_learning",
+          "title": "Learning within a Manipulation System",
+          "zh": "操作系统中的学习",
+          "node_ids": [
+            "vla_behavior_cloning",
+            "rl_mdp",
+            "cv_affordance",
+            "sim_sim2real"
+          ],
+          "summary": "Learning methods inherit the system’s sensor and action assumptions.",
+          "learning_outcome": "Locate learned components without hiding their physical interfaces."
+        }
+      ]
+    },
+    {
+      "id": "course_simulation",
+      "title": "Robot Simulation and Sim-to-Real Foundations",
+      "zh": "机器人仿真与仿真到现实基础",
+      "anchor": "Designed lab track: MIT Drake tutorials + official MuJoCo and Isaac Lab guides",
+      "source_urls": [
+        {
+          "title": "Drake Python tutorials",
+          "url": "https://drake.mit.edu/"
+        },
+        {
+          "title": "MuJoCo mathematical and computational foundations",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/"
+        },
+        {
+          "title": "MuJoCo modeling and compiler semantics",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        },
+        {
+          "title": "Isaac Lab official how-to guides and concepts",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/index.html"
+        }
+      ],
+      "scope": "A dedicated introductory simulation track, distinct from CSE598 research readings. Learn asset compilation, integration, contacts, sensing, control stepping, environment semantics and validation before comparing engines or training speed. Drake, MuJoCo and Isaac Lab are complementary primary resources, not interchangeable claims about one course.",
+      "modules": [
+        {
+          "id": "sim_models",
+          "title": "Compile a Physically Specified Robot",
+          "zh": "编译物理参数明确的机器人",
+          "node_ids": [
+            "ph_units",
+            "desc_urdf",
+            "desc_inertial",
+            "desc_geometry",
+            "desc_variant",
+            "desc_import",
+            "sim_isaacsim"
+          ],
+          "summary": "Check source geometry and physical parameters before running dynamics.",
+          "learning_outcome": "Audit DOF, total declared mass, frames and importer settings."
+        },
+        {
+          "id": "sim_descriptions",
+          "title": "Robot Description Formats and Hardware Variants",
+          "zh": "机器人描述格式与硬件变体",
+          "node_ids": [
+            "desc_urdf",
+            "desc_link",
+            "desc_joint",
+            "desc_tree",
+            "desc_origin",
+            "desc_joint_axis",
+            "desc_limits",
+            "desc_inertial",
+            "desc_geometry",
+            "desc_dof",
+            "desc_floating_base",
+            "desc_mimic",
+            "desc_transmission",
+            "desc_ros2control",
+            "desc_xacro",
+            "desc_srdf",
+            "desc_import",
+            "desc_variant"
+          ],
+          "summary": "Atlas supplement: expands source-format details needed to import real robot assets.",
+          "learning_outcome": "Read inertial, joint, collision and variant fields without equating metadata to a working controller.",
+          "atlas_supplement": true
+        },
+        {
+          "id": "sim_numerics",
+          "title": "Dynamics, Integration and Contacts",
+          "zh": "动力学、积分与接触",
+          "node_ids": [
+            "ph_manipulator",
+            "c_ode",
+            "c_euler",
+            "c_runge_kutta",
+            "eng_hybrid_contact",
+            "sim_mujoco"
+          ],
+          "summary": "The integrator and contact formulation affect numerical behavior.",
+          "learning_outcome": "Run a timestep study and distinguish model error from integration error."
+        },
+        {
+          "id": "sim_loops",
+          "title": "Control, Sensor and Physics Clocks",
+          "zh": "控制、传感器与物理时钟",
+          "node_ids": [
+            "sim_contactsensors",
+            "eng_signal_sampling",
+            "eng_actuator_dynamics",
+            "ros2_time",
+            "per_latency"
+          ],
+          "summary": "Substeps and observation age define the closed-loop system.",
+          "learning_outcome": "State all update rates and test action-hold and sensor timing."
+        },
+        {
+          "id": "sim_envs",
+          "title": "Robot-Learning Environment Semantics",
+          "zh": "机器人学习环境语义",
+          "node_ids": [
+            "r_state",
+            "rl_mdp",
+            "r_rollout",
+            "sim_isaaclab",
+            "sim_brax"
+          ],
+          "summary": "Observation, action, reward, reset and termination define the learning task.",
+          "learning_outcome": "Explain which variables reset and distinguish termination from timeout handling."
+        },
+        {
+          "id": "sim_batch",
+          "title": "Accelerated and Differentiable Simulation",
+          "zh": "加速与可微分仿真",
+          "node_ids": [
+            "sim_mjx",
+            "sim_warp",
+            "sim_differentiable",
+            "gpu_model",
+            "train_profile"
+          ],
+          "summary": "Throughput and gradients each depend on implementation assumptions.",
+          "learning_outcome": "Benchmark matched workloads and inspect contact-gradient limitations."
+        },
+        {
+          "id": "sim_transfer",
+          "title": "Identification and Transfer Evidence",
+          "zh": "辨识与迁移证据",
+          "node_ids": [
+            "est_sysid",
+            "sim_domainrand",
+            "sim_sim2real",
+            "motion_contact_quality",
+            "eng_record_replay"
+          ],
+          "summary": "Transfer requires matching interfaces and measuring failure modes.",
+          "learning_outcome": "Separate asset loading, numerical validation, trained behavior and physical evaluation."
+        }
+      ]
+    },
+    {
+      "id": "course_engineering",
+      "title": "Robotics Software and Research Engineering",
+      "zh": "机器人软件与科研工程",
+      "anchor": "Designed engineering track: MIT Missing Semester, MIT C/C++, official ROS 2; Stanford CS149 + official CUDA/PyTorch documentation",
+      "source_urls": [
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "MIT OCW: Effective Programming in C and C++",
+          "url": "https://ocw.mit.edu/courses/6-s096-effective-programming-in-c-and-c-january-iap-2014/"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        },
+        {
+          "title": "ROS 2 rosbag2: official recording and playback software",
+          "url": "https://github.com/ros2/rosbag2"
+        },
+        {
+          "title": "ros2_control controller manager: lifecycle, limits and fallback",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/controller_manager/doc/userdoc.html"
+        },
+        {
+          "title": "Stanford CS149: Parallel Computing — verified public course edition",
+          "url": "https://gfxcourses.stanford.edu/cs149/fall25"
+        },
+        {
+          "title": "NVIDIA CUDA C++ Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/"
+        },
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/stable/notes/cuda.html"
+        },
+        {
+          "title": "PyTorch distributed communication",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+        }
+      ],
+      "scope": "Practical complement to theory and research seminars. Covers native software, ROS interfaces, data provenance, tests and runtime behavior. Tool documentation supports implementation; no single listed source is asserted to teach every module. Real hardware integration additionally requires the exact platform manual and measured system behavior. Parallel computing and training-system modules use CS149 for hardware/software principles and official CUDA/PyTorch documentation for implementation semantics; this does not claim CS149 teaches every PyTorch or distributed-training API.",
+      "modules": [
+        {
+          "id": "eng_languages",
+          "title": "Python, C++ and Reproducible Builds",
+          "zh": "Python、C++ 与可复现构建",
+          "node_ids": [
+            "e_python",
+            "eng_cpp_build",
+            "cs_environment",
+            "cs_storage"
+          ],
+          "summary": "Native and Python components share dependency and memory boundaries.",
+          "learning_outcome": "Identify source, compiled binary, library and configuration versions."
+        },
+        {
+          "id": "eng_ros",
+          "title": "ROS 2 Communication and Frames",
+          "zh": "ROS 2 通信与坐标系",
+          "node_ids": [
+            "ros2_graph",
+            "ros2_topics",
+            "ros2_requests",
+            "ros2_qos",
+            "ros2_tf",
+            "ros2_time"
+          ],
+          "summary": "Messages, lifecycle and clock policies are part of the algorithm interface.",
+          "learning_outcome": "Design a message contract with units, timestamps and frames."
+        },
+        {
+          "id": "eng_quality",
+          "title": "Tests, Debugging and Profiling",
+          "zh": "测试、调试与性能分析",
+          "node_ids": [
+            "eng_version_tests",
+            "train_repro",
+            "train_profile",
+            "eng_record_replay"
+          ],
+          "summary": "Correctness and runtime bottlenecks require different measurements.",
+          "learning_outcome": "Reproduce a failure and define a meaningful regression check."
+        },
+        {
+          "id": "eng_runtime",
+          "title": "Control Runtime and Fault Behavior",
+          "zh": "控制运行时与故障行为",
+          "node_ids": [
+            "ctrl_runtime_limits",
+            "ros2_control",
+            "eng_fault_lifecycle",
+            "desc_limits"
+          ],
+          "summary": "Commands need valid units, bounded ages and defined failure transitions.",
+          "learning_outcome": "Trace stale observations or missed updates to an explicit runtime response."
+        },
+        {
+          "id": "eng_training",
+          "title": "Data and Training Artifacts",
+          "zh": "数据与训练产物",
+          "node_ids": [
+            "e_dataset",
+            "train_state",
+            "train_checkpoint",
+            "train_repro",
+            "ml_evaluation"
+          ],
+          "summary": "Training state, data versions and evaluation protocol support repeatability.",
+          "learning_outcome": "Resume a run and identify the exact policy, dataset and robot configuration."
+        },
+        {
+          "id": "eng_hardware",
+          "title": "Hardware-Specific Integration",
+          "zh": "硬件相关集成",
+          "node_ids": [
+            "hw_g1_23",
+            "hw_g1_29",
+            "hw_go2",
+            "hw_t1_23",
+            "hw_t1_29",
+            "hw_t2_31",
+            "hw_k1_22",
+            "eng_actuator_dynamics",
+            "desc_variant",
+            "sim_sim2real"
+          ],
+          "summary": "Model parameters and physical driver behavior must be checked separately.",
+          "learning_outcome": "Map every action coordinate to the exact robot variant and command interface."
+        },
+        {
+          "id": "eng_compute",
+          "title": "Numerical Storage, Memory and Parallel Work",
+          "zh": "数值存储、内存与并行工作",
+          "node_ids": [
+            "cs_complexity",
+            "cs_floating",
+            "cs_storage",
+            "cs_memory",
+            "cs_parallel",
+            "gpu_model"
+          ],
+          "summary": "Floating point, layouts and parallel work constrain accuracy and throughput.",
+          "learning_outcome": "Estimate memory and identify whether latency, bandwidth or computation dominates."
+        },
+        {
+          "id": "eng_cuda",
+          "title": "GPU Architecture and CUDA Execution",
+          "zh": "GPU 架构与 CUDA 执行",
+          "node_ids": [
+            "gpu_kernel",
+            "gpu_simt",
+            "gpu_divergence",
+            "gpu_hierarchy",
+            "gpu_coalescing",
+            "gpu_tiling",
+            "gpu_tensorcores"
+          ],
+          "summary": "Thread execution and memory locality explain GPU performance tradeoffs.",
+          "learning_outcome": "Map work to threads and reason about divergence, reuse and coalescing."
+        },
+        {
+          "id": "eng_torch",
+          "title": "PyTorch Autograd, Device and Data Execution",
+          "zh": "PyTorch 自动微分、设备与数据执行",
+          "node_ids": [
+            "e_torch",
+            "gpu_libraries",
+            "pt_vjp",
+            "pt_graph",
+            "pt_device",
+            "pt_streams",
+            "pt_data"
+          ],
+          "summary": "Framework operations dispatch kernels and manage graphs, transfers and asynchronous execution.",
+          "learning_outcome": "Trace one training step and measure it with correct synchronization."
+        },
+        {
+          "id": "eng_train_scale",
+          "title": "Training Precision, Memory and Distributed Execution",
+          "zh": "训练精度、内存与分布式执行",
+          "node_ids": [
+            "train_batch",
+            "train_amp",
+            "train_checkpoint",
+            "train_ddp",
+            "train_sharding",
+            "train_state"
+          ],
+          "summary": "Batching, precision and collective communication change memory and scaling behavior.",
+          "learning_outcome": "Estimate per-device training state and explain accumulation versus distributed reduction."
+        },
+        {
+          "id": "eng_compile",
+          "title": "Compiled and IO-Aware GPU Operators",
+          "zh": "编译与 IO 感知 GPU 算子",
+          "node_ids": [
+            "pt_compile",
+            "pt_triton",
+            "train_flash",
+            "train_profile"
+          ],
+          "summary": "Compilation and tiling can reduce memory traffic and launch overhead.",
+          "learning_outcome": "Profile a matched workload and verify numerical behavior before claiming a speedup."
+        }
+      ]
+    },
+    {
+      "id": "course_cse598",
+      "title": "CSE 598: Action and Perception",
+      "zh": "行动与感知：研究阅读",
+      "anchor": "University of Michigan CSE598; existing verified reading metadata",
+      "source_urls": [
+        {
+          "title": "CSE 598: Action and Perception — supplied public course pointer",
+          "url": "https://docs.google.com/document/d/1oYfPqCVi-3yUG_wL_NgWzgt3YHZCBvFL/"
+        },
+        {
+          "title": "University of Michigan: Stella X. Yu",
+          "url": "https://web.eecs.umich.edu/~stellayu/"
+        }
+      ],
+      "scope": "Research seminar and associated reading library spanning perception, robot learning, interaction, memory, geometry and world/action models. It is not a complete introduction to simulation, mechanics, estimation or software engineering. Reuse the 20 topic associations and 106 reading records from existing course598 metadata; no duplicate paper records, schedules, grades or private resources are added.",
+      "modules": [
+        {
+          "id": "c598_topic_01",
+          "title": "Visual Representations of Images and Videos",
+          "zh": "图像与视频表征",
+          "node_ids": [
+            "v_selfsupervised",
+            "wm_latent_prediction",
+            "multimodal_contrastive",
+            "d_transformer"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[0].readings",
+          "reading_node_ids": [
+            "v_dino",
+            "v_dinov2",
+            "paper_dinov3",
+            "paper_mae",
+            "paper_videomae",
+            "paper_videomaev2",
+            "repr_ijepa",
+            "paper_nepa",
+            "paper_clip",
+            "paper_siglip",
+            "paper_oak",
+            "paper_caft",
+            "paper_ver",
+            "paper_dynamo",
+            "wm_vjepa2",
+            "paper_internvideo"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_02",
+          "title": "Visual Representation of Depth and 3D",
+          "zh": "深度与三维表征",
+          "node_ids": [
+            "cv_depth",
+            "cv_multiview",
+            "cv_sdf",
+            "cv_gaussian_splat"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[1].readings",
+          "reading_node_ids": [
+            "paper_dpt",
+            "paper_depth_anything2",
+            "paper_vggt",
+            "paper_sam3d",
+            "paper_vggt_omega"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_03",
+          "title": "Robot Learning from Multimodal Experiences for Dexterity",
+          "zh": "多模态灵巧学习",
+          "node_ids": [
+            "cv_tactile",
+            "vla_behavior_cloning",
+            "cv_affordance",
+            "per_extrinsics"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[2].readings",
+          "reading_node_ids": [
+            "paper_racer",
+            "paper_aimbot",
+            "paper_vitascope",
+            "paper_hydroshear",
+            "paper_adept"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_04",
+          "title": "Bridging the Interaction Gap: Low-Level Control in Large-Scale Procedural Worlds",
+          "zh": "交互场景与低层控制",
+          "node_ids": [
+            "sim_assets",
+            "cv_scene_graph",
+            "vla_behavior_cloning",
+            "r_feedback"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[3].readings",
+          "reading_node_ids": [
+            "paper_hodor",
+            "paper_scenegraph_il",
+            "paper_foragebench",
+            "paper_sage",
+            "paper_scenesmith"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_05",
+          "title": "Visual Space Perception and Nonlinear Perceptual Geometries",
+          "zh": "视觉空间与感知几何",
+          "node_ids": [
+            "per_camera",
+            "r_frames",
+            "cv_multiview"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[4].readings",
+          "reading_node_ids": [
+            "paper_doublevision",
+            "paper_artists_perspective",
+            "paper_art_geometric_field",
+            "paper_egocentric_perspective",
+            "paper_fovography",
+            "paper_natural_perspective"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_06",
+          "title": "Object-Centric Embodied 3D Vision",
+          "zh": "物体中心三维感知",
+          "node_ids": [
+            "cv_inverse_rendering",
+            "cv_sdf",
+            "est_factorgraph",
+            "per_association"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[5].readings",
+          "reading_node_ids": [
+            "paper_vysics",
+            "paper_contact_guided_reconstruction",
+            "paper_cupid",
+            "paper_foundationpose"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_07",
+          "title": "Robots That Learn from Experience",
+          "zh": "从经验中学习",
+          "node_ids": [
+            "rl_mdp",
+            "rl_bellman",
+            "rl_actorcritic",
+            "vla_behavior_cloning"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[6].readings",
+          "reading_node_ids": [
+            "paper_dsrl",
+            "paper_posterior_bc",
+            "paper_sim_exploration_transfer",
+            "paper_asid"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_08",
+          "title": "Building Agentic Robotics Systems: Reasoning, Tools, Infrastructure, and Reinforcement Learning",
+          "zh": "智能体机器人系统",
+          "node_ids": [
+            "cv_tool_agent",
+            "ros2_graph",
+            "cv_retrieval_memory",
+            "rl_mdp"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[7].readings",
+          "reading_node_ids": [
+            "paper_spacetools",
+            "paper_volo",
+            "paper_probe",
+            "paper_vesta"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_09",
+          "title": "Towards Reliable Dexterity with Less Data",
+          "zh": "少数据可靠灵巧操作",
+          "node_ids": [
+            "ph_friction",
+            "eng_grasp_wrench",
+            "cv_information_gain",
+            "ml_evaluation"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[8].readings",
+          "reading_node_ids": [
+            "paper_stein_robust_contact",
+            "paper_contact_fisher",
+            "paper_contact_data_curation"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_10",
+          "title": "From SLAM to Spatial AI: Mapping, Memory, and Reasoning",
+          "zh": "从 SLAM 到空间智能",
+          "node_ids": [
+            "est_slam",
+            "est_factorgraph",
+            "map_esdf",
+            "cv_retrieval_memory"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[9].readings",
+          "reading_node_ids": [
+            "paper_kimera_multi",
+            "paper_splatam",
+            "paper_latentam",
+            "paper_sbp",
+            "paper_daaam"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_11",
+          "title": "Foundation Models for Unified Multimodal Understanding and Generation",
+          "zh": "统一多模态理解与生成",
+          "node_ids": [
+            "vla_vlm",
+            "multimodal_contrastive",
+            "g_diffusion",
+            "language_llm"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[10].readings",
+          "reading_node_ids": [
+            "paper_tuna",
+            "paper_tuna2",
+            "paper_bagel",
+            "paper_metaqueries",
+            "paper_transfusion"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_12",
+          "title": "Game-ready 3D Asset Generation",
+          "zh": "仿真场景资产生成",
+          "node_ids": [
+            "sim_assets",
+            "desc_geometry",
+            "cv_sdf",
+            "cv_gaussian_splat"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[11].readings",
+          "reading_node_ids": [
+            "paper_cube",
+            "paper_cubepart",
+            "paper_multicube",
+            "paper_articraft",
+            "paper_procedura"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_13",
+          "title": "From Pixels to Physics: Understanding and Manipulating Physics from Images",
+          "zh": "从图像到物理",
+          "node_ids": [
+            "cv_inverse_rendering",
+            "est_sysid",
+            "ph_manipulator",
+            "sim_differentiable"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[12].readings",
+          "reading_node_ids": [
+            "paper_gains",
+            "paper_projo4d",
+            "paper_monophysics",
+            "paper_harmovid"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_14",
+          "title": "What’s Missing in Multimodal AI? Towards Spatial Awareness, Effective Tool Use and Fine-Grained Understanding",
+          "zh": "空间理解与工具使用",
+          "node_ids": [
+            "multimodal_contrastive",
+            "cv_tool_agent",
+            "cv_multiview",
+            "ml_evaluation"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[13].readings",
+          "reading_node_ids": [
+            "paper_tips",
+            "paper_tipsv2",
+            "paper_encyclopedic_vqa",
+            "paper_hammr",
+            "paper_universal_embeddings",
+            "paper_udon",
+            "paper_vessa",
+            "paper_suprank"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_15",
+          "title": "Learning Human and Robot Motions",
+          "zh": "人体与机器人运动",
+          "node_ids": [
+            "motion_smpl",
+            "motion_retargeting",
+            "motion_tracking",
+            "motion_prior"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[14].readings",
+          "reading_node_ids": [
+            "paper_mdm",
+            "paper_closd",
+            "paper_beyondmimic",
+            "paper_cloak"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_16",
+          "title": "The Role of Geometry in Large-Scale 3D Learning",
+          "zh": "大规模三维学习的几何",
+          "node_ids": [
+            "geo_se3",
+            "cv_multiview",
+            "cv_depth",
+            "cv_gaussian_splat"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[15].readings",
+          "reading_node_ids": [
+            "paper_depth_anything3",
+            "paper_lvsm",
+            "paper_erayzer",
+            "paper_rayrope",
+            "paper_flow3r"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_17",
+          "title": "Memory for Robotics",
+          "zh": "机器人记忆",
+          "node_ids": [
+            "cv_retrieval_memory",
+            "r_markov",
+            "language_llm",
+            "vla_vlm"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[16].readings",
+          "reading_node_ids": [
+            "paper_mem",
+            "paper_memer",
+            "paper_memoryvla",
+            "paper_robomme",
+            "paper_gen15"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_18",
+          "title": "World-Action Models for Contact-Rich Robotic Manipulation",
+          "zh": "接触操作的世界行动模型",
+          "node_ids": [
+            "system_world_model",
+            "system_vla",
+            "eng_hybrid_contact",
+            "r_mpc"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[17].readings",
+          "reading_node_ids": [
+            "paper_palm",
+            "paper_trex",
+            "paper_dreamzero",
+            "paper_vtam"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_19",
+          "title": "Beyond Plausible: Physically Valid Human-Object Interaction for Robot World Models",
+          "zh": "物理有效的人物交互",
+          "node_ids": [
+            "motion_contact_quality",
+            "ph_constraints",
+            "eng_hybrid_contact",
+            "cv_affordance"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[18].readings",
+          "reading_node_ids": [
+            "paper_david_affordance",
+            "paper_dexterous_worldmodels",
+            "paper_hope",
+            "paper_rofacto"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        },
+        {
+          "id": "c598_topic_20",
+          "title": "Perception You Can Act On: Reliability, Attack Surfaces, and Active Multimodal Agents",
+          "zh": "可执行感知与可靠性",
+          "node_ids": [
+            "ml_evaluation",
+            "wm_uncertainty",
+            "cv_information_gain",
+            "per_latency"
+          ],
+          "summary": "Research-reading bridge from reusable foundation concepts to the associated paper records.",
+          "learning_outcome": "Explain the listed methods using the linked foundations, identify their assumptions and inspect the original method and evidence.",
+          "reading_metadata_ref": "course598.sessions[19].readings",
+          "reading_node_ids": [
+            "paper_eot_adversarial",
+            "paper_lamp",
+            "paper_soundbreak",
+            "paper_clamp_immunization",
+            "paper_introconformal"
+          ],
+          "relation": "Reading association only; not a claim of delivered coverage or presenter authorship."
+        }
+      ],
+      "reading_metadata_ref": "course598",
+      "reading_count": 106,
+      "topic_count": 20,
+      "reading_identity_policy": "Public method identities remain those already verified in the atlas. Unresolved acronym DRVLA stays unresolved; this curriculum layer does not resolve it."
+    }
+  ],
+  "gaps": [
+    {
+      "title": "Theory-to-runtime integration",
+      "why": "A mechanics derivation or a learned policy is insufficient without matching frames, action units, timestamps and hardware interfaces.",
+      "category": "engineering",
+      "course_sources": [
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "MIT OCW: Effective Programming in C and C++",
+          "url": "https://ocw.mit.edu/courses/6-s096-effective-programming-in-c-and-c-january-iap-2014/"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        },
+        {
+          "title": "ros2_control controller manager: lifecycle, limits and fallback",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/controller_manager/doc/userdoc.html"
+        }
+      ],
+      "node_ids": [
+        "eng_cpp_build",
+        "eng_version_tests",
+        "eng_fault_lifecycle",
+        "ros2_control"
+      ],
+      "coverage_status": "expanded: new integration concepts; practical competence requires implementation and interface tests"
+    },
+    {
+      "title": "Sampling, filtering and delay",
+      "why": "Existing timing nodes needed an explicit signal-processing prerequisite for aliasing, bandwidth and phase delay.",
+      "category": "signals_and_control",
+      "course_sources": [
+        {
+          "title": "MIT OCW 6.003: Signals and Systems",
+          "url": "https://ocw.mit.edu/courses/6-003-signals-and-systems-fall-2011/"
+        }
+      ],
+      "node_ids": [
+        "eng_signal_sampling",
+        "ros2_time",
+        "per_latency"
+      ],
+      "coverage_status": "expanded: new sampling/filtering concept; full frequency-domain analysis remains external course study"
+    },
+    {
+      "title": "Contact transitions and physically valid motion",
+      "why": "Rigid-body equations and friction alone do not explain discrete mode transitions or impact resets.",
+      "category": "dynamics",
+      "course_sources": [
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "MuJoCo mathematical and computational foundations",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/"
+        },
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "eng_hybrid_contact",
+        "motion_contact_quality",
+        "ph_constraints"
+      ],
+      "coverage_status": "expanded: hybrid modes added; full complementarity and nonsmooth analysis remain advanced extensions"
+    },
+    {
+      "title": "Grasp and wrench feasibility",
+      "why": "An object pose or IK solution does not establish force closure or actuator-feasible manipulation.",
+      "category": "manipulation",
+      "course_sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "eng_grasp_wrench",
+        "ph_friction",
+        "ctrl_impedance"
+      ],
+      "coverage_status": "expanded: grasp map and closure concept; specialized dexterous-contact algorithms remain paper-level extensions"
+    },
+    {
+      "title": "Wheeled and mobile-robot foundations",
+      "why": "The robot scope extends beyond humanoids and needs explicit nonholonomic wheel kinematics.",
+      "category": "kinematics",
+      "course_sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "MIT Visual Navigation: public lecture materials",
+          "url": "https://vnav.mit.edu/lectures.html"
+        }
+      ],
+      "node_ids": [
+        "eng_wheeled_nonholonomic",
+        "est_odometry",
+        "nav_stack"
+      ],
+      "coverage_status": "expanded: differential-drive model; specialized wheel types and slip identification remain external extensions"
+    },
+    {
+      "title": "Executable timed trajectories",
+      "why": "Geometric planning and general trajectory optimization need a clear connection through time parameterization.",
+      "category": "planning",
+      "course_sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "eng_trajectory_generation",
+        "ctrl_trajopt",
+        "desc_limits"
+      ],
+      "coverage_status": "expanded: time scaling added; full time-optimal path parameterization remains external study"
+    },
+    {
+      "title": "Estimation and SLAM beyond mechanics",
+      "why": "Modern Robotics is not a comprehensive course in probabilistic filtering, nonlinear smoothing or visual-inertial navigation.",
+      "category": "estimation",
+      "course_sources": [
+        {
+          "title": "MIT Visual Navigation: public lecture materials",
+          "url": "https://vnav.mit.edu/lectures.html"
+        },
+        {
+          "title": "MIT OCW 6.003: Signals and Systems",
+          "url": "https://ocw.mit.edu/courses/6-003-signals-and-systems-fall-2011/"
+        }
+      ],
+      "node_ids": [
+        "est_bayesfilter",
+        "est_ekf",
+        "est_vio",
+        "est_factorgraph",
+        "est_slam"
+      ],
+      "coverage_status": "existing nodes reused; dedicated estimation track added; no claim of complete estimator implementation"
+    },
+    {
+      "title": "Advanced control beyond basic robot feedback",
+      "why": "Legged underactuation, Lyapunov methods, MPC and robust control need a deeper sequence after basic robot mechanics.",
+      "category": "control",
+      "course_sources": [
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "MIT OCW Underactuated Robotics",
+          "url": "https://ocw.mit.edu/courses/6-832-underactuated-robotics-spring-2009/"
+        }
+      ],
+      "node_ids": [
+        "ctrl_lqr",
+        "ctrl_lyapunov",
+        "r_mpc",
+        "ctrl_wbc_qp",
+        "ctrl_centroidal"
+      ],
+      "coverage_status": "existing concepts grouped into advanced control track; advanced robust/adaptive synthesis remains external depth"
+    },
+    {
+      "title": "Simulation fundamentals before engine comparisons",
+      "why": "CSE598 simulation-associated papers do not replace numerical integration, importer, contact and sensor-loop foundations.",
+      "category": "simulation",
+      "course_sources": [
+        {
+          "title": "Drake Python tutorials",
+          "url": "https://drake.mit.edu/"
+        },
+        {
+          "title": "MuJoCo mathematical and computational foundations",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/"
+        },
+        {
+          "title": "MuJoCo modeling and compiler semantics",
+          "url": "https://mujoco.readthedocs.io/en/stable/modeling.html"
+        },
+        {
+          "title": "Isaac Lab official how-to guides and concepts",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/index.html"
+        }
+      ],
+      "node_ids": [
+        "c_euler",
+        "c_runge_kutta",
+        "desc_import",
+        "sim_contactsensors",
+        "sim_domainrand",
+        "sim_sim2real"
+      ],
+      "coverage_status": "dedicated foundation track; no assumption that reading an engine node proves working simulation"
+    },
+    {
+      "title": "Actuation and identification",
+      "why": "A single URDF effort bound cannot model torque-speed limits, electrical dynamics, thermal restrictions or delay.",
+      "category": "hardware",
+      "course_sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "Isaac Lab official how-to guides and concepts",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/index.html"
+        },
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "eng_actuator_dynamics",
+        "est_sysid",
+        "desc_transmission"
+      ],
+      "coverage_status": "expanded: actuator model added; exact motor/drive data and physical identification remain platform-specific"
+    },
+    {
+      "title": "Scientific evidence and repeatability",
+      "why": "Paper reading, deterministic code checks and real behavior evaluation establish different evidence scopes.",
+      "category": "research_engineering",
+      "course_sources": [
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "ROS 2 rosbag2: official recording and playback software",
+          "url": "https://github.com/ros2/rosbag2"
+        },
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "eng_record_replay",
+        "eng_version_tests",
+        "train_repro",
+        "ml_evaluation",
+        "e_dataset"
+      ],
+      "coverage_status": "expanded: replay and tests; learning outcomes are targets, not claims of learner mastery"
+    },
+    {
+      "title": "Large-scale training and GPU efficiency",
+      "why": "Robot researchers also need GPU memory, asynchronous execution and profiling, which are outside Modern Robotics.",
+      "category": "training_systems",
+      "course_sources": [
+        {
+          "title": "Isaac Lab official how-to guides and concepts",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/index.html"
+        },
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "Stanford CS149: Parallel Computing — verified public course edition",
+          "url": "https://gfxcourses.stanford.edu/cs149/fall25"
+        },
+        {
+          "title": "NVIDIA CUDA C++ Programming Guide",
+          "url": "https://docs.nvidia.com/cuda/cuda-programming-guide/"
+        },
+        {
+          "title": "PyTorch CUDA semantics",
+          "url": "https://docs.pytorch.org/docs/stable/notes/cuda.html"
+        },
+        {
+          "title": "PyTorch distributed communication",
+          "url": "https://docs.pytorch.org/docs/stable/distributed.html"
+        }
+      ],
+      "node_ids": [
+        "gpu_model",
+        "pt_streams",
+        "train_amp",
+        "train_ddp",
+        "train_profile",
+        "train_state"
+      ],
+      "coverage_status": "existing concepts mapped in explicit engineering modules; conceptual coverage is not an executed performance lab or working distributed-training run"
+    },
+    {
+      "title": "Task-level reasoning and long-horizon autonomy",
+      "why": "Local motion control does not by itself solve task composition, failures, memory and reasoning.",
+      "category": "autonomy",
+      "course_sources": [
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        },
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ],
+      "node_ids": [
+        "cv_tool_agent",
+        "cv_retrieval_memory",
+        "soccer_skill_chaining",
+        "r_feedback"
+      ],
+      "coverage_status": "partial existing coverage; formal task planning and behavior-tree/PDDL algorithms remain future expansion, not silently marked complete"
+    },
+    {
+      "title": "Hardware electronics and communication depth",
+      "why": "Mechanical models and software APIs omit power integrity, embedded interfaces, drive electronics and detailed bus behavior.",
+      "category": "embedded_systems",
+      "course_sources": [
+        {
+          "title": "MIT OCW: Effective Programming in C and C++",
+          "url": "https://ocw.mit.edu/courses/6-s096-effective-programming-in-c-and-c-january-iap-2014/"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        },
+        {
+          "title": "ros2_control controller manager: lifecycle, limits and fallback",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/controller_manager/doc/userdoc.html"
+        }
+      ],
+      "node_ids": [
+        "eng_actuator_dynamics",
+        "ctrl_runtime_limits",
+        "eng_fault_lifecycle"
+      ],
+      "coverage_status": "partial foundations only; a dedicated embedded/mechatronics course is still needed for hardware-design roles"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "eng_signal_sampling",
+      "en": "Sampled Signals, Aliasing and Filtering",
+      "title": "采样信号、混叠与滤波",
+      "group": "control",
+      "kind": "concept",
+      "summary": "A sampled signal stores values at discrete times.",
+      "definition": "A sampled signal stores values at discrete times. Sampling can make distinct continuous-time frequencies indistinguishable, which is aliasing. For an ideally band-limited signal, a sampling rate strictly above twice its highest frequency permits reconstruction under ideal assumptions. Physical sensor bandwidth, anti-aliasing filters, timestamp jitter and dropped samples complicate that result. A digital low-pass filter reduces selected frequency components but adds phase delay. Control and estimation must therefore account for both noise reduction and latency. Upsampling an already aliased recording cannot recover information that was lost during acquisition.",
+      "example": "A 50 Hz stream cannot uniquely represent a 40 Hz sinusoid: it can appear as a 10 Hz component. Record sensor acquisition rate separately from policy update rate. Before downsampling IMU data, apply an appropriate anti-alias filter and quantify the resulting delay.",
+      "role_en": "Sampling and filter delay connect sensor measurements, discretized feedback and trustworthy estimation.",
+      "latex": "x[k]=x(kT_s),\\quad f_s=1/T_s,\\quad f_s>2f_{\\max},\\quad y[k]=(1-\\alpha)y[k-1]+\\alpha x[k]",
+      "notation": [
+        {
+          "symbol": "T_s",
+          "meaning": "Sampling period, seconds."
+        },
+        {
+          "symbol": "f_s,f_{\\max}",
+          "meaning": "Sampling rate and highest retained frequency, hertz."
+        },
+        {
+          "symbol": "\\alpha",
+          "meaning": "Smoothing coefficient between zero and one for this first-order filter."
+        }
+      ],
+      "prereqs": [
+        "m_function",
+        "c_ode",
+        "ros2_time"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW 6.003: Signals and Systems",
+          "url": "https://ocw.mit.edu/courses/6-003-signals-and-systems-fall-2011/"
+        }
+      ]
+    },
+    {
+      "id": "eng_hybrid_contact",
+      "en": "Hybrid Dynamics and Contact Modes",
+      "title": "混杂动力学与接触模式",
+      "group": "dynamics",
+      "kind": "concept",
+      "summary": "A hybrid dynamical system combines continuous evolution with discrete changes of mode.",
+      "definition": "A hybrid dynamical system combines continuous evolution with discrete changes of mode. In legged robotics, flight, left support, right support and double support can have different constraints. A guard condition specifies when a transition occurs, and a reset map describes an instantaneous state change such as impact velocity. Not every simulator explicitly exposes such modes: compliant contact models can instead resolve rapid transitions continuously. Identifying the intended formulation prevents confusing smooth control derivatives with derivatives across an impact. Mode timing and contact feasibility matter even when a trajectory looks kinematically smooth.",
+      "example": "A foot approaches the ground during flight. At contact the normal gap reaches zero while the foot is approaching; an impact model can change velocity before stance dynamics begin. A reference motion with a stance foot sliding sideways violates its intended contact mode even when all joint angles are within limits.",
+      "role_en": "Hybrid contact models connect constrained dynamics, gait phases, impact simulation and physically executable motion tracking.",
+      "latex": "\\dot x=f_m(x,u),\\quad x^-\\in G_{m\\to n},\\quad x^+=\\Delta_{m\\to n}(x^-)",
+      "notation": [
+        {
+          "symbol": "m,n",
+          "meaning": "Discrete contact modes."
+        },
+        {
+          "symbol": "G",
+          "meaning": "Transition guard."
+        },
+        {
+          "symbol": "\\Delta",
+          "meaning": "Reset map at a transition."
+        }
+      ],
+      "prereqs": [
+        "ph_constraints",
+        "ph_friction",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        },
+        {
+          "title": "MuJoCo mathematical and computational foundations",
+          "url": "https://mujoco.readthedocs.io/en/stable/computation/"
+        }
+      ]
+    },
+    {
+      "id": "eng_grasp_wrench",
+      "en": "Wrenches, Grasp Maps and Force Closure",
+      "title": "力旋量、抓取映射与力闭合",
+      "group": "dynamics",
+      "kind": "concept",
+      "summary": "A wrench combines a force and the moment it produces about a specified reference point.",
+      "definition": "A wrench combines a force and the moment it produces about a specified reference point. A grasp map transforms individual contact forces into the net wrench on an object. Contact locations, contact types and friction restrict the set of achievable wrenches. Force closure means admissible contacts can counter arbitrary sufficiently small external wrenches in every direction; it is stronger than merely touching or holding an object against gravity in one pose. Frame conventions and units must be explicit because moment and force components have different dimensions. A geometrically feasible grasp can still violate actuator or friction limits.",
+      "example": "Two opposed frictionless contacts on a flat-sided object may resist forces in one direction while failing to resist tangential slip or rotation. Add friction cones and actual contact locations before assessing wrench feasibility. A successful rendered grasp pose alone is not evidence of force closure.",
+      "role_en": "Wrench feasibility extends friction and statics into grasp selection, manipulation and contact-force optimization.",
+      "latex": "w=\\begin{bmatrix}\\tau\\\\f\\end{bmatrix},\\quad \\tau=r\\times f,\\quad w_o=Gf_c,\\quad f_c\\in\\mathcal K",
+      "notation": [
+        {
+          "symbol": "w",
+          "meaning": "Wrench with moment first under the convention used here."
+        },
+        {
+          "symbol": "G",
+          "meaning": "Grasp map."
+        },
+        {
+          "symbol": "\\mathcal K",
+          "meaning": "Admissible contact-force set, including friction constraints."
+        }
+      ],
+      "prereqs": [
+        "ph_torque",
+        "ph_friction",
+        "rb_jacobian",
+        "la_cross"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "MIT Robotic Manipulation: Perception, Planning, and Control",
+          "url": "https://manipulation.mit.edu/"
+        }
+      ]
+    },
+    {
+      "id": "eng_wheeled_nonholonomic",
+      "en": "Wheeled Kinematics and Nonholonomic Constraints",
+      "title": "轮式运动学与非完整约束",
+      "group": "kinematics",
+      "kind": "concept",
+      "summary": "A wheeled robot can have instantaneous velocity restrictions that do not remove the corresponding configuration coordinates.",
+      "definition": "A wheeled robot can have instantaneous velocity restrictions that do not remove the corresponding configuration coordinates. An ideal differential-drive robot cannot translate sideways instantaneously, yet a sequence of forward motions and turns can reach a sideways-displaced pose. This is a nonholonomic constraint. Wheel radius, track width, frame orientation and sign conventions determine the mapping from wheel speeds to body motion. Odometry integrates that model and accumulates error when wheels slip or parameters are inaccurate. Kinematic reachability does not imply an arbitrary smooth pose trajectory can be tracked under wheel-speed and acceleration limits.",
+      "example": "With equal wheel speeds a differential-drive robot moves straight; opposite wheel speeds rotate it. To reach a point directly to its left, it must turn and translate rather than command a lateral velocity that its rolling constraints forbid. Mecanum-wheel kinematics use a different model.",
+      "role_en": "Nonholonomic models extend configuration-space planning, odometry and feedback to wheeled mobile robots.",
+      "latex": "\\dot x=v\\cos\\theta,\\quad\\dot y=v\\sin\\theta,\\quad\\dot\\theta=\\omega,\\quad v=\\tfrac r2(\\dot\\phi_R+\\dot\\phi_L),\\quad\\omega=\\tfrac r b(\\dot\\phi_R-\\dot\\phi_L)",
+      "notation": [
+        {
+          "symbol": "r,b",
+          "meaning": "Wheel radius and wheel separation, metres."
+        },
+        {
+          "symbol": "\\phi_L,\\phi_R",
+          "meaning": "Left and right wheel angles."
+        },
+        {
+          "symbol": "v,\\omega",
+          "meaning": "Forward body speed and yaw rate."
+        }
+      ],
+      "prereqs": [
+        "r_frames",
+        "ctrl_statespace",
+        "est_odometry"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "Modern Robotics: official video supplements",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/foundations-of-robot-motion/"
+        }
+      ]
+    },
+    {
+      "id": "eng_trajectory_generation",
+      "en": "Path Parameterization and Time Scaling",
+      "title": "路径参数化与时间标定",
+      "group": "planning",
+      "kind": "concept",
+      "summary": "A geometric path specifies a sequence of configurations without stating when the robot reaches them.",
+      "definition": "A geometric path specifies a sequence of configurations without stating when the robot reaches them. Time scaling supplies a monotonic path parameter as a function of time, producing velocity and acceleration. A collision-free path can violate joint-speed, acceleration or torque constraints when traversed too quickly. Smooth polynomial scaling can enforce endpoint velocity conditions, while time-optimal scaling seeks the shortest feasible duration under specified constraints. This problem differs from finding a new path or solving a general trajectory optimization problem, though the methods can be combined. Derivative continuity must match the controller and actuator requirements.",
+      "example": "Move one joint along a fixed path from zero to one radian. A cubic timing law can start and finish at zero velocity, but its acceleration and torque still need checking. Doubling the duration reduces speed and acceleration while leaving the geometric path unchanged.",
+      "role_en": "Time scaling connects motion planning to executable references for joint controllers and motion-tracking policies.",
+      "latex": "q=q(s),\\quad s=s(t),\\quad\\dot q=q_s\\dot s,\\quad\\ddot q=q_{ss}\\dot s^2+q_s\\ddot s",
+      "notation": [
+        {
+          "symbol": "s",
+          "meaning": "Monotonic path parameter."
+        },
+        {
+          "symbol": "q_s,q_{ss}",
+          "meaning": "First and second path derivatives."
+        },
+        {
+          "symbol": "\\dot s,\\ddot s",
+          "meaning": "Time-scaling velocity and acceleration."
+        }
+      ],
+      "prereqs": [
+        "rb_fk",
+        "m_chain",
+        "c_ode",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "Modern Robotics: official video supplements",
+          "url": "https://modernrobotics.northwestern.edu/nu-gm-book-resource/foundations-of-robot-motion/"
+        }
+      ]
+    },
+    {
+      "id": "eng_cpp_build",
+      "en": "C++ Ownership, Compilation and Build Dependencies",
+      "title": "C++ 所有权、编译与构建依赖",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Native robotics software often uses C++ for hardware interfaces, geometry and simulation.",
+      "definition": "Native robotics software often uses C++ for hardware interfaces, geometry and simulation. The source code is compiled and linked against libraries before execution. Object lifetime and ownership determine whether referenced memory remains valid, and build configuration determines which headers, binaries and dependencies are used. A Python binding does not eliminate these native dependencies. Understanding compilation errors, linking errors and runtime library loading helps distinguish code problems from environment problems. Reproducibility requires recording compiler and dependency versions along with the build options. A fast executable still needs correct synchronization, tested interfaces and measured timing.",
+      "example": "A Python process importing a simulator can fail because its native shared library was built against an incompatible dependency. Another error arises when a C++ callback retains a reference after the original object has been destroyed. These require different diagnoses from a Python syntax error.",
+      "role_en": "Native ownership and build knowledge support ROS 2 packages, simulator extensions and reliable high-rate control integrations.",
+      "latex": "\\text{source}\\xrightarrow{\\text{compile}}\\text{object files}\\xrightarrow{\\text{link}}\\text{binary + libraries}",
+      "notation": [
+        {
+          "symbol": "\\text{compile}",
+          "meaning": "Translate a source translation unit."
+        },
+        {
+          "symbol": "\\text{link}",
+          "meaning": "Resolve compiled symbols and library dependencies."
+        }
+      ],
+      "prereqs": [
+        "e_python",
+        "cs_memory",
+        "cs_environment"
+      ],
+      "sources": [
+        {
+          "title": "MIT OCW: Effective Programming in C and C++",
+          "url": "https://ocw.mit.edu/courses/6-s096-effective-programming-in-c-and-c-january-iap-2014/"
+        },
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        }
+      ]
+    },
+    {
+      "id": "eng_version_tests",
+      "en": "Version Control, Regression Tests and CI",
+      "title": "版本控制、回归测试与持续集成",
+      "group": "computing",
+      "kind": "concept",
+      "summary": "Version control records source changes and allows a tested implementation to be identified precisely.",
+      "definition": "Version control records source changes and allows a tested implementation to be identified precisely. Automated tests check specified behavior at different scopes: a unit test can verify one transform, while an integration test checks a sensor-to-controller interface. A regression test preserves a previously corrected behavior. Continuous integration runs selected checks on new changes in a controlled environment. Passing tests supports only the cases and assumptions they exercise; it does not prove physical safety or research generalization. Test data, tolerances and dependencies must be recorded alongside the source revision to make failures interpretable.",
+      "example": "A frame-conversion test verifies that a known camera point transforms correctly into the robot frame. An integration replay then checks timestamp handling with delayed messages. Neither test establishes ball-contact success on hardware, which requires a separate experiment and measured outcomes.",
+      "role_en": "Versioned tests connect software changes, reproducible training configurations and evidence for deployable robot behavior.",
+      "latex": "\\text{claim support}\\subseteq\\text{tested inputs, assumptions and tolerances}",
+      "notation": [
+        {
+          "symbol": "\\text{claim support}",
+          "meaning": "The scope actually supported by executed checks."
+        }
+      ],
+      "prereqs": [
+        "e_python",
+        "train_repro",
+        "desc_variant"
+      ],
+      "sources": [
+        {
+          "title": "MIT Missing Semester: shell, Git, debugging, builds, testing and CI",
+          "url": "https://missing.csail.mit.edu/2020/"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        }
+      ]
+    },
+    {
+      "id": "eng_record_replay",
+      "en": "Robot Data Recording, Replay and Provenance",
+      "title": "机器人数据记录、回放与来源",
+      "group": "robotics_software",
+      "kind": "concept",
+      "summary": "A robot recording should preserve observations, commands, timestamps, coordinate frames and the configuration required to interpret them.",
+      "definition": "A robot recording should preserve observations, commands, timestamps, coordinate frames and the configuration required to interpret them. Replay feeds recorded data into software to reproduce an input sequence. It helps isolate perception or interface regressions, but replay does not recreate closed-loop physical interaction unless the environment response is modeled. A changed controller would have produced different future observations on the real robot. Record acquisition time separately from arrival time, and identify missing messages or clock discontinuities. Dataset provenance also includes sensor calibration, robot variant, policy version and any filtering or resampling.",
+      "example": "Replay a recorded camera and IMU stream through two estimators using the same calibration and timestamps. Compare pose residuals and latency. This supports an estimator comparison on that recorded sequence; it does not demonstrate how a changed policy would steer the robot through a new physical encounter.",
+      "role_en": "Recording and replay connect ROS 2 timing, datasets, debugging and repeatable perception evaluation.",
+      "latex": "\\mathcal D=\\{(t_i^{\\rm acquire},t_i^{\\rm receive},y_i,u_i,\\mathcal C_i)\\}_{i=1}^N",
+      "notation": [
+        {
+          "symbol": "y_i,u_i",
+          "meaning": "Recorded observations and commands."
+        },
+        {
+          "symbol": "\\mathcal C_i",
+          "meaning": "Configuration and provenance needed to interpret the sample."
+        }
+      ],
+      "prereqs": [
+        "ros2_topics",
+        "ros2_time",
+        "e_dataset",
+        "train_state"
+      ],
+      "sources": [
+        {
+          "title": "ROS 2 rosbag2: official recording and playback software",
+          "url": "https://github.com/ros2/rosbag2"
+        },
+        {
+          "title": "ROS 2 documentation source: official tutorials",
+          "url": "https://github.com/ros2/ros2_documentation/tree/rolling/source/Tutorials"
+        }
+      ]
+    },
+    {
+      "id": "eng_fault_lifecycle",
+      "en": "Runtime Fault Detection and Controller Lifecycle",
+      "title": "运行故障检测与控制器生命周期",
+      "group": "robotics_software",
+      "kind": "concept",
+      "summary": "A runtime controller needs defined behavior when observations become stale, an update misses its deadline, a command is invalid or hardware reports an error.",
+      "definition": "A runtime controller needs defined behavior when observations become stale, an update misses its deadline, a command is invalid or hardware reports an error. Lifecycle states make activation, operation, fallback and shutdown explicit. A watchdog monitors whether required updates arrive on time; it does not determine that every received command is correct. Fallback behavior must be appropriate to the robot state and tested through the actual interface. A generic zero command can have different meanings for torque, velocity and position control. Logging the triggering condition and state transition makes a fault response auditable.",
+      "example": "If the policy stops producing actions, detect the elapsed command age and switch through a documented controller transition. For a humanoid, abruptly disabling torque and commanding a held pose are physically different responses. Evaluate the intended fallback first with injected software faults in simulation and controlled integration tests.",
+      "role_en": "Fault semantics connect control deadlines, command units, hardware interfaces and observable deployment behavior.",
+      "latex": "a_u=t_{\\rm now}-t_{\\rm last\\ command},\\quad a_u>\\delta\\Rightarrow\\text{defined fault transition}",
+      "notation": [
+        {
+          "symbol": "a_u",
+          "meaning": "Age of the latest valid command."
+        },
+        {
+          "symbol": "\\delta",
+          "meaning": "Configured command-age threshold; must match the application."
+        }
+      ],
+      "prereqs": [
+        "ctrl_runtime_limits",
+        "ros2_control",
+        "desc_limits"
+      ],
+      "sources": [
+        {
+          "title": "ros2_control controller manager: lifecycle, limits and fallback",
+          "url": "https://control.ros.org/rolling/doc/ros2_control/controller_manager/doc/userdoc.html"
+        }
+      ]
+    },
+    {
+      "id": "eng_actuator_dynamics",
+      "en": "Actuator Dynamics, Torque–Speed and Thermal Limits",
+      "title": "执行器动力学、转矩速度与热限制",
+      "group": "dynamics",
+      "kind": "concept",
+      "summary": "A commanded joint torque is realized through a motor, transmission, drive electronics and control loop.",
+      "definition": "A commanded joint torque is realized through a motor, transmission, drive electronics and control loop. An ideal motor approximation relates torque to current, but available voltage, speed, current limits, friction and heating restrict actual output. Continuous torque can be lower than a short peak rating, and a fixed URDF effort limit cannot represent every torque-speed or thermal dependency. Actuator delay and bandwidth also change tracking and stability. Identify the command interface, gear convention and measurement frame before fitting or learning a dynamics model. Simulated actuator parameters should be validated against the intended hardware operating conditions.",
+      "example": "A controller can request an allowed peak torque at high joint speed while the motor cannot supply it because of voltage limits. Repeatedly holding that torque can also exceed thermal limits. Domain randomization of mass alone does not account for these actuator differences.",
+      "role_en": "Actuator dynamics connect motor hardware, system identification, simulator action models and sim-to-real control.",
+      "latex": "\\tau_m\\approx k_t i,\\quad V=Ri+L\\dot i+k_e\\omega_m,\\quad P_{\\rm loss}\\approx i^2R",
+      "notation": [
+        {
+          "symbol": "k_t,k_e",
+          "meaning": "Torque and back-emf constants under consistent units."
+        },
+        {
+          "symbol": "i,V",
+          "meaning": "Motor current and applied voltage."
+        },
+        {
+          "symbol": "R,L",
+          "meaning": "Winding resistance and inductance."
+        }
+      ],
+      "prereqs": [
+        "ph_torque",
+        "desc_transmission",
+        "est_sysid",
+        "c_ode"
+      ],
+      "sources": [
+        {
+          "title": "Modern Robotics: official book, software and chapter outline",
+          "url": "https://hades.mech.northwestern.edu/index.php/Modern_Robotics"
+        },
+        {
+          "title": "Isaac Lab official how-to guides and concepts",
+          "url": "https://isaac-sim.github.io/IsaacLab/main/source/how-to/index.html"
+        },
+        {
+          "title": "MIT Underactuated Robotics notes",
+          "url": "https://underactuated.mit.edu/"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "m_function",
+      "to": "eng_signal_sampling",
+      "type": "prereq",
+      "why_en": "Sampling and filter delay connect sensor measurements, discretized feedback and trustworthy estimation."
+    },
+    {
+      "from": "c_ode",
+      "to": "eng_signal_sampling",
+      "type": "prereq",
+      "why_en": "Sampling and filter delay connect sensor measurements, discretized feedback and trustworthy estimation."
+    },
+    {
+      "from": "ros2_time",
+      "to": "eng_signal_sampling",
+      "type": "prereq",
+      "why_en": "Sampling and filter delay connect sensor measurements, discretized feedback and trustworthy estimation."
+    },
+    {
+      "from": "ph_constraints",
+      "to": "eng_hybrid_contact",
+      "type": "prereq",
+      "why_en": "Hybrid contact models connect constrained dynamics, gait phases, impact simulation and physically executable motion tracking."
+    },
+    {
+      "from": "ph_friction",
+      "to": "eng_hybrid_contact",
+      "type": "prereq",
+      "why_en": "Hybrid contact models connect constrained dynamics, gait phases, impact simulation and physically executable motion tracking."
+    },
+    {
+      "from": "c_ode",
+      "to": "eng_hybrid_contact",
+      "type": "prereq",
+      "why_en": "Hybrid contact models connect constrained dynamics, gait phases, impact simulation and physically executable motion tracking."
+    },
+    {
+      "from": "ph_torque",
+      "to": "eng_grasp_wrench",
+      "type": "prereq",
+      "why_en": "Wrench feasibility extends friction and statics into grasp selection, manipulation and contact-force optimization."
+    },
+    {
+      "from": "ph_friction",
+      "to": "eng_grasp_wrench",
+      "type": "prereq",
+      "why_en": "Wrench feasibility extends friction and statics into grasp selection, manipulation and contact-force optimization."
+    },
+    {
+      "from": "rb_jacobian",
+      "to": "eng_grasp_wrench",
+      "type": "prereq",
+      "why_en": "Wrench feasibility extends friction and statics into grasp selection, manipulation and contact-force optimization."
+    },
+    {
+      "from": "la_cross",
+      "to": "eng_grasp_wrench",
+      "type": "prereq",
+      "why_en": "Wrench feasibility extends friction and statics into grasp selection, manipulation and contact-force optimization."
+    },
+    {
+      "from": "r_frames",
+      "to": "eng_wheeled_nonholonomic",
+      "type": "prereq",
+      "why_en": "Nonholonomic models extend configuration-space planning, odometry and feedback to wheeled mobile robots."
+    },
+    {
+      "from": "ctrl_statespace",
+      "to": "eng_wheeled_nonholonomic",
+      "type": "prereq",
+      "why_en": "Nonholonomic models extend configuration-space planning, odometry and feedback to wheeled mobile robots."
+    },
+    {
+      "from": "est_odometry",
+      "to": "eng_wheeled_nonholonomic",
+      "type": "prereq",
+      "why_en": "Nonholonomic models extend configuration-space planning, odometry and feedback to wheeled mobile robots."
+    },
+    {
+      "from": "rb_fk",
+      "to": "eng_trajectory_generation",
+      "type": "prereq",
+      "why_en": "Time scaling connects motion planning to executable references for joint controllers and motion-tracking policies."
+    },
+    {
+      "from": "m_chain",
+      "to": "eng_trajectory_generation",
+      "type": "prereq",
+      "why_en": "Time scaling connects motion planning to executable references for joint controllers and motion-tracking policies."
+    },
+    {
+      "from": "c_ode",
+      "to": "eng_trajectory_generation",
+      "type": "prereq",
+      "why_en": "Time scaling connects motion planning to executable references for joint controllers and motion-tracking policies."
+    },
+    {
+      "from": "desc_limits",
+      "to": "eng_trajectory_generation",
+      "type": "prereq",
+      "why_en": "Time scaling connects motion planning to executable references for joint controllers and motion-tracking policies."
+    },
+    {
+      "from": "e_python",
+      "to": "eng_cpp_build",
+      "type": "prereq",
+      "why_en": "Native ownership and build knowledge support ROS 2 packages, simulator extensions and reliable high-rate control integrations."
+    },
+    {
+      "from": "cs_memory",
+      "to": "eng_cpp_build",
+      "type": "prereq",
+      "why_en": "Native ownership and build knowledge support ROS 2 packages, simulator extensions and reliable high-rate control integrations."
+    },
+    {
+      "from": "cs_environment",
+      "to": "eng_cpp_build",
+      "type": "prereq",
+      "why_en": "Native ownership and build knowledge support ROS 2 packages, simulator extensions and reliable high-rate control integrations."
+    },
+    {
+      "from": "e_python",
+      "to": "eng_version_tests",
+      "type": "prereq",
+      "why_en": "Versioned tests connect software changes, reproducible training configurations and evidence for deployable robot behavior."
+    },
+    {
+      "from": "train_repro",
+      "to": "eng_version_tests",
+      "type": "prereq",
+      "why_en": "Versioned tests connect software changes, reproducible training configurations and evidence for deployable robot behavior."
+    },
+    {
+      "from": "desc_variant",
+      "to": "eng_version_tests",
+      "type": "prereq",
+      "why_en": "Versioned tests connect software changes, reproducible training configurations and evidence for deployable robot behavior."
+    },
+    {
+      "from": "ros2_topics",
+      "to": "eng_record_replay",
+      "type": "prereq",
+      "why_en": "Recording and replay connect ROS 2 timing, datasets, debugging and repeatable perception evaluation."
+    },
+    {
+      "from": "ros2_time",
+      "to": "eng_record_replay",
+      "type": "prereq",
+      "why_en": "Recording and replay connect ROS 2 timing, datasets, debugging and repeatable perception evaluation."
+    },
+    {
+      "from": "e_dataset",
+      "to": "eng_record_replay",
+      "type": "prereq",
+      "why_en": "Recording and replay connect ROS 2 timing, datasets, debugging and repeatable perception evaluation."
+    },
+    {
+      "from": "train_state",
+      "to": "eng_record_replay",
+      "type": "prereq",
+      "why_en": "Recording and replay connect ROS 2 timing, datasets, debugging and repeatable perception evaluation."
+    },
+    {
+      "from": "ctrl_runtime_limits",
+      "to": "eng_fault_lifecycle",
+      "type": "prereq",
+      "why_en": "Fault semantics connect control deadlines, command units, hardware interfaces and observable deployment behavior."
+    },
+    {
+      "from": "ros2_control",
+      "to": "eng_fault_lifecycle",
+      "type": "prereq",
+      "why_en": "Fault semantics connect control deadlines, command units, hardware interfaces and observable deployment behavior."
+    },
+    {
+      "from": "desc_limits",
+      "to": "eng_fault_lifecycle",
+      "type": "prereq",
+      "why_en": "Fault semantics connect control deadlines, command units, hardware interfaces and observable deployment behavior."
+    },
+    {
+      "from": "ph_torque",
+      "to": "eng_actuator_dynamics",
+      "type": "prereq",
+      "why_en": "Actuator dynamics connect motor hardware, system identification, simulator action models and sim-to-real control."
+    },
+    {
+      "from": "desc_transmission",
+      "to": "eng_actuator_dynamics",
+      "type": "prereq",
+      "why_en": "Actuator dynamics connect motor hardware, system identification, simulator action models and sim-to-real control."
+    },
+    {
+      "from": "est_sysid",
+      "to": "eng_actuator_dynamics",
+      "type": "prereq",
+      "why_en": "Actuator dynamics connect motor hardware, system identification, simulator action models and sim-to-real control."
+    },
+    {
+      "from": "c_ode",
+      "to": "eng_actuator_dynamics",
+      "type": "prereq",
+      "why_en": "Actuator dynamics connect motor hardware, system identification, simulator action models and sim-to-real control."
+    }
+  ],
+  "audit": {
+    "existing_node_count": 492,
+    "new_concept_count": 10,
+    "new_paper_count": 0,
+    "course598_reused_metadata": "course598",
+    "course598_topic_count": 20,
+    "course598_reading_associations": 106,
+    "course_scope_policy": "Official courses are distinguished from atlas-designed tracks; node inclusion indicates a learning connection, not verified coverage of every algorithm by one source.",
+    "verification": "Official chapter outlines and course pages browsed; CSE598 metadata inspected locally. Course outcomes are proposed targets. No claim of lecture attendance, assignment completion or mastery.",
+    "unavailable_primary_pages": "Some hosted ROS tutorial pages returned access challenges; official ROS 2 source repository and ros2_control documentation were used.",
+    "unassigned_existing_robotics_engineering_nodes": [],
+    "robotics_engineering_coverage_groups": [
+      "computing",
+      "control",
+      "cuda",
+      "dynamics",
+      "estimation",
+      "kinematics",
+      "motion",
+      "perception",
+      "physics",
+      "planning",
+      "pytorch_systems",
+      "robot_basics",
+      "robot_description",
+      "robot_hardware",
+      "robotics_software",
+      "simulation",
+      "training"
+    ],
+    "competence_policy": "A mapped concept means curricular coverage, not completed coursework, an executed lab, a working simulator, a trained policy or validated hardware skill.",
+    "parallel_course_verification": "Stanford CS149 official public Fall 2025 page verified; not asserted to be the newest edition. Berkeley CS267 URL was not reachable and is not used as a verified anchor.",
+    "program_comparison_sources": [
+      {
+        "title": "CMU MSR curriculum — breadth audit source",
+        "url": "https://www.ri.cmu.edu/education/academic-programs/master-of-science-robotics/curriculum/"
+      },
+      {
+        "title": "Stanford CS237A — robotics foundations breadth comparison",
+        "url": "https://bulletin.stanford.edu/courses/2185453"
+      },
+      {
+        "title": "Stanford CS329S archived syllabus — ML systems lifecycle",
+        "url": "https://stanford-cs329s.github.io/syllabus.html"
+      }
+    ]
+  }
+}

@@ -122,7 +122,7 @@ from expansion_build import expand_atlas
 nodes,edges,expansion=expand_atlas(P,nodes,edges)
 import base64
 figures={f.name:'data:image/png;base64,'+base64.b64encode(f.read_bytes()).decode() for f in (P/'paper_assets').glob('*.png')}
-data=dict(**expansion,paperFigures=figures,nodes=nodes,edges=edges,references=[dict(title=t,url=u) for t,u in refs],version='5.0',date='2026-11-16')
+data=dict(**expansion,paperFigures=figures,nodes=nodes,edges=edges,references=[dict(title=t,url=u) for t,u in refs],version='6.0',date='2026-11-16')
 (P/'dist').mkdir(exist_ok=True)
 (P/'atlas.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
 css=(P/'vendor/katex/dist/katex.min.css').read_text()
@@ -132,7 +132,7 @@ def font_data(m):
  return 'url(data:'+mime+';base64,'+base64.b64encode(file.read_bytes()).decode()+')'
 css=re.sub(r'url\((fonts/[^)]+)\)',font_data,css)
 js=(P/'vendor/katex/dist/katex.min.js').read_text()
-html=(P/'template.html').read_text().replace('__KATEX_CSS__',css).replace('__KATEX_JS__',js).replace('__DATA__',json.dumps(data,ensure_ascii=False).replace('</','<\\/'))
+html=(P/'template.html').read_text().replace('__KATEX_CSS__',css).replace('__KATEX_JS__',js).replace('__NAVIGATION_JS__',(P/'navigation.js').read_text()).replace('__DATA__',json.dumps(data,ensure_ascii=False).replace('</','<\\/'))
 html += '\n<!-- KaTeX license follows\n'+(P/'vendor/katex/LICENSE').read_text().replace('--','- -')+'\n-->\n'
 (P/'dist/index.html').write_text(html)
 script=re.search(r'<script>\n(.*?)</script>',html,re.S).group(1);(P/'app-check.js').write_text(script)

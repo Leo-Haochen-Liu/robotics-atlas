@@ -1,0 +1,33 @@
+{
+  "scope": "Reviewed stable supplemental references; new research concepts are not automatically added here.",
+  "course_node_ids": {
+    "course_math_bridge": [
+      "sim_camera",
+      "la_cross"
+    ],
+    "course_eecs545": [
+      "d_linear",
+      "d_bptt",
+      "g_conditional",
+      "d_train_infer",
+      "g_flow_matching",
+      "wm_rssm",
+      "language_tokens",
+      "language_maskedlm"
+    ],
+    "course_cs285": [
+      "ml_reinforcement"
+    ],
+    "course_cs231n": [
+      "language_nlp"
+    ],
+    "course_cse598": [
+      "vla_action_tokens",
+      "soccer_ball_state",
+      "soccer_foot_ball_contact",
+      "soccer_active_vision",
+      "soccer_skill_chaining",
+      "soccer_multiagent"
+    ]
+  }
+}

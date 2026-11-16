@@ -1,4 +1,6 @@
-# Taxonomy and connection conventions
+# Record types and connection conventions
+
+The main navigation now has a stable course-based Foundations map and a topic-based Research map. The types below describe records and relationships; they are not separate top-level browsing areas. Papers and methods for one research field are co-located. See [the curriculum](CURRICULUM.md) and [coverage audit](COVERAGE_AUDIT.md).
 
 The atlas uses several independent classification axes, not a claim that all of machine learning has one universal tree. A node has one primary browsing location and typed cross-links for other roles. Category depth describes browsing scope; solid prerequisite arrows describe learning dependencies.
 
